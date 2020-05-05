@@ -10,3 +10,7 @@ infos/
 README
 ablage/
 backup/
+alternativedownload.sh
+exclude.lst
+zipall.sh
+tools/scripte/
