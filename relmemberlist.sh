@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Written by Carsten Jacob coding@langstreckentouren.de
-# Script is CC0 1.0 Universell (CC0 1.0) https://creativecommons.org/publicdomain/zero/1.0/deed.de
+# License: GNU Lesser General Public License v3.0
+# See: http://www.gnu.org/licenses/lgpl-3.0.html
+# Written by Carsten Jacob
+# Please feel free to contact me coding@langstreckentouren.de
 
 # Ausgabe auf Standardausgabe.
 # Wichtig für echo-Ausgaben. Diese müssen immer mit einem # am Zeilenanfang beginnen, wenn bei der Auswertung Zeilen gezählt werden müssen, werden alle Kommentare vorher gelöscht. Ansonsten gibt es verfälschte Ergebnisse!

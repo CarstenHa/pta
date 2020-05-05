@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Written by Carsten Jacob coding@langstreckentouren.de
-# Script is CC0 1.0 Universell (CC0 1.0) https://creativecommons.org/publicdomain/zero/1.0/deed.de
+# License: GNU Lesser General Public License v3.0
+# See: http://www.gnu.org/licenses/lgpl-3.0.html
+# Written by Carsten Jacob
+# Please feel free to contact me coding@langstreckentouren.de
 
 # Hinweise zu diesem Skript: Das Herunterladen mit wget und der Option -t 0 lieferte zum Teil fehlerhafte Ergebnisse. Deswegen werden die .osm-Dateien in einer Schleife auf eine Minimalgröße untersucht. Deswegen sollte der Test der while-Schleifen von Zeit zu Zeit überprüft werden (find-Befehl mit Option -size). 
 

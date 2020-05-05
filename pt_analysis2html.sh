@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Written by Carsten Jacob coding@langstreckentouren.de
-# Script is CC0 1.0 Universell (CC0 1.0) https://creativecommons.org/publicdomain/zero/1.0/deed.de
+# License: GNU Lesser General Public License v3.0
+# See: http://www.gnu.org/licenses/lgpl-3.0.html
+# Written by Carsten Jacob
+# Please feel free to contact me coding@langstreckentouren.de
 
 # Abfrage für JOSM:
 # type:relation and type=route and (route=bus or route=ferry or route=light_rail or route=train or route=tram or route=subway)
