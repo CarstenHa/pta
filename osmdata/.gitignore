@@ -1,0 +1,3 @@
+# .osm-Dateien werden ignoriert
+*
+!.gitignore

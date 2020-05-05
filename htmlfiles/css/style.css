@@ -1,0 +1,386 @@
+   * {
+    box-sizing: border-box;
+   }
+   a {
+    color: #555555;
+   }
+   a.symbol {
+    text-decoration: none;
+   }
+   a:visited {
+    color: #9d6554;
+   }
+   a:hover {
+    color: #884d3b;
+   }
+   a:active {
+    color: #000000;
+   }
+   a.masterueber {
+    text-decoration: none;
+    color: #222;
+   }
+   a.masterueber:hover {
+    text-decoration: underline;
+   }
+   div.navi {
+    position: relative;
+    width: 100%;
+    height: 2em;
+    margin: 1em 0 1.4em 0;
+   }
+   a.neuladen {
+    width: 80px;
+    height: 30px;
+    padding: .3em;
+    border: 1px solid grey;
+    border-radius: 10px;
+    font-size: 1.2em;
+    text-decoration: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    text-align: center;
+    background-color: white;
+    font-weight: normal;
+   }
+   a.neuladen:hover {
+    background-color: orange;
+    color: white;
+    border: 1px solid #903414;
+   }
+   main {
+    position: relative;
+   }
+   main.imp {
+    display: grid;
+    grid-template-columns: .8fr 1.4fr .8fr;
+    grid-template-rows: 10vh 1fr 1fr;
+    align-content: space-between;
+    justify-content: space-between;
+   }
+   div#imp {
+    grid-column: 2 / 3;
+    grid-row:    2 / 3;	
+    max-width: 65em;
+    margin: 0;
+    padding: 1em;
+    border: 1px solid #ddd;
+    background-color: #eeeeee;
+    border-radius: 10px;
+   }
+   div#imp h4,
+   div#imp p {
+    margin: 0;
+    padding: inherit;
+   }
+   /* Statistics-Element - Anfang */
+   div#stat {
+    font-size: 1em;
+    background-color: #eeeeee;
+    padding: 1.2em 1em;
+    border: 1px solid #d6d6d6;
+    border-radius: 10px;
+    /* Hier muss die Höhe bei eventueller Änderung des Inhalts manuell angepasst werden! */
+    height: 25em;
+    transition: height 1s ease-in-out; 
+    position: relative;
+   }
+   @media only screen and (max-width: 320px) {
+    div#stat {height: 28em;}
+   }
+   div#stat.hide {
+    transition: height 1s ease-in-out; 
+    height: 2em; 
+    overflow: hidden;
+   }
+   div#stat hr {
+    background-color: #d6d6d6;
+   }
+   div#stat.hide p,
+   div#stat.hide hr {
+    opacity: 0;
+   }
+   div#stat h4 {
+    margin: -.6em 0 0 0;
+   }
+   /* Verzögertes Einblenden von Absätzen. Kann u.U. bei größerem Absatz auf .4s verkürzt werden */
+   div#stat p,
+   div#stat hr {
+    opacity: 1;
+    transition: opacity .4s ease-in-out; 
+    transition-delay: .8s;
+   }
+   div#stat i#on, div#stat i#off {
+    position: absolute;
+    right: .8em;
+    top: .6em;
+    color: #666666;
+    font-size: 1.2em;
+   }
+   /* Einblenden von Plus/Minus-Zeichen */
+   div#stat.hide i#off, div#stat i#on {
+    opacity: 0;
+    transition: opacity .4s ease-in-out; 
+   }
+   div#stat i#off, div#stat.hide i#on {
+    opacity: 1;
+    transition: opacity .4s ease-in-out; 
+   }
+   /* Statistics-Element - Ende */
+   hr {
+    height: 1px;
+    border: none;
+    background-color: #999999;
+   }
+   button {
+    width: 80px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid grey;
+    border-radius: 10px;
+    font-size: 1.2em;
+    font-family: 'Rubik',sans-serif;
+    font-weight: normal;
+    position: absolute;
+    right: 90px;
+    top: 0;
+    background-color: white;
+   }
+   button:hover {
+    background-color: orange;
+    color: white;
+    border: 1px solid #903414;
+   }
+   body {
+    font-family: 'Rubik',sans-serif;
+    font-weight: 400;
+    font-size: 9pt;
+    line-height: 1.3;
+    color: #222;
+    text-align: left;
+   }
+   header {
+    margin: .5em;
+   }
+   h1 {
+    font-size: 1.3em;
+    text-align: center;
+    text-decoration: underline;
+   }
+   h2 {
+    font-size: 1.2em;
+   }
+   h3 {
+    font-size: 1em;
+    background-color: #d6d6d6;
+    padding: 0.6em 1em 0.6em 1em;
+    border: 1px solid #d6d6d6;
+    border-radius: 10px;
+    position: relative;
+   }
+   h4 {
+    font-size: 1em;
+    margin: .5em 0;
+   }
+   div {
+    margin-bottom: 1em;
+   }
+   div.routetab, div.stopareatab, div.stopplat {
+    background-color: #f6f5f4;
+    border-radius: 10px;
+    padding: 0.1em 1em 0.1em 1em;
+   }
+   div.stopplat:nth-child(even) {
+    background-color: #ececec;
+   }
+   div.mastertabhg {
+    background-color: #d6d6d6;
+    border-radius: 0 0 10px 10px;
+    padding: 0.1em 1em 0.1em 1em;
+    margin-top: -1.5em;
+    border-left: 1px solid #d6d6d6;
+    border-right: 1px solid #d6d6d6;
+    border-bottom: 1px solid #d6d6d6;
+   }
+   h3 .fa-chevron-down {
+    position: absolute;
+    right: 10px;
+    top: 6px;
+    z-index: 1;
+    color: #666666;
+    font-size: 1.2em;
+   }
+   p.pfeillinks {
+    position: absolute;
+    right: 10px;
+    top: -34px;
+    z-index: 2;
+    padding: 0;
+    font-size: 1.2em;
+    color: #666666;
+   }
+   .fa-arrow-circle-o-left {
+    margin-right: .2em;
+   }
+   .fa-chevron-left {
+    background-color: #d6d6d6;
+    padding: .2em;
+   }
+   .bgueberhell, .bgueberhell .fa-chevron-left {
+    background-color: #eeeeee !important;
+   }
+   .fa-map:hover, .fa-search-plus:hover {
+    color: #ffffff;
+    /* Imitiert mit Hilfe von text-shadow einen Outline-Effekt. */
+    text-shadow: 1px  1px 1px #333333,
+                 1px -1px 1px #333333,
+                -1px  1px 1px #333333,
+                -1px -1px 1px #333333;
+   }
+   div.masterroute {
+    display: none;
+    position: relative;
+   }
+   .onlyprint {display: none;}
+   div.masterroute:target {
+    display: block;
+    -webkit-animation: tabeinblendung .5s ease-in;
+    animation: tabeinblendung .5s ease-in;
+   }
+    @-webkit-keyframes tabeinblendung {
+    from  { -webkit-transform: translate3d(-100%, 0, 0); }
+    to    { -webkit-transform: translate3d(0, 0, 0); }
+   }
+    @keyframes tabeinblendung {
+    from  { transform: translate3d(-100%, 0, 0); }
+    to    { transform: translate3d(0, 0, 0); }
+   }
+   div.headerallg {
+    margin: 0 -.4em;
+    padding: 0.1em 1em 0.1em 1em;
+    border: 1px solid #ddd;
+    background-color: #eeeeee;
+    border-radius: 10px;
+   }
+   table {
+    width: 100%;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    table-layout: fixed;
+    border-collapse: collapse;
+    background-color: #ffffff;
+   }
+   table.stop_plat {
+   border:  2px solid #ddd;
+   }
+   table.mastertab {
+    border:  2px solid #ddd;
+    margin-top: .5em;
+    margin-bottom: 1em;
+   }
+   table.first {
+    border-top:  2px solid #ddd;
+    border-left:  2px solid #ddd;
+    border-right:  2px solid #ddd;
+    margin-bottom: 0;
+   }
+   table.second {
+    border-bottom:  2px solid #ddd;
+    border-left:  2px solid #ddd;
+    border-right:  2px solid #ddd;
+   }
+   table.third {
+    border:  2px solid #ddd;
+   }
+   tr {
+    border-bottom: 1px solid #ddd;
+   }
+   th {
+    width: 25%;
+    border-right: 1px solid #ddd;
+    background-color: #F6F6F6;
+    padding: .5em;
+   }
+   td {
+    background-color: white;
+    padding: .6em;
+   }
+   td.small {
+    border-right: 1px solid #ddd;
+   }
+   td.withcolour {
+    background-color: #90EE90;
+   }
+   td.yellow {
+    background-color: #F0E68C;
+   }
+   td.red {
+    background-color: #FA8072;
+   }
+   td.grey {
+    background-color: #F6F6F6;
+   }
+   td span.routecolour {
+    font-size: 1em;
+    border: 1px solid #666666;
+    margin: .3em;
+    padding: 0 .5em;
+   }
+   img.routeicontrain,
+   img.routeiconlightrail,
+   img.routeiconsubway,
+   img.routeiconmonorail,
+   img.routeicontram,
+   img.routeiconbus,
+   img.routeicontrolleybus,
+   img.routeiconferry {
+    width: 16px;
+    height: 16px;
+    vertical-align: -.3em;
+    margin-right: .2em;
+   }
+   /* Wichtige Anweisung. Verhindert den Zeilenumbruch zwischen Routennummer und Routenicon (stop_areas.html) */
+   div.route {
+    display: inline;
+    white-space: pre;
+   }
+   footer {
+    margin: .5em;
+   }
+@media only screen and (max-width: 620px) {
+   main.imp {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+   }
+   div#imp {
+    grid-column: 1 / 2;
+    grid-row:    1 / 2;	
+    max-width: 100%;
+   }
+}
+/* ---------------------- Drucklayout ---------------------- */
+@media print {
+   div.masterroute {
+    display: block;
+   }
+   main.imp {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+   }
+   div#imp {
+    grid-column: 1 / 2;
+    grid-row:    1 / 2;	
+    max-width: 100%;
+   }
+   .fa-map,
+   div.navi { display: none;}
+   .onlyprint {display: inline;}
+   div#stat.hide {
+    overflow: visible;
+    height: auto;
+   }
+   div#stat i#on, div#stat i#off {display: none;}
+   div#stat.hide p {opacity: 1;}
+}
+
