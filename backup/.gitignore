@@ -1,0 +1,3 @@
+# Alle Dateien in diesem Ordner werden ignoriert.
+*
+!.gitignore
