@@ -1,7 +1,7 @@
 # pta - Public transport analysis
 Openstreetmap data analysis of public transport
 
-Dieses Tool analysiert die Public-Transport-Daten (route=bus) des Openstreetmap-Projekts. Das Gebiet welches analysiert wird, deckt sich mit dem Verkehrsgebiet "Takst Sjælland" in Ost-Dänemark. 
+Dieses Tool analysiert die Public-Transport-Daten (route=bus) des Openstreetmap-Projekts. Das Gebiet, welches analysiert wird, deckt sich mit dem Verkehrsgebiet "Takst Sjælland" in Ost-Dänemark. 
 
 Um dieses Tool nutzen zu können, müssen einige Schritte vorher durchgeführt werden:
 
