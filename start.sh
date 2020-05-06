@@ -4,6 +4,7 @@
 # See: http://www.gnu.org/licenses/lgpl-3.0.html
 # Written by Carsten Jacob
 # Please feel free to contact me coding@langstreckentouren.de
+# https://github.com/CarstenHa
 
 # Hinweise zu diesem Skript: Das Herunterladen mit wget und der Option -t 0 lieferte zum Teil fehlerhafte Ergebnisse. Deswegen werden die .osm-Dateien in einer Schleife auf eine Minimalgröße untersucht. Deswegen sollte der Test der while-Schleifen von Zeit zu Zeit überprüft werden (find-Befehl mit Option -size). 
 

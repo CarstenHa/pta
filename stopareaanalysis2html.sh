@@ -4,6 +4,7 @@
 # See: http://www.gnu.org/licenses/lgpl-3.0.html
 # Written by Carsten Jacob
 # Please feel free to contact me coding@langstreckentouren.de
+# https://github.com/CarstenHa
 
 # Hier werden die Routen in ein besser auswertbares Format geschrieben.
 # Die Datei relmem_bus_takst.lst wird später bei der Auswertung der stop_areas benötigt. Dort werden die Routen ermittelt.
@@ -342,6 +343,7 @@ echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org
 echo "  <p><a href=\"impressum.html\">Impressum</a>"
 echo "  <p>&nbsp;</p>"
 echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
+echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa\">https://github.com/CarstenHa</a></p>"
 echo "</footer>"
 echo "</body>"
 echo "</html>"

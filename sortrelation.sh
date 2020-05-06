@@ -4,6 +4,7 @@
 # See: http://www.gnu.org/licenses/lgpl-3.0.html
 # Written by Carsten Jacob
 # Please feel free to contact me coding@langstreckentouren.de
+# https://github.com/CarstenHa
 
 backupordner="./backup"
 relationid="10020274"

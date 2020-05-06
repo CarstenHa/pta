@@ -4,6 +4,7 @@
 # See: http://www.gnu.org/licenses/lgpl-3.0.html
 # Written by Carsten Jacob
 # Please feel free to contact me coding@langstreckentouren.de
+# https://github.com/CarstenHa
 
 # Abfrage für JOSM:
 # type:relation and type=route and (route=bus or route=ferry or route=light_rail or route=train or route=tram or route=subway)
@@ -848,6 +849,7 @@ echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org
 echo "  <p><a href=\"impressum.html\">Impressum</a>"
 echo "  <p>&nbsp;</p>"
 echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
+echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa\">https://github.com/CarstenHa</a></p>"
 echo " </footer>"
 echo "</body>"
 echo "</html>"
