@@ -2,8 +2,6 @@ config/real_bus_stops.cfg
 htmlfiles/css/font-awesome.css
 htmlfiles/css/fonts.css
 htmlfiles/impressum.html
-htmlfiles/stop_areas.html
-htmlfiles/stop_platform.html
 infos/
 README
 ablage/
