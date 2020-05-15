@@ -5,7 +5,7 @@ Dieses Tool analysiert die Public-Transport-Daten (route=bus) des Openstreetmap-
 Ziel dieses Projekts ist es, eine bessere Überprüfbarkeit der OSM-Daten gegenüber den tatsächlichen Gegebenheiten eines Verkehrsgebietes herzustellen. So wird zum Beispiel das OSM-tag 'check_date=*' mit der Fahrplanperiode verglichen, um nur ein Merkmal dieses Tools zu nennen.
 
 Die generierten HTML-Seiten, die ein Teil dieses Tools sind, finden Sie übrigens unter:  
-https://carstenha.github.io/pta/htmlfiles/takst_sjaelland.html
+https://carstenha.github.io/pta/htmlfiles/takst_sjaelland.html  
 Den Programmcode und weitere Informationen finden Sie unter:  
 https://github.com/CarstenHa  
 Diese Informationen finden Sie unter:  
@@ -41,9 +41,6 @@ http://scripts.sil.org/OFL
 
 Font Awesome: Font Awesome by Dave Gandy (http://fontawesome.io). The font is licensed under the SIL Open Font License 1.1 (http://scripts.sil.org/OFL). CSS files are licensed under MIT License (http://opensource.org/licenses/mit-license.html)
 
-### 4. Datenschutz
-
-Ich erhebe keine personenbezogenen Daten noch werte ich Sie aus oder gebe Diese an Dritte weiter. Allerdings habe ich keinen Einfluss darauf, welche Daten Dritte (Service Provider etc.) erheben, auswerten, etc.
 
 Viel Spaß!
 
