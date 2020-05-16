@@ -41,6 +41,9 @@ http://scripts.sil.org/OFL
 
 Font Awesome: Font Awesome by Dave Gandy (http://fontawesome.io). The font is licensed under the SIL Open Font License 1.1 (http://scripts.sil.org/OFL). CSS files are licensed under MIT License (http://opensource.org/licenses/mit-license.html)
 
+Font Exo2: Copyright (c) 2013, Natanael Gama (www.ndiscovered.com info(at)ndiscovered.com), with Reserved Font Name Exo. This Font Software is licensed under the SIL Open Font License, Version 1.1. http://scripts.sil.org/OFL
+
+
 
 Viel Spaß!
 

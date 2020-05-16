@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html class="index" lang="de">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="htmlfiles/css/style.css">
+    <link rel="stylesheet" href="htmlfiles/css/fonts.css">
+    <link rel="stylesheet" href="htmlfiles/css/font-awesome.css">
+    <title>pta | OSM public transport data analysis</title>
+    <meta name="description" content="OSM public transport data analysis">
+  </head>
+  <body class="index">
+    <header class="index">
+<img class="indexbanner" src="htmlfiles/images/rail.jpg" alt="Panorama Monument Valley - Quelle Wikipedia" srcset="htmlfiles/images/rail1000px.jpg 1000w, htmlfiles/images/rail2000px.jpg 2000w, htmlfiles/images/rail.jpg 5000w">
+<h1>pta</h1>
+<h2>OSM public transport data analysis</h2>
+<h3>Buses in East-Denmark</h3>
+    </header>
+    <main class="index" role="main">
+<article>
+<p>Dieses Tool analysiert die Public-Transport-Daten (route=bus) des Openstreetmap-Projekts. Das Gebiet, welches analysiert wird, deckt sich mit dem Verkehrsgebiet "Takst Sjælland" in Ost-Dänemark.<br>
+Ziel dieses Projekts ist es, eine bessere Überprüfbarkeit der OSM-Daten gegenüber den tatsächlichen Gegebenheiten eines Verkehrsgebietes herzustellen. So wird zum Beispiel das OSM-tag 'check_date=*' mit der Fahrplanperiode verglichen, um nur ein Merkmal dieses Tools zu nennen.</p>
+
+<p>Die generierten HTML-Seiten, die ein Teil dieses Tools sind, finden Sie übrigens unter:<br><a href="htmlfiles/takst_sjaelland.html">https://carstenha.github.io/pta/htmlfiles/takst_sjaelland.html</a><br>Den Programmcode und weitere Informationen finden Sie unter:<br><a href="https://github.com/CarstenHa">https://github.com/CarstenHa</a><br>Diese Seite erreichen Sie im Internet unter:<br><a href="https://carstenha.github.io/pta/">https://carstenha.github.io/pta/</a></p>
+
+<h3> 1. Vorbereitende Schritte</h3>
+
+<p>Um dieses Tool nutzen zu können, müssen einige Schritte vorher durchgeführt werden:</p>
+<p>
+
+Das Programm Osmosis muss herunter geladen, entpackt und in das Verzeichnis 'tools/osmosis' verschoben werden. Informationen zu dem Programm finden sich unter:<br><a href="https://wiki.openstreetmap.org/wiki/Osmosis">https://wiki.openstreetmap.org/wiki/Osmosis </a></p>Das Programm Osmconvert muss heruntergeladen und in das Verzeichnis 'tools/osmconvert' verschoben werden. Informationen zu dem Programm finden sich unter:<br><a href="https://wiki.openstreetmap.org/wiki/Osmconvert">https://wiki.openstreetmap.org/wiki/Osmconvert</a><br>
+<p>In dem Ordner 'config' ist die Datei 'real_bus_stops.lst'. Diese Datei umbenennen in 'real_bus_stops.cfg'. Diese neue Datei kann dann mit Daten gefüttert werden. Nähere Erläuterungen dazu befinden sich in der Datei selber.
+
+</p>
+<h3> 2. Ausführung</h3>
+<p>
+
+Start des Erstellungsprozesses:  
+    ./start.sh</p>
+<p>Anzeigen der Hilfe:  
+    ./start.sh -h
+
+</p>
+<h3> 3. Lizenzhinweise</h3>
+<p>
+Die Openstreetmap-Daten stehen unter der ODbL-Lizenz <a href="https://opendatacommons.org/licenses/odbl/">https://opendatacommons.org/licenses/odbl/</a><br>© OpenStreetMap contributors <a href="https://www.openstreetmap.org/copyright">https://www.openstreetmap.org/copyright</a></p>
+<p>Font Rubik: Copyright 2015 The Rubik Project Authors (<a href="https://github.com/googlefonts/rubik">https://github.com/googlefonts/rubik</a>). The font is licensed under the SIL Open Font License.  
+<a href="http://scripts.sil.org/OFL">http://scripts.sil.org/OFL</a></p>
+<p>Font Awesome: Font Awesome by Dave Gandy (<a href="http://fontawesome.io">http://fontawesome.io</a>). The font is licensed under the SIL Open Font License 1.1 (<a href="http://scripts.sil.org/OFL">http://scripts.sil.org/OFL</a>). CSS files are licensed under MIT License (<a href="http://opensource.org/licenses/mit-license.html">http://opensource.org/licenses/mit-license.html</a>)</p>
+<p>Font Exo2: Copyright (c) 2013, Natanael Gama (<a href="www.ndiscovered.com">www.ndiscovered.com</a> info(at)ndiscovered.com), with Reserved Font Name Exo. This Font Software is licensed under the SIL Open Font License, Version 1.1. <a href="http://scripts.sil.org/OFL">http://scripts.sil.org/OFL</a></p>
+<p>Viel Spaß!
+</p>
+</article>
+</main>
+<footer>
+<p><a href="https://github.com/CarstenHa">https://github.com/CarstenHa</a></p>
+</footer>
+</body>
+</html>
