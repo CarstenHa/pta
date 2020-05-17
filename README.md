@@ -7,7 +7,7 @@ Ziel dieses Projekts ist es, eine bessere Überprüfbarkeit der OSM-Daten gegen�
 Die generierten HTML-Seiten, die ein Teil dieses Tools sind, finden Sie übrigens unter:  
 https://carstenha.github.io/pta/htmlfiles/takst_sjaelland.html  
 Den Programmcode und weitere Informationen finden Sie unter:  
-https://github.com/CarstenHa  
+https://github.com/CarstenHa/pta  
 Diese Informationen finden Sie unter:  
 https://carstenha.github.io/pta/
 
@@ -42,6 +42,9 @@ http://scripts.sil.org/OFL
 Font Awesome: Font Awesome by Dave Gandy (http://fontawesome.io). The font is licensed under the SIL Open Font License 1.1 (http://scripts.sil.org/OFL). CSS files are licensed under MIT License (http://opensource.org/licenses/mit-license.html)
 
 Font Exo2: Copyright (c) 2013, Natanael Gama (www.ndiscovered.com info(at)ndiscovered.com), with Reserved Font Name Exo. This Font Software is licensed under the SIL Open Font License, Version 1.1. http://scripts.sil.org/OFL
+
+CarstenHa/pta is licensed under the GNU Lesser General Public License v3.0  
+https://github.com/CarstenHa/pta/blob/master/LICENSE
 
 
 

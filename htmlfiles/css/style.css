@@ -413,17 +413,19 @@
    }
 @media only screen and (max-width: 620px) {
    header.index h1 {
-    bottom: 15%;
-    right: 5%;
+    bottom: 30px;
+    right: 15px;
     font-size: 4em;
    }
    header.index h2 {
-    bottom: 10%;
-    right: 5%;
+    bottom: 25px;
+    right: 15px;
+    font-size: 1.4em;
    }
    header.index h3 {
-    right: 5%;
-    bottom: 2%;
+    right: 15px;
+    bottom: 10px;
+    font-size: 1.2em;
    }
    img.indexbanner {
     border-bottom: .5em solid #444444;
