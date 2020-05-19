@@ -507,9 +507,10 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
        fi
 
        # Name des stops wird ermittelt.
+       # Klasse stn_f ist für Verarbeitung mit anderen Programmen.
        if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-        echo "   <td class=\"small withcolour\">"$osmstopname"</td>" >>./"$htmlname2"
-       else echo "   <td class=\"small\">"$osmstopname"</td>" >>./"$htmlname2"
+        echo "   <td class=\"small withcolour stn_f\">"$osmstopname"</td>" >>./"$htmlname2"
+       else echo "   <td class=\"small stn_f\">"$osmstopname"</td>" >>./"$htmlname2"
        fi
 
        # Art des OSM-Elements (node/way/relation) wird in Datei geschrieben, und wenn es kein node ist, wird Fehler ausgegeben.
@@ -537,7 +538,8 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
      elif [ $(grep "$osmstoprelid" ./osmdata/stop_areas.osm | wc -l) == "0" ]; then
 
       echo "   <td class=\"small\"><a href =\"https://www.openstreetmap.org/$osmstopelement/"$osmstoprelid"\">"$osmstoprelid"</a> / No</td>" >>./"$htmlname2"
-      echo "   <td class=\"small\">"$osmstopname"</td>" >>./"$htmlname2"
+      # Klasse stn_f ist für Verarbeitung mit anderen Programmen.
+      echo "   <td class=\"small stn_f\">"$osmstopname"</td>" >>./"$htmlname2"
       if [ "$osmstopelement" == "node" ]; then
        echo "   <td class=\"small\">"$osmstopelement"</td>" >>./"$htmlname2"
       else echo "   <td class=\"small red\">Wrong element ("$osmstopelement")! It must be a node.</td>" >>./"$htmlname2"
@@ -647,9 +649,10 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
        fi
 
        # Name der platform wird ermittelt.
+       # Klasse pln_f ist für Verarbeitung mit anderen Programmen.
        if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-        echo "   <td class=\"small withcolour\">"$osmplatformname"</td>" >>./"$htmlname2"
-       else echo "   <td class=\"small\">"$osmplatformname"</td>" >>./"$htmlname2"
+        echo "   <td class=\"small withcolour pln_f\">"$osmplatformname"</td>" >>./"$htmlname2"
+       else echo "   <td class=\"small pln_f\">"$osmplatformname"</td>" >>./"$htmlname2"
        fi
  
        # Art des OSM-Elements (node/way/relation) wird in Datei geschrieben.
@@ -682,7 +685,8 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
 
         echo "   <td class=\"small\"><a href =\"https://www.openstreetmap.org/$osmplatformelement/"$osmplatformrelid"\">"$osmplatformrelid"</a> / No</td>" >>./"$htmlname2"
-        echo "   <td class=\"small\">"$osmplatformname"</td>" >>./"$htmlname2"
+        # Klasse pln_f ist für Verarbeitung mit anderen Programmen.
+        echo "   <td class=\"small pln_f\">"$osmplatformname"</td>" >>./"$htmlname2"
           if [ "$osmplatformelement" == "way" -a "$areacheck" == "yes" ]; then
            echo "   <td class=\"small\">way + area=yes</td>" >>./"$htmlname2"
           else echo "   <td class=\"small\">"$osmplatformelement"</td>" >>./"$htmlname2"
@@ -847,8 +851,8 @@ echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und
 echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
 echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
 echo "  <p>&nbsp;</p>"
-echo "  <p><a href=\"https://carstenha.github.io/pta/\">Website</a></p>"
-echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa\">https://github.com/CarstenHa</a></p>"
+echo "  <p><a href=\"https://carstenha.github.io/pta/\">Repository-Website</a></p>"
+echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
 echo "  <p>&nbsp;</p>"
 echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
 echo " </footer>"
