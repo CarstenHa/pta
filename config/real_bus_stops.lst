@@ -1,5 +1,5 @@
 # Example of real_bus_stops.cfg (field delimiter is a space)
 #
 # row 1: # Name bus route (optional)
-# row 2 column 1: RelationID row 2 column 2: Number of bus stops row 2 column 3: Date of data collection (format YYYY-MM-DD)
+# row 2 column 1: RelationID row 2 column 2: Number of bus stops row 2 column 3: Date of data collection (format YYYY-MM-DD) column 4: Bus number column 5: GTFS-shape-id
 

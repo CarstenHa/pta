@@ -241,10 +241,13 @@
    div {
     margin-bottom: 1em;
    }
-   div.routetab, div.stopareatab, div.stopplat {
+   div.routetab, div.stopareatab, div.stopplat, div.gtfs {
     background-color: #f6f5f4;
     border-radius: 10px;
     padding: 0.1em 1em 0.1em 1em;
+   }
+   div.gtfs {
+    background-color: #ecf4e2;
    }
    div.stopplat:nth-child(even) {
     background-color: #ececec;
@@ -257,6 +260,10 @@
     border-left: 1px solid #d6d6d6;
     border-right: 1px solid #d6d6d6;
     border-bottom: 1px solid #d6d6d6;
+   }
+   div.gtfs table th {
+    font-weight: normal;
+    background-color: #ecf4e2;
    }
    h3 .fa-chevron-down {
     position: absolute;
@@ -350,6 +357,9 @@
    }
    tr {
     border-bottom: 1px solid #ddd;
+   }
+   tr.othernotes td {
+    text-align: center;
    }
    th {
     width: 25%;

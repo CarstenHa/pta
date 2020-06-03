@@ -356,12 +356,14 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo "  <tr>" >>./"$htmlname"
     echo "   <th style=\"font-weight: normal;\">Stop/Platform:</th>" >>./"$htmlname"
     unset realbusstop
+    unset shapeid
     unset osmstop
     unset osmplatform
     unset osmstoplist
     unset osmplatformlist
     # Zeichenkette mit Datum
     realbusstop="$(grep "$relnumber" ./config/real_bus_stops.cfg | cut -d" " -f2)"
+    shapeid="$(grep "$relnumber" ./config/real_bus_stops.cfg | cut -d" " -f5)"
     # Zeichenkette ohne Datum
     realbusstopnumber="${realbusstop% (*}"
 
@@ -416,7 +418,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     echo "  </tr>" >>./"$htmlname"
     echo "  <tr>" >>./"$htmlname"
-    echo "   <th style=\"font-weight: normal;\">stop/platform-Analysis:</th>" >>./"$htmlname"
+    echo "   <th style=\"font-weight: normal;\">stop/platform-Analysis/GTFS:</th>" >>./"$htmlname"
     if [ -n "$osmstoplist" ]; then
      echo "   <td class=\"@stoperrorcheck${i} small\"><a href=\"stop_platform.html#st_ar1"$i"\">Stop-analysis</a></td>" >>./"$htmlname"
     else echo "   <td class=\"small\">No stops</td>" >>./"$htmlname"
@@ -425,8 +427,14 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
      echo "   <td class=\"@platformerrorcheck${i} small\"><a href=\"stop_platform.html#st_ar2"$i"\">Platform-analysis</a></td>" >>./"$htmlname"
     else echo "   <td class=\"small\">No platforms</td>" >>./"$htmlname"
     fi
-    echo "   <td><!--@othernotes3${i}--></td>" >>./"$htmlname"
+    if [ -n "$shapeid" -a -e "./htmlfiles/gtfs/${shapeid}.html" ]; then
+     echo "   <td><a href=\"gtfs/${shapeid}.html\">GTFS data</a></td>" >>./"$htmlname"
+    else echo "   <td>No GTFS data</td>" >>./"$htmlname"
+    fi
     echo "  </tr>" >>./"$htmlname"
+
+    # Achtung! Hier wird bei weiteren Fehlerfunden evtl. später eine komplette Tabellenzeile hinzugefügt.
+    echo "  <!--@othernotes3${i}-->" >>./"$htmlname"
 
     # Zeile 4 der zweiten Tabelle:
     openinghours="$(echo "$relbereich" | grep 'opening_hours' | sed 's/^.*v='\''\([^'\'']*\)'\''.*$/\1/')"
@@ -793,8 +801,9 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
    if [ "$har_errorelementcounter" -gt "0" -o "$emptyrolecheck" -gt "0" ]; then
 
-     # Hier wird bei einem gefundenen Fehler ein Kommentar durch eine Tabellenzelle ersetzt.
-     sed -i 's/<td><!--@othernotes3'${i}'--><\/td>/<td class="red"><a href="'"$(basename "$htmlname2")"'#othernotes3'${i}'">Other notes<\/a><\/td>/' ./"$htmlname" && \
+     # Hier wird bei einem gefundenen Fehler ein Kommentar durch eine Tabellenzeile ersetzt.
+     # Zelle erstreckt sich über die ersten beiden Spalten (colspan="2").
+     sed -i 's/<!--@othernotes3'${i}'-->/<tr class="othernotes"><th style="font-weight: normal;">Other notes:<\/th><td class="small red" colspan="2"><a href="'"$(basename "$htmlname2")"'#othernotes3'${i}'">Other notes<\/a><\/td><\/tr>/' ./"$htmlname" && \
 
      echo "  <table id=\"othernotes3${i}\" class=\"third\">" >>./"$htmlname2"
      echo "    <tr>" >>./"$htmlname2"
