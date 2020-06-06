@@ -39,6 +39,9 @@ Die Openstreetmap-Daten stehen unter der ODbL-Lizenz https://opendatacommons.org
 GTFS-Daten: rejseplanen.dk (https://www.rejseplanen.dk/)  
 Daten stehen unter Creative Commons BY-ND 3.0 Lizenz (http://creativecommons.org/licenses/by-nd/3.0/)
 
+Die GTFS-Kartenansicht wurde mit Openlayers realisiert.
+Der Code von Openlayers (https://openlayers.org/) steht unter der Lizenz 2-Clause BSD (https://tldrlegal.com/license/bsd-2-clause-license-(freebsd))
+
 Font Rubik: Copyright 2015 The Rubik Project Authors (https://github.com/googlefonts/rubik). The font is licensed under the SIL Open Font License.  
 http://scripts.sil.org/OFL
 

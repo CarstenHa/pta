@@ -428,7 +428,13 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     else echo "   <td class=\"small\">No platforms</td>" >>./"$htmlname"
     fi
     if [ -n "$shapeid" -a -e "./htmlfiles/gtfs/${shapeid}.html" ]; then
-     echo "   <td><a href=\"gtfs/${shapeid}.html\">GTFS data</a></td>" >>./"$htmlname"
+
+      if [ -e "./htmlfiles/gtfs/maps/${shapeid}.html" ]; then
+       echo "   <td><a href=\"gtfs/${shapeid}.html\">GTFS data</a> <a href=\"gtfs/maps/${shapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td>" >>./"$htmlname"
+      else
+       echo "   <td><a href=\"gtfs/${shapeid}.html\">GTFS data</a></td>" >>./"$htmlname"
+      fi
+
     else echo "   <td>No GTFS data</td>" >>./"$htmlname"
     fi
     echo "  </tr>" >>./"$htmlname"
