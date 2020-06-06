@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx version="1.1" creator="rcompare">
+<!-- Data source: rejseplanen.dk (CC-BY-ND 3.0) -->
+<rte>
+<desc>Route 202A</desc>
+<rtept lat="55.636809" lon="12.088049">
+</rtept>
+<rtept lat="55.636809" lon="12.088049">
+</rtept>
+<rtept lat="55.636256" lon="12.088594">
+</rtept>
+<rtept lat="55.635744" lon="12.088951">
+</rtept>
+<rtept lat="55.635562" lon="12.089016">
+</rtept>
+<rtept lat="55.635343" lon="12.089158">
+</rtept>
+<rtept lat="55.634577" lon="12.089574">
+</rtept>
+<rtept lat="55.634323" lon="12.089681">
+</rtept>
+<rtept lat="55.634006" lon="12.089784">
+</rtept>
+<rtept lat="55.633617" lon="12.089848">
+</rtept>
+<rtept lat="55.633212" lon="12.089864">
+</rtept>
+<rtept lat="55.633212" lon="12.089864">
+</rtept>
+<rtept lat="55.633212" lon="12.089864">
+</rtept>
+<rtept lat="55.633212" lon="12.089864">
+</rtept>
+<rtept lat="55.632457" lon="12.089884">
+</rtept>
+<rtept lat="55.631826" lon="12.089930">
+</rtept>
+<rtept lat="55.631358" lon="12.089972">
+</rtept>
+<rtept lat="55.630735" lon="12.090082">
+</rtept>
+<rtept lat="55.630752" lon="12.089050">
+</rtept>
+<rtept lat="55.630749" lon="12.088097">
+</rtept>
+<rtept lat="55.630827" lon="12.086037">
+</rtept>
+<rtept lat="55.630827" lon="12.086037">
+</rtept>
+<rtept lat="55.630503" lon="12.078908">
+</rtept>
+<rtept lat="55.630503" lon="12.078908">
+</rtept>
+<rtept lat="55.628619" lon="12.078776">
+</rtept>
+<rtept lat="55.628619" lon="12.078776">
+</rtept>
+<rtept lat="55.628619" lon="12.078776">
+</rtept>
+<rtept lat="55.628619" lon="12.078776">
+</rtept>
+<rtept lat="55.627308" lon="12.078689">
+</rtept>
+<rtept lat="55.627119" lon="12.078690">
+</rtept>
+<rtept lat="55.626562" lon="12.078694">
+</rtept>
+<rtept lat="55.626553" lon="12.078694">
+</rtept>
+<rtept lat="55.626553" lon="12.078694">
+</rtept>
+<rtept lat="55.626562" lon="12.078694">
+</rtept>
+<rtept lat="55.626022" lon="12.078716">
+</rtept>
+<rtept lat="55.625977" lon="12.081207">
+</rtept>
+<rtept lat="55.625977" lon="12.081207">
+</rtept>
+</rte>
+<wpt lat="55.636809225478" lon="12.088049439086">
+<desc>Stop 1: Roskilde St., Sygehuset (Køgevej)</desc>
+</wpt>
+<wpt lat="55.633212362518" lon="12.089864058065">
+<desc>Stop 2: Rådhuset (Køgevej)</desc>
+</wpt>
+<wpt lat="55.630827466255" lon="12.086037136092">
+<desc>Stop 3: Roskilde Ring (Søndre Ringvej)</desc>
+</wpt>
+<wpt lat="55.630503282063" lon="12.078908335454">
+<desc>Stop 4: Zealand (Maglegårdsvej)</desc>
+</wpt>
+<wpt lat="55.628618656490" lon="12.078776332772">
+<desc>Stop 5: Slagteriskolen (Maglegårdsvej)</desc>
+</wpt>
+<wpt lat="55.626561959061" lon="12.078694403164">
+<desc>Stop 6: Roskilde Handelsskole (Maglegårdsvej)</desc>
+</wpt>
+<wpt lat="55.625977398757" lon="12.081206700632">
+<desc>Stop 7: Musicon, Erhvervskolerne (Maglelunden)</desc>
+</wpt>
+</gpx>
