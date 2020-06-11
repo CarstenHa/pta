@@ -89,7 +89,7 @@ echo "<header>" | tee -a ./"$htmlname" ./"$htmlname2" &>/dev/null
 echo "<h1>Stop/Platform-Analysis</h1>" >>./"$htmlname2"
 echo " <h2 style=\"text-align: center;\">(in ref order)</h2>" >>./"$htmlname2"
 echo "<h1>Public Transport - Sjælland, Lolland, Falster und Møn</h1>" >>./"$htmlname"
-echo " <h2 style=\"text-align: center;\">with OSM data analysis of Takst Sjælland</h2>" >>./"$htmlname"
+echo " <h2 style=\"text-align: center;\">OSM data analysis - Takst Sjælland (Bus)</h2>" >>./"$htmlname"
 echo "<div class=\"headerallg\">" >>./"$htmlname"
 echo " <p><strong>General information:</strong></p>" >>./"$htmlname"
 echo " <p><a href=\"https://www.openstreetmap.org/relation/10285271\">Kollektiv trafik i Danmark</a>: 10285271</p>" >>./"$htmlname"
@@ -388,7 +388,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     elif [ "$(echo "$realbusstop" | sed 's/\(^.*\) .*/\1/')" == "$osmstop" ]; then
      echo "   <td class=\"small withcolour\">Stops in OSM-route: "$osmstop" (100%)</td>" >>./"$htmlname"
     elif [ -z "$realbusstop" ]; then
-     echo "   <td class=\"small yellow\">Stops in OSM-route: "$osmstop"</td>" >>./"$htmlname"
+     echo "   <td class=\"small\">Stops in OSM-route: "$osmstop"</td>" >>./"$htmlname"
     else echo "   <td class=\"small yellow\">Stops in OSM-route: "$osmstop" ($((100*$osmstop/$realbusstopnumber))%)</td>" >>./"$htmlname"
     fi
 
@@ -397,7 +397,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     elif [ "$(echo "$realbusstop" | sed 's/\(^.*\) .*/\1/')" == "$osmplatform" ]; then
      echo "   <td class=\"small withcolour\">Platforms in OSM-route: "$osmplatform" (100%)</td>" >>./"$htmlname"
     elif [ -z "$realbusstop" ]; then
-     echo "   <td class=\"small yellow\">Platforms in OSM-route: "$osmplatform"</td>" >>./"$htmlname"
+     echo "   <td class=\"small\">Platforms in OSM-route: "$osmplatform"</td>" >>./"$htmlname"
     else echo "   <td class=\"small yellow\">Platforms in OSM-route: "$osmplatform" ($((100*$osmplatform/$realbusstopnumber))%)</td>" >>./"$htmlname"
     fi
 
