@@ -292,6 +292,9 @@
    .bgueberhell, .bgueberhell .fa-chevron-left {
     background-color: #eeeeee !important;
    }
+   .fa-map {
+    margin-left: .2em;
+   }
    .fa-map:hover, .fa-search-plus:hover {
     color: #ffffff;
     /* Imitiert mit Hilfe von text-shadow einen Outline-Effekt. */

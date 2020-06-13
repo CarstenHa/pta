@@ -68,21 +68,22 @@ osmdialog() {
 echo ""
 echo "Auswahl der .osm-Dateien:"
 echo ""
-echo "[1] - All Bus-routes in \"Takst Sjælland\"-area (takst_bus.osm)"
-echo "[2] - All Bus-routes in \"Takst Sjælland\"-area (route_train.osm)"
-echo "[3] - All Bus-routes in \"Takst Sjælland\"-area (takst_light_rail.osm)"
-echo "[4] - All Bus-routes in \"Takst Sjælland\"-area (takst_subway.osm)"
-echo "[5] - All Bus-routes in \"Takst Sjælland\"-area (takst_monorail.osm)"
-echo "[6] - All Bus-routes in \"Takst Sjælland\"-area (takst_tram.osm)"
-echo "[7] - All Bus-routes in \"Takst Sjælland\"-area (takst_trolleybus.osm)"
-echo "[8] - All Bus-routes in \"Takst Sjælland\"-area (takst_ferry.osm)"
-echo "[9] - All Stop-areas in \"Takst Sjælland\"-area (stop_area_bbox.osm)"
-echo "[10] - All Stop-area-groups in \"Takst Sjælland\"-area (stop_area_groups.osm)"
-echo "[11] - All Stop-areas in \"Takst Sjælland stoppested\"-Relation (takst_stoppested.osm)"
-echo "[12] - All Bus-routes in \"Takst Sjælland - Bus\"-Relation (takst_busrelation.osm)"
-echo "[13] - All master-routes in \"Takst Sjælland\"-area (route_master_bus.osm)"
-echo "[a] - All OSM-files and start HTML processing."
-echo "[n] - nothing"
+echo "[1] - Download bus routes in \"Takst Sjælland\"-area (takst_bus.osm)"
+echo "[2] - Download train routes in \"Takst Sjælland\"-area (route_train.osm)"
+echo "[3] - Download light-rail routes in \"Takst Sjælland\"-area (takst_light_rail.osm)"
+echo "[4] - Download subway routes in \"Takst Sjælland\"-area (takst_subway.osm)"
+echo "[5] - Download monorail routes in \"Takst Sjælland\"-area (takst_monorail.osm)"
+echo "[6] - Download tram routes in \"Takst Sjælland\"-area (takst_tram.osm)"
+echo "[7] - Download trolleybus routes in \"Takst Sjælland\"-area (takst_trolleybus.osm)"
+echo "[8] - Download ferry routes in \"Takst Sjælland\"-area (takst_ferry.osm)"
+echo "[9] - Download stop-areas in \"Takst Sjælland\"-area (stop_area_bbox.osm)"
+echo "[10] - Download stop-area-groups in \"Takst Sjælland\"-area (stop_area_groups.osm)"
+echo "[11] - Download stop-areas in \"Takst Sjælland stoppested\"-Relation (takst_stoppested.osm)"
+echo "[12] - Download bus routes in \"Takst Sjælland - Bus\"-Relation (takst_busrelation.osm)"
+echo "[13] - Download master routes in \"Takst Sjælland\"-area (route_master_bus.osm)"
+echo "[a] - Download all OSM-files and start HTML generation."
+echo "[n] - Download nothing. Start HTML generation."
+echo "[q] - Quit"
 echo ""
 }
 
@@ -265,6 +266,10 @@ while true; do
          break
           ;;
       n) break
+          ;;
+      q) # Programm wird ohne Erstellung von HTML-Seiten beendet.
+         echo "$(basename ${0}) wird ohne weitere Überprüfung der OSM-Daten beendet."
+         exit 0
           ;;
       *) echo "Fehlerhafte Eingabe!"
           ;;
