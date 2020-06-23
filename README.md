@@ -1,8 +1,22 @@
 # pta - Public transport analysis
 Openstreetmap data analysis of public transport
 
-Dieses Tool analysiert die Public-Transport-Daten (route=bus) des Openstreetmap-Projekts. Das Gebiet, welches analysiert wird, deckt sich mit dem Verkehrsgebiet "Takst Sjælland" in Ost-Dänemark.  
-Ziel dieses Projekts ist es, eine bessere Überprüfbarkeit der OSM-Daten gegenüber den tatsächlichen Gegebenheiten eines Verkehrsgebietes herzustellen. So wird zum Beispiel das OSM-tag 'check_date=*' mit der Fahrplanperiode verglichen, um nur ein Merkmal dieses Tools zu nennen.
+Dieses Tool analysiert die Public-Transport-Daten (route=bus) des Openstreetmap-Projekts. Das Gebiet, welches analysiert wird, deckt sich mit dem "Takst Sjælland" (DOT) in Ost-Dänemark.  
+Die Idee, die hinter diesem Projekt steht ist, eine bessere inhaltliche Überprüfbarkeit der OSM-Daten gegenüber den tatsächlichen Gegebenheiten eines Verkehrsgebietes herzustellen, da sich Fahrpläne, Routen und Haltestellen relativ schnell ändern können.  
+In der Regel sind OSM-Routen nach dem Public Transport Schema 2 ja wie folgt angeordnet:
+
+Stop 1  
+Platform 1  
+Stop 2  
+Platform 2  
+...  
+Weg 1  
+Weg 2  
+Weg 3  
+usw.  
+
+In den HTML-Seiten nach der Auswertung mit diesem Tool werden die stops und platforms zur besseren Übersichtlichkeit in getrennten Tabellen angezeigt.  
+Außerdem wird zum Beispiel das OSM-tag 'check_date=*' mit der Fahrplanperiode verglichen und vieles mehr ...
 
 Die generierten HTML-Seiten, die ein Teil dieses Tools sind, finden Sie übrigens unter:  
 https://carstenha.github.io/pta/htmlfiles/takst_sjaelland.html  
@@ -10,6 +24,9 @@ Den Programmcode und weitere Informationen finden Sie unter:
 https://github.com/CarstenHa/pta  
 Diese Informationen finden Sie unter:  
 https://carstenha.github.io/pta/
+
+Für alle, die dieses Tool für andere Verkehrsgebiete umschreiben wollen, gibt es ein kleines Wiki, wo die einzelnen Skripte etwas näher vorgestellt werden.  
+https://github.com/CarstenHa/pta/wiki
 
 ### 1. Vorbereitende Schritte
 
