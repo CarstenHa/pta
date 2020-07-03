@@ -25,7 +25,7 @@ do
        b) wget -O "$backupordner/`date +%Y%m%d`_takst_sjaelland_bus.osm" "http://overpass-api.de/api/interpreter?data=(relation(10002530);>>;);out meta;"
        ;;
        # Löscht alle Dateien im Backup-Ordner, die älter als * Tage sind.
-       d) find "$backupordner"/ -maxdepth 1 -type f -name "*" -mtime +"$OPTARG" -execdir rm -f {} \;
+       d) find "$backupordner"/ -maxdepth 1 -type f \( -name "*.osm" -or -name "*.html" -or -name "*.lst" -or -name "*.log" \) -mtime +"$OPTARG" -execdir rm -f {} \;
        ;;
        h) echo ""
           echo "Synopsis:"
