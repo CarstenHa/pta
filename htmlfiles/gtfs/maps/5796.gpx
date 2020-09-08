@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx version="1.1" creator="rcompare">
+<!-- Data source: rejseplanen.dk (CC-BY-ND 3.0) -->
+<rte>
+<desc>Route 13</desc>
+<rtept lat="55.665434" lon="12.439988">
+</rtept>
+<rtept lat="55.665434" lon="12.439988">
+</rtept>
+<rtept lat="55.665433" lon="12.440020">
+</rtept>
+<rtept lat="55.665459" lon="12.440070">
+</rtept>
+<rtept lat="55.665494" lon="12.440105">
+</rtept>
+<rtept lat="55.667865" lon="12.440218">
+</rtept>
+<rtept lat="55.667865" lon="12.440218">
+</rtept>
+<rtept lat="55.667865" lon="12.440218">
+</rtept>
+<rtept lat="55.667865" lon="12.440218">
+</rtept>
+<rtept lat="55.668188" lon="12.440230">
+</rtept>
+<rtept lat="55.668206" lon="12.439898">
+</rtept>
+<rtept lat="55.668244" lon="12.439503">
+</rtept>
+<rtept lat="55.668399" lon="12.438467">
+</rtept>
+<rtept lat="55.668424" lon="12.438215">
+</rtept>
+<rtept lat="55.668443" lon="12.437882">
+</rtept>
+<rtept lat="55.668446" lon="12.437135">
+</rtept>
+<rtept lat="55.668435" lon="12.436863">
+</rtept>
+<rtept lat="55.668363" lon="12.436237">
+</rtept>
+<rtept lat="55.669243" lon="12.435964">
+</rtept>
+<rtept lat="55.669363" lon="12.437120">
+</rtept>
+<rtept lat="55.669363" lon="12.437120">
+</rtept>
+<rtept lat="55.669363" lon="12.437120">
+</rtept>
+<rtept lat="55.669363" lon="12.437120">
+</rtept>
+<rtept lat="55.669462" lon="12.438067">
+</rtept>
+<rtept lat="55.669575" lon="12.439191">
+</rtept>
+<rtept lat="55.670169" lon="12.445893">
+</rtept>
+<rtept lat="55.670169" lon="12.445893">
+</rtept>
+<rtept lat="55.670169" lon="12.445893">
+</rtept>
+<rtept lat="55.670169" lon="12.445893">
+</rtept>
+<rtept lat="55.670680" lon="12.451697">
+</rtept>
+<rtept lat="55.670680" lon="12.451697">
+</rtept>
+<rtept lat="55.670680" lon="12.451697">
+</rtept>
+<rtept lat="55.670680" lon="12.451697">
+</rtept>
+<rtept lat="55.670980" lon="12.455081">
+</rtept>
+<rtept lat="55.671083" lon="12.456522">
+</rtept>
+<rtept lat="55.671228" lon="12.456487">
+</rtept>
+<rtept lat="55.671627" lon="12.456363">
+</rtept>
+<rtept lat="55.671627" lon="12.456363">
+</rtept>
+<rtept lat="55.671627" lon="12.456363">
+</rtept>
+<rtept lat="55.671627" lon="12.456363">
+</rtept>
+<rtept lat="55.672670" lon="12.456073">
+</rtept>
+<rtept lat="55.673394" lon="12.455898">
+</rtept>
+<rtept lat="55.673738" lon="12.455801">
+</rtept>
+<rtept lat="55.673738" lon="12.455801">
+</rtept>
+<rtept lat="55.673738" lon="12.455801">
+</rtept>
+<rtept lat="55.673738" lon="12.455801">
+</rtept>
+<rtept lat="55.674356" lon="12.455585">
+</rtept>
+<rtept lat="55.675434" lon="12.455298">
+</rtept>
+<rtept lat="55.676012" lon="12.455206">
+</rtept>
+<rtept lat="55.676528" lon="12.455093">
+</rtept>
+<rtept lat="55.676528" lon="12.455093">
+</rtept>
+<rtept lat="55.676528" lon="12.455093">
+</rtept>
+<rtept lat="55.676528" lon="12.455093">
+</rtept>
+<rtept lat="55.676818" lon="12.455007">
+</rtept>
+<rtept lat="55.677315" lon="12.454923">
+</rtept>
+<rtept lat="55.677929" lon="12.454819">
+</rtept>
+<rtept lat="55.678210" lon="12.454748">
+</rtept>
+<rtept lat="55.678545" lon="12.454650">
+</rtept>
+<rtept lat="55.678983" lon="12.454418">
+</rtept>
+<rtept lat="55.679375" lon="12.454230">
+</rtept>
+<rtept lat="55.679594" lon="12.454106">
+</rtept>
+<rtept lat="55.679594" lon="12.454106">
+</rtept>
+<rtept lat="55.679594" lon="12.454106">
+</rtept>
+<rtept lat="55.679594" lon="12.454106">
+</rtept>
+<rtept lat="55.679887" lon="12.453925">
+</rtept>
+<rtept lat="55.680307" lon="12.453708">
+</rtept>
+<rtept lat="55.680571" lon="12.453588">
+</rtept>
+<rtept lat="55.680531" lon="12.455335">
+</rtept>
+<rtept lat="55.680491" lon="12.455777">
+</rtept>
+<rtept lat="55.680478" lon="12.456253">
+</rtept>
+<rtept lat="55.680465" lon="12.456713">
+</rtept>
+<rtept lat="55.680429" lon="12.456710">
+</rtept>
+<rtept lat="55.680373" lon="12.456785">
+</rtept>
+<rtept lat="55.680348" lon="12.457371">
+</rtept>
+<rtept lat="55.680348" lon="12.457371">
+</rtept>
+</rte>
+<wpt lat="55.665434317303" lon="12.439988412029">
+<desc>Stop 1: Brøndbyøster St., Nygårds Plads (Nygårds Plads)</desc>
+</wpt>
+<wpt lat="55.667864534097" lon="12.440217753015">
+<desc>Stop 2: Nygårds Plads, øst (Nygårds Plads)</desc>
+</wpt>
+<wpt lat="55.669363051882" lon="12.437119873986">
+<desc>Stop 3: Korsdalsvej (Roskildevej)</desc>
+</wpt>
+<wpt lat="55.670168799790" lon="12.445892932006">
+<desc>Stop 4: Vestbadet (Roskildevej)</desc>
+</wpt>
+<wpt lat="55.670679897667" lon="12.451697132098">
+<desc>Stop 5: Brandholms Allé (Roskildevej)</desc>
+</wpt>
+<wpt lat="55.671627436809" lon="12.456362695364">
+<desc>Stop 6: Roskildevej (Tårnvej)</desc>
+</wpt>
+<wpt lat="55.673738255281" lon="12.455801197105">
+<desc>Stop 7: Valhøjs Allé (Tårnvej)</desc>
+</wpt>
+<wpt lat="55.676527566092" lon="12.455092661698">
+<desc>Stop 8: Rødager Allé (Tårnvej)</desc>
+</wpt>
+<wpt lat="55.679594440923" lon="12.454106174384">
+<desc>Stop 9: Rødovre Centrum (Tårnvej)</desc>
+</wpt>
+<wpt lat="55.680347621046" lon="12.457371229970">
+<desc>Stop 10: Rødovre Centrum (Rødovre Parkvej)</desc>
+</wpt>
+</gpx>
