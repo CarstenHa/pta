@@ -907,7 +907,7 @@ if [ "$1" == "./osmdata/takst.osm" -o "$1" == "osmdata/takst.osm" ]; then
   echo "Hinweis: Es existiert keine Datei checksortlist.lst im Backup-Ordner, die mit der aktuellen Version verglichen werden könnte."
  else
  checkbackupfile="$(ls -t "$backupordner"/*checksortlist.lst | sed -n '1p')"
-  if [ -z "$(diff "$checkbackupfile" ./checksortlist.tmp)" ]; then
+  if [ -z "$(diff "$checkbackupfile" ./checksortlist.tmp | sort | uniq -u -f 1 | sed -n '/^[<>]/p')" ]; then
    echo "Es befinden sich gegenüber der letzten Aktualisierung keine neuen Routen in der Zusammenstellung."
    echo ""
   else 
