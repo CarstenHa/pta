@@ -16,16 +16,19 @@ zeitpunktbegin=`date +%s`
 # Bei seperater Ausführung von pt_analysis2html.sh muss die Datei relmem_bus_takst.lst erst noch erstellt erstellt werden.
 export witchprocess="all"
 
-# Wird nur ausgeführt, wenn Option(en) angegeben sind. Anschliessend exit. Wenn Skript ohne Optionen ausgeführt wird, wird nur der untere Teil dieses Skriptes abgearbeitet.
-if [ ! $# -eq 0 ]; then
-
-while getopts bd:hlt opt
+while getopts abd:hlt opt
 do
    case $opt in
+       a) # automatisierter Prozess ohne Abfragen.
+          selectosmdata="a"
+          autoprocess="yes"
+       ;;
        b) wget -O "$backupordner/`date +%Y%m%d`_takst_sjaelland_bus.osm" "http://overpass-api.de/api/interpreter?data=(relation(10002530);>>;);out meta;"
+          exit
        ;;
        # Löscht alle Dateien im Backup-Ordner, die älter als * Tage sind.
        d) find "$backupordner"/ -maxdepth 1 -type f \( -name "*.osm" -or -name "*.html" -or -name "*.lst" -or -name "*.log" \) -mtime +"$OPTARG" -execdir rm -f {} \;
+          exit
        ;;
        h) echo ""
           echo "Synopsis:"
@@ -34,6 +37,9 @@ do
           echo ""
           echo "Options:"
           echo ""
+          echo "-a"
+          echo "    Automatischer Prozess ohne weitere Abfragen. Ist identisch bei Auswahl [a],"
+          echo "    wenn dieses Skript ohne weitere Optionen ausgeführt wird."
           echo "-b"
           echo "    Downloading Takst-Sjælland - Bus-Relation (incl. Multipoygone)."
           echo "-d [NUM]"
@@ -48,20 +54,22 @@ do
           echo "-t"
           echo "    Downloading Takst-Sjælland - Tog-Relation (incl. Multipoygone)."
           echo ""
+          exit
        ;;
        l) echo ""
           echo "Es fehlen unter anderem folgende Routen:"
           echo ""
           grep -B 1 'ptaroute_is_missing' ./config/real_bus_stops.cfg | sed -n '/#/p' | sed 's/^# //'
           echo ""
+          exit
        ;;
        t) wget -O "$backupordner/`date +%Y%m%d`_takst_sjaelland_tog.osm" "http://overpass-api.de/api/interpreter?data=(relation(10002529);>>;);out meta;"
+          exit
+       ;;
+       ?) exit 1
        ;;
     esac
 done
-
-exit
-fi
 
 # Dialog für dass Herunterladen der OSM-Daten von der Overpass Api.
 osmdialog() {
@@ -191,8 +199,11 @@ sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_master_bus.osm
 # Die einzelnen Downloads können in einer Schleife so lange heruntergeldaen werden, bis n gewählt wird. Der komplette Download hat ein break am Ende.
 while true; do
 
-   osmdialog
-   read -p "Welche Datei(en) soll(en) heruntergeladen werden? " selectosmdata
+   if [ ! "$autoprocess" == "yes" ]; then
+    osmdialog
+    read -p "Welche Datei(en) soll(en) heruntergeladen werden? " selectosmdata
+   fi
+
     case "$selectosmdata" in
       1) rm -f ./osmdata/takst_bus.osm
          while [ "$(find ./osmdata/takst_bus.osm -maxdepth 1 -size -25M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_bus.osm ]; do takstbus; done
@@ -248,21 +259,174 @@ while true; do
          rm -f ./osmdata/takst_stoppested.osm
          rm -f ./osmdata/takst_busrelation.osm
          rm -f ./osmdata/route_master_bus.osm
-         while [ "$(find ./osmdata/takst_bus.osm -maxdepth 1 -size -25M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_bus.osm ]; do takstbus; done
-         while [ "$(find ./osmdata/route_train.osm -maxdepth 1 -size -10M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_train.osm ]; do taksttrain; done
-         while [ "$(find ./osmdata/takst_light_rail.osm -maxdepth 1 -size -2M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_light_rail.osm ]; do takstlightrail; done
-         while [ "$(find ./osmdata/takst_subway.osm -maxdepth 1 -size -200k 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_subway.osm ]; do takstsubway; done
-         while [ ! -e ./osmdata/takst_monorail.osm ]; do takstmonorail; done
-         while [ ! -e ./osmdata/takst_tram.osm ]; do taksttram; done
-         while [ ! -e ./osmdata/takst_trolleybus.osm ]; do taksttrolleybus; done
-         while [ "$(find ./osmdata/takst_ferry.osm -maxdepth 1 -size -100k 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_ferry.osm ]; do takstferry; done
-         while [ "$(find ./osmdata/stop_area_bbox.osm -maxdepth 1 -size -1M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_area_bbox.osm ]; do stopareas; done
-         while [ "$(find ./osmdata/stop_area_groups.osm -maxdepth 1 -size -100k 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_area_groups.osm ]; do stopareagroups; done
-         while [ "$(find ./osmdata/takst_stoppested.osm -maxdepth 1 -size -150k 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_stoppested.osm ]; do takststoppested; done
-         while [ "$(find ./osmdata/takst_busrelation.osm -maxdepth 1 -size -2M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_busrelation.osm ]; do takstbusrelation; done
-         while [ "$(find ./osmdata/route_master_bus.osm -maxdepth 1 -size -3M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_master_bus.osm ]; do routemasterbus; done
+
+         # Hier werden die Anzahl der maximalen Downloadversuche definiert.
+         maxattempt="50" 
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/takst_bus.osm -maxdepth 1 -size -25M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_bus.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_bus.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          takstbus
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/route_train.osm -maxdepth 1 -size -10M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_train.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (route_train.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          taksttrain
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/takst_light_rail.osm -maxdepth 1 -size -2M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_light_rail.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_light_rail.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          takstlightrail
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/takst_subway.osm -maxdepth 1 -size -200k 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_subway.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_subway.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          takstsubway
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ ! -e ./osmdata/takst_monorail.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_monorail.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          takstmonorail
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ ! -e ./osmdata/takst_tram.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_tram.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          taksttram
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ ! -e ./osmdata/takst_trolleybus.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_trolleybus.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          taksttrolleybus
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/takst_ferry.osm -maxdepth 1 -size -100k 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_ferry.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_ferry.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          takstferry
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/stop_area_bbox.osm -maxdepth 1 -size -1M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_area_bbox.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (stop_area_bbox.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          stopareas
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/stop_area_groups.osm -maxdepth 1 -size -100k 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_area_groups.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (stop_area_groups.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          stopareagroups
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/takst_stoppested.osm -maxdepth 1 -size -150k 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_stoppested.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_stoppested.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          takststoppested
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/takst_busrelation.osm -maxdepth 1 -size -2M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_busrelation.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_busrelation.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          takstbusrelation
+          let downloadcounter++
+         done
+
+         downloadcounter="0"
+         while [ "$(find ./osmdata/route_master_bus.osm -maxdepth 1 -size -3M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_master_bus.osm ]; do
+          if [ "$downloadcounter" -ge "$maxattempt" ]; then
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (route_master_bus.osm) überschritten."
+           killthisscript="yes"
+           break
+          fi
+          echo -n "Downloadversuch $(($downloadcounter + 1)) "
+          routemasterbus
+          let downloadcounter++
+         done
+
          stoppesteddownload="1"
          busrelationdownload="1"
+
+         if [ "$killthisscript" == "yes" ]; then
+          echo "Es konnten nicht alle OSM-Daten vollständig heruntergeladen werden. Skript wird abgebrochen."
+          exit 1
+         fi
+
          break
           ;;
       n) break
