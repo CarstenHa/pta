@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# License: GNU Lesser General Public License v3.0
+# See: http://www.gnu.org/licenses/lgpl-3.0.html
+# Written by Carsten Jacob
+# Please feel free to contact me coding@langstreckentouren.de
+# https://github.com/CarstenHa
+
+# Programm für Einbindung in Crontab. Wenn ptacron ohne Crontab genutzt wird, wird der gesamte Prozess in den Hintergrund verschoben.
+# Außerdem wird eine Logdatei im Ordner './backup' erstellt.
+
+# Beispiel für einen Eintrag in crontab:
+# 2 Uhr nachts; Jeden Sonntag und jeden Mittwoch
+
+# Minute Stunde Tag Monat Wochentag Befehl
+# -----------------------------------------------------------------
+# MAILTO=""
+# 0 2 * * 0,3 cd ~/path/to/pta/ && ./ptacron
+# -----------------------------------------------------------------
+
+startdatum=`date +%Y%m%d_%H%M`
+
+nohup ./start.sh -a >./backup/${startdatum}_ptanalysis.log 2>&1 &
