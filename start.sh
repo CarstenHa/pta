@@ -462,10 +462,14 @@ fi
 ./stopareaanalysis2html.sh
 ./pt_analysis2html.sh ./osmdata/takst.osm
 
+# *** Benachrichtigungen ***
 # Zeitspanne des Erstellungsprozesses wird errechnet und angezeigt.
 zeitdiff=$((`date +%s`-"$zeitpunktbegin"))
+
 echo "Public Transport Analyseseiten sind fertig (`date +%d.%m.%Y` um `date +%H:%M` Uhr)."
 printf 'Dauer des Erstellungsprozesses: %02dh:%02dm:%02ds\n' $(($zeitdiff/3600)) $(($zeitdiff%3600/60)) $(($zeitdiff%60))
-
-notify-send -t 0 "Hinweis" "Public Transport-Analyseseiten sind fertig."
+notify-send -t 0 "Hinweis" "Public Transport-Analyseseiten sind fertig." 2>/dev/null
+if [ -e "./tools/mail/sendamail" ]; then
+ ./tools/mail/sendamail
+fi
 
