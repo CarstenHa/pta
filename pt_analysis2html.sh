@@ -19,7 +19,7 @@ if [ ! -e ./relmemberlist.sh ]; then
 fi
 
 # Bei seperater Ausführung dieses Skriptes, muss erst noch relmem_bus_takst.lst erstellt werden (siehe auch Kommentare zur export-Variablen in start.sh).
-if [ "$witchprocess" != "all" ]; then
+if [ "$whichprocess" != "all" ]; then
  echo "Routen werden mit relmemberlist.sh in ein besser auswertbares Format umgeschrieben ..."
  ./relmemberlist.sh -d ./osmdata/takst.osm >./relmem_bus_takst.lst
  echo "Bearbeitung mit relmemberlist.sh beendet."

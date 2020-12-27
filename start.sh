@@ -6,7 +6,29 @@
 # Please feel free to contact me coding@langstreckentouren.de
 # https://github.com/CarstenHa
 
-# Hinweise zu diesem Skript: Das Herunterladen mit wget und der Option -t 0 lieferte zum Teil fehlerhafte Ergebnisse. Deswegen werden die .osm-Dateien in einer Schleife auf eine Minimalgröße untersucht. Deswegen sollte der Test der while-Schleifen von Zeit zu Zeit überprüft werden (find-Befehl mit Option -size). 
+# Hinweise zu diesem Skript: Das Herunterladen mit wget und der Option -t 0 lieferte zum Teil fehlerhafte Ergebnisse. Deswegen werden die .osm-Dateien in einer Schleife auf eine Minimalgröße untersucht. Deswegen sollte der Test der while-Schleifen von Zeit zu Zeit überprüft werden (find-Befehl mit Option -size).
+
+# *** Erreichbarkeit von overpass-api.de überprüfen ***
+
+pingcounter="1"
+echo "Versuche overpass-api.de zu erreichen. Versuch ${pingcounter} ..."
+ping -c 1 overpass-api.de
+
+while [ ! "$?" == "0" ]; do
+ echo "Verbindung konnte nicht hergestellt werden."
+ let pingcounter++
+  if [ "$pingcounter" -gt "3" ]; then
+   echo "Kann overpass-api.de nicht erreichen. Skript wird abgebrochen."
+   exit 1
+  fi
+ sleep 20
+ echo "Versuche erneut overpass-api.de zu erreichen. Versuch ${pingcounter} ..."
+ ping -c 1 overpass-api.de
+done
+
+echo "overpass-api.de ist erreichbar."
+
+# *** Variablen definieren ***
 
 backupordner="./backup"
 zeitpunktbegin=`date +%s`
@@ -14,7 +36,7 @@ zeitpunktbegin=`date +%s`
 # Das exportieren dieser Variable ist wichtig, damit pt_analysis2html.sh weiss, ob es relmemberlist.sh ausführen muss oder nicht.
 # Bei kompletter Erstellung mit start.sh, kann dann auf die Datei zurückgegriffen werden, die mit stopareaanalysis2html.sh erstellt wurde.
 # Bei seperater Ausführung von pt_analysis2html.sh muss die Datei relmem_bus_takst.lst erst noch erstellt erstellt werden.
-export witchprocess="all"
+export whichprocess="all"
 
 while getopts abd:hlt opt
 do
@@ -268,6 +290,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_bus.osm) überschritten."
            killthisscript="yes"
+           kindofosm="takst_bus.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -280,6 +303,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (route_train.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, route_train.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -292,6 +316,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_light_rail.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, takst_light_rail.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -304,6 +329,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_subway.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, takst_subway.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -316,6 +342,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_monorail.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, takst_monorail.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -328,6 +355,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_tram.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, takst_tram.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -340,6 +368,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_trolleybus.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, takst_trolleybus.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -352,6 +381,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_ferry.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, takst_ferry.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -364,6 +394,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (stop_area_bbox.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, stop_area_bbox.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -376,6 +407,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (stop_area_groups.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, stop_area_groups.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -388,6 +420,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_stoppested.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, takst_stoppested.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -400,6 +433,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (takst_busrelation.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, takst_busrelation.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -412,6 +446,7 @@ while true; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
            echo "Anzahl von maximal ${maxattempt} Download-Versuchen (route_master_bus.osm) überschritten."
            killthisscript="yes"
+           kindofosm="${kindofosm}, route_master_bus.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -424,6 +459,7 @@ while true; do
 
          if [ "$killthisscript" == "yes" ]; then
           echo "Es konnten nicht alle OSM-Daten vollständig heruntergeladen werden. Skript wird abgebrochen."
+          echo "Folgende Dateien sind unter anderem betroffen: ${kindofosm}"
           exit 1
          fi
 

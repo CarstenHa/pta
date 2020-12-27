@@ -364,7 +364,7 @@ rm -f ./stop_area_group.lst
 rm -f ./stop_area_analysis.lst
 mv ./stop_area_analysis_sort.lst "$backupordner"/`date +%Y%m%d_%H%M`_stop_area_analysis_sort.lst
 # Bei seperater Ausführung dieses Skriptes wird relmem_bus_takst.lst in den Backupordner verschoben. Ansonsten bleibt die Datei im Verzeichnis und wird von pt_analysis2html.sh weiter genutzt und dann später in den Backupordner verschoben.
-if [ "$witchprocess" != "all" ]; then
+if [ "$whichprocess" != "all" ]; then
  mv ./relmem_bus_takst.lst "$backupordner"/`date +%Y%m%d_%H%M`_relmem_bus_takst.lst
 fi
 mv ./relmem_train_takst.lst "$backupordner"/`date +%Y%m%d_%H%M`_relmem_train_takst.lst
