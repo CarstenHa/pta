@@ -8,26 +8,6 @@
 
 # Hinweise zu diesem Skript: Das Herunterladen mit wget und der Option -t 0 lieferte zum Teil fehlerhafte Ergebnisse. Deswegen werden die .osm-Dateien in einer Schleife auf eine Minimalgröße untersucht. Deswegen sollte der Test der while-Schleifen von Zeit zu Zeit überprüft werden (find-Befehl mit Option -size).
 
-# *** Erreichbarkeit von overpass-api.de überprüfen ***
-
-pingcounter="1"
-echo "Versuche overpass-api.de zu erreichen. Versuch ${pingcounter} ..."
-ping -c 1 overpass-api.de
-
-while [ ! "$?" == "0" ]; do
- echo "Verbindung konnte nicht hergestellt werden."
- let pingcounter++
-  if [ "$pingcounter" -gt "3" ]; then
-   echo "Kann overpass-api.de nicht erreichen. Skript wird abgebrochen."
-   exit 1
-  fi
- sleep 20
- echo "Versuche erneut overpass-api.de zu erreichen. Versuch ${pingcounter} ..."
- ping -c 1 overpass-api.de
-done
-
-echo "overpass-api.de ist erreichbar."
-
 # *** Variablen definieren ***
 
 backupordner="./backup"
@@ -93,6 +73,27 @@ do
     esac
 done
 
+# *** Erreichbarkeit von overpass-api.de überprüfen ***
+
+pingcounter="1"
+echo "Versuche overpass-api.de zu erreichen. Versuch ${pingcounter} ..."
+ping -c 1 overpass-api.de
+
+while [ ! "$?" == "0" ]; do
+ echo "Verbindung konnte nicht hergestellt werden."
+ let pingcounter++
+  if [ "$pingcounter" -gt "3" ]; then
+   echo "Kann overpass-api.de nicht erreichen. Skript wird abgebrochen."
+   exit 1
+  fi
+ sleep 20
+ echo "Versuche erneut overpass-api.de zu erreichen. Versuch ${pingcounter} ..."
+ ping -c 1 overpass-api.de
+done
+
+echo "overpass-api.de ist erreichbar."
+
+# *** Funktionen definieren ***
 # Dialog für dass Herunterladen der OSM-Daten von der Overpass Api.
 osmdialog() {
 echo ""
@@ -117,7 +118,6 @@ echo "[q] - Quit"
 echo ""
 }
 
-# *** Funktionen definieren ***
 # Hinweis: http: ... ;>;);out meta; Ein > und Multipolygone werden NICHT vollständig heruntergeladen.
 
 takstbus() {
