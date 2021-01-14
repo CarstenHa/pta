@@ -283,7 +283,7 @@ while true; do
          rm -f ./osmdata/route_master_bus.osm
 
          # Hier werden die Anzahl der maximalen Downloadversuche definiert.
-         maxattempt="50" 
+         maxattempt="25" 
 
          downloadcounter="0"
          while [ "$(find ./osmdata/takst_bus.osm -maxdepth 1 -size -25M 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/takst_bus.osm ]; do

@@ -92,8 +92,20 @@ echo "<h1>Public Transport - Sjælland, Lolland, Falster und Møn</h1>" >>./"$ht
 echo " <h2 style=\"text-align: center;\">OSM data analysis - Takst Sjælland (Bus)</h2>" >>./"$htmlname"
 echo "<div class=\"headerallg\">" >>./"$htmlname"
 echo " <p><strong>General information:</strong></p>" >>./"$htmlname"
-echo " <p><a href=\"https://www.openstreetmap.org/relation/10285271\">Kollektiv trafik i Danmark</a>: 10285271</p>" >>./"$htmlname"
-echo " <p><a href=\"https://www.openstreetmap.org/relation/9983018\">Relation Takst Sjælland</a>: 9983018</p>" >>./"$htmlname"
+
+# Überprüfungen, ob Relationen in Daten existieren.
+# Die anderen Relationen (10020275/10002530) brauchen hier nicht überprüft werden. Dies wird durch start.sh geregelt.
+if [ -n "$(grep '<relation.*id=['\''\"]10285271['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
+ echo " <p><a href=\"https://www.openstreetmap.org/relation/10285271\">Kollektiv trafik i Danmark</a>: 10285271</p>" >>./"$htmlname"
+else
+ echo " <p>Kollektiv trafik i Danmark: Relation not found</p>" >>./"$htmlname"
+fi
+if [ -n "$(grep '<relation.*id=['\''\"]9983018['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
+ echo " <p><a href=\"https://www.openstreetmap.org/relation/9983018\">Relation Takst Sjælland</a>: 9983018</p>" >>./"$htmlname"
+else
+ echo " <p>Relation Takst Sjælland: Relation not found</p>" >>./"$htmlname"
+fi
+
 echo " <p><a href=\"https://www.openstreetmap.org/relation/10020275\">Relation Takst Sjælland - Stoppested</a>: 10020275</p>" >>./"$htmlname"
 echo "</div>" >>./"$htmlname"
 echo " <h2>1. Bus routes:</h2>" >>./"$htmlname"
