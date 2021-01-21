@@ -8,6 +8,12 @@
 
 # Hinweise zu diesem Skript: Das Herunterladen mit wget und der Option -t 0 lieferte zum Teil fehlerhafte Ergebnisse. Deswegen werden die .osm-Dateien in einer Schleife auf eine Minimalgröße untersucht. Deswegen sollte der Test der while-Schleifen von Zeit zu Zeit überprüft werden (find-Befehl mit Option -size).
 
+if [ ! -e "./tools/osmconvert/osmconvert" ]; then
+ echo "Das Programm osmconvert fehlt im Ordner tools/osmconvert/"
+ echo "Skript wird abgebrochen!"
+ exit 1
+fi
+
 # *** Variablen definieren ***
 
 backupordner="./backup"
