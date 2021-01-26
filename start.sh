@@ -54,20 +54,8 @@ do
           echo "    Löscht alle Dateien im Backup-Ordner, die älter als [NUM] Tage sind."
           echo "-h"
           echo "    Zeigt Hilfe an."
-          echo "-l"
-          echo "    Listet fehlende Routen auf, die noch erstellt und in die Datei real_bus_stops.cfg eingebunden werden müssen."
-          echo "    Synopsis of real_bus_stops.cfg:"
-          echo "    # [Name-Tag of the route]"
-          echo "    [RelationID] [Number of Real Bus stops] [Date of the data (TT.MM.JJJJ)]"
           echo "-t"
           echo "    Downloading Takst-Sjælland - Tog-Relation (incl. Multipoygone)."
-          echo ""
-          exit
-       ;;
-       l) echo ""
-          echo "Es fehlen unter anderem folgende Routen:"
-          echo ""
-          grep -B 1 'ptaroute_is_missing' ./config/real_bus_stops.cfg | sed -n '/#/p' | sed 's/^# //'
           echo ""
           exit
        ;;
