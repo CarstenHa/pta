@@ -238,6 +238,11 @@
     font-size: 1em;
     margin: .5em 0;
    }
+   h5 {
+    font-size: 1em;
+    font-weight: normal;
+    margin: .7em .4em
+   }
    div {
     margin-bottom: 1em;
    }
@@ -288,6 +293,12 @@
    .fa-chevron-left {
     background-color: #d6d6d6;
     padding: .2em;
+   }
+   .fa-times {
+    color: #d05d5d;
+   }
+   .fa-check {
+    color: #76b273;
    }
    .bgueberhell, .bgueberhell .fa-chevron-left {
     background-color: #eeeeee !important;
