@@ -8,10 +8,10 @@
     text-decoration: none;
    }
    a:visited {
-    color: #9d6554;
+    color: #666666;
    }
    a:hover {
-    color: #884d3b;
+    color: #333333;
    }
    a:active {
     color: #000000;
@@ -82,7 +82,7 @@
     border: 1px solid #d6d6d6;
     border-radius: 10px;
     /* Hier muss die Höhe bei eventueller Änderung des Inhalts manuell angepasst werden! */
-    height: 25em;
+    height: 33em;
     transition: height 1s ease-in-out; 
     position: relative;
    }
@@ -159,6 +159,24 @@
     line-height: 1.3;
     color: #222;
     text-align: left;
+   }
+   div.routes {
+    background-image: url('../images/ptaroute.svg');
+   }
+   div.stopareas {
+    background-image: url('../images/ptastop.svg');
+   }
+   div.routes,
+   div.stopareas {
+    background-position: left top;
+    background-size: 80% 80%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    width: 96vw;
+    height: 96vh;
+    position: absolute;
+    z-index: -1;
+    opacity: 0.1;
    }
    .index {
     margin: 0;
@@ -246,12 +264,15 @@
    div {
     margin-bottom: 1em;
    }
-   div.routetab, div.stopareatab, div.stopplat, div.gtfs {
+   div.routetab, div.stopareatab, div.stopplat, div.gtfs, div.gtfs2, div.gtfs3, div.gtfs4 {
     background-color: #f6f5f4;
     border-radius: 10px;
     padding: 0.1em 1em 0.1em 1em;
    }
-   div.gtfs {
+   div.gtfs,
+   div.gtfs2,
+   div.gtfs3,
+   div.gtfs4 {
     background-color: #ecf4e2;
    }
    div.stopplat:nth-child(even) {
@@ -266,9 +287,87 @@
     border-right: 1px solid #d6d6d6;
     border-bottom: 1px solid #d6d6d6;
    }
-   div.gtfs table th {
+   div.gtfs table th,
+   div.gtfs2 table th,
+   div.gtfs3 table th,
+   div.gtfs4 table th {
     font-weight: normal;
     background-color: #ecf4e2;
+   }
+   div.gtfs2 table th,
+   div.gtfs3 table th,
+   div.gtfs4 table th {
+    width: 7em;
+    text-align: right;
+   }
+   div.gtfs3 table td:nth-of-type(2) {
+    width: 6em;
+    text-align: center;
+   }
+   div.gtfs4 table td:nth-of-type(2) {
+    width: 6em;
+    text-align: center;
+   }
+   div.gtfs2 table td:nth-of-type(3) {
+    width: 6em;
+    text-align: center;
+   }
+   div.gtfs3 table td:nth-of-type(3) {
+    width: 6em;
+    text-align: center;
+   }
+   div.gtfs4 table td:nth-of-type(3) {
+    width: 6em;
+    text-align: center;
+   }
+   div.gtfs2 table td:nth-of-type(4) {
+    width: 4em;
+    text-align: center;
+   }
+   div.gtfs3 table td:nth-of-type(4) {
+    width: 6em;
+    text-align: center;
+   }
+   div.gtfs4 table td:nth-of-type(4) {
+    width: 6em;
+    text-align: center;
+   }
+   div.gtfs2 table td:nth-of-type(5) {
+    width: 4em;
+    text-align: center;
+   }
+   div.gtfs4 table td:nth-of-type(5) {
+    width: 4em;
+    text-align: center;
+   }
+   div.gtfs4 table td:nth-of-type(6) {
+    width: 4em;
+    text-align: center;
+   }
+   div.gtfs4 table td:nth-of-type(7) {
+    width: 4em;
+    text-align: center;
+   }
+   div.gtfs4 td.pta {
+    background-image: url('../images/ptaroute.svg');
+    background-position: 50% 50%;
+    background-size: 50% 50%;
+    background-repeat: no-repeat;
+   }
+   div.gtfs4 td.pta:visited {
+    background-image: url('../images/ptaroute3.svg');
+    background-position: 50% 50%;
+    background-size: 50% 50%;
+    background-repeat: no-repeat;
+   }
+   div.gtfs4 td.pta:hover {
+    background-image: url('../images/ptaroute2.svg');
+    background-position: 50% 50%;
+    background-size: 50% 50%;
+    background-repeat: no-repeat;
+   }
+   div.gtfs4 td.pta a {
+    text-decoration: none;
    }
    h3 .fa-chevron-down {
     position: absolute;
@@ -306,14 +405,18 @@
    .fa-map {
     margin-left: .2em;
    }
-   .fa-map:hover, .fa-search-plus:hover {
-    color: #ffffff;
-    /* Imitiert mit Hilfe von text-shadow einen Outline-Effekt. */
-    text-shadow: 1px  1px 1px #333333,
-                 1px -1px 1px #333333,
-                -1px  1px 1px #333333,
-                -1px -1px 1px #333333;
+   div.gtfs2 .fa-map,
+   div.gtfs2 .fa-list {
+    margin: 0;
    }
+   /*.fa-map:hover, .fa-search-plus:hover, .fa-list:hover {*/
+   /* color: #ffffff;*/
+   /* Imitiert mit Hilfe von text-shadow einen Outline-Effekt. */
+   /* text-shadow: 1px  1px 1px #333333,*/
+   /*             1px -1px 1px #333333,*/
+   /*             -1px  1px 1px #333333,*/
+   /*             -1px -1px 1px #333333;*/
+   /*}*/
    div.masterroute {
     display: none;
     position: relative;
@@ -338,6 +441,23 @@
     border: 1px solid #ddd;
     background-color: #eeeeee;
     border-radius: 10px;
+   }
+   div.headergtfs {
+    margin: 1em 0;
+    background-color: #ecf4e2;
+   }
+   div.headergtfs img {
+    vertical-align: middle;
+   }
+   div.headergtfs img#ptaroutelogo {
+    height: 2.2em;
+    width: auto;
+    margin: .4em .6em .4em 0;
+   }
+   div.headergtfs img#ptastoplogo {
+    height: 1.6em;
+    width: auto;
+    margin: .4em .9em .4em .2em;
    }
    table {
     width: 100%;
@@ -399,6 +519,9 @@
    }
    td.grey {
     background-color: #F6F6F6;
+   }
+   td.green {
+    background-color: #ecf4e2;
    }
    td span.routecolour {
     font-size: 1em;

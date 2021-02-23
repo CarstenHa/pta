@@ -79,6 +79,7 @@ echo "  <link rel=\"stylesheet\" href=\"css/font-awesome.css\">"
 echo "  <link rel=\"stylesheet\" href=\"css/style.css\">"
 echo "</head>"
 echo "<body>"
+echo " <div class=\"routes\"></div>"
 }
 htmlkopf >>./"$htmlname"
 # Javascript wird eingebunden.
@@ -117,7 +118,15 @@ echo " <i id=\"on\" class=\"fa-div fa fa-plus fa-1x\"></i>" >>./"$htmlname"
 echo " <i id=\"off\" class=\"fa-div fa fa-minus fa-1x\"></i>" >>./"$htmlname"
 echo " <h4>Statistics</h4>" >>./"$htmlname"
 echo " <p>Name of the evaluated file: "$1"</p>" >>./"$htmlname"
-echo " <p>Result of the found bus routes: "$anzbusrel"</p>" >>./"$htmlname"
+echo " <p>Result of the found bus routes in OSM data: ${anzbusrel}</p>" >>./"$htmlname"
+if [ -e "./htmlfiles/gtfsroutes.html" ]; then
+ moviaroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
+ echo " <p>Movia's bus routes in OSM data: ${moviaroutes}<br>" >>./"$htmlname"
+ anzmissingroutes="$(grep 'gtfsid[12]tab' ./htmlfiles/gtfsroutes.html | wc -l)"
+ echo "    Ca. $((100*${moviaroutes}/${anzmissingroutes}))% of Movia's bus routes are created in whole or in part.</p>" >>./"$htmlname"
+ echo " <p>Which routes are missing, see:<br>" >>./"$htmlname"
+ echo "    List of <a href=\"gtfsroutes.html\">GTFS routes</a> (shapes).</p>" >>./"$htmlname"
+fi
 echo " <hr>" >>./"$htmlname"
 echo " <p>The ten oldest routes (with check_date tag):</p>" >>./"$htmlname"
 # Die zehn ältesten Routen (mit check_date-Tag) werden herausgefiltert.
