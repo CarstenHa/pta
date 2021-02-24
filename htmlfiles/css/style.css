@@ -166,8 +166,12 @@
    div.stopareas {
     background-image: url('../images/ptastop.svg');
    }
+   div.gtfsshapes {
+    background-image: url('../images/gtfs.svg');
+   }
    div.routes,
-   div.stopareas {
+   div.stopareas,
+   div.gtfsshapes {
     background-position: left top;
     background-size: 80% 80%;
     background-repeat: no-repeat;
@@ -177,6 +181,9 @@
     position: absolute;
     z-index: -1;
     opacity: 0.1;
+   }
+   div.gtfsshapes {
+    background-size: 12% 12%;
    }
    .index {
     margin: 0;
@@ -445,6 +452,7 @@
    div.headergtfs {
     margin: 1em 0;
     background-color: #ecf4e2;
+    position: relative;
    }
    div.headergtfs img {
     vertical-align: middle;
@@ -452,12 +460,35 @@
    div.headergtfs img#ptaroutelogo {
     height: 2.2em;
     width: auto;
-    margin: .4em .6em .4em 0;
+    margin: .4em .6em .4em .8em;
    }
    div.headergtfs img#ptastoplogo {
     height: 1.6em;
     width: auto;
-    margin: .4em .9em .4em .2em;
+    margin: .4em .9em .4em 1em;
+   }
+   div.headergtfs span {
+    font-family: 'Exo',sans-serif;
+    font-weight: 800;
+    font-size: .7em;
+    color: #ffffff;
+    /* Imitiert mit Hilfe von text-shadow einen Outline-Effekt. */
+    text-shadow: 1px  1px 1px #333333,
+                 1px -1px 1px #333333,
+                -1px  1px 1px #333333,
+                -1px -1px 1px #333333;
+   }
+   div.headergtfs span:nth-of-type(1) {
+    position: absolute;
+    top: 3em;
+    left: 1.4em;
+    z-index: 1;
+   }
+   div.headergtfs span:nth-of-type(2) {
+    position: absolute;
+    top: 6.9em;
+    left: 1.4em;
+    z-index: 1;
    }
    table {
     width: 100%;
