@@ -209,6 +209,13 @@
     width: 100%;
     height: auto;
    }
+   header.index img#logo {
+    position: absolute;
+    right: 50px;
+    bottom: 60px;
+    width: 400px;
+    height: auto;
+   }
    header {
     margin: .5em;
    }
@@ -220,7 +227,7 @@
     font-weight: 800;
     font-size: 10em;
     position: absolute;
-    bottom: 40px;
+    bottom: 90px;
     right: 50px;
     color: white;
     text-decoration: none;
@@ -230,7 +237,7 @@
     font-weight: 800;
     font-size: 2em;
     position: absolute;
-    bottom: 70px;
+    bottom: 105px;
     right: 50px;
     color: white;
     text-decoration: none;
@@ -240,7 +247,7 @@
     font-weight: 600;
     font-size: 1.4em;
     position: absolute;
-    bottom: 50px;
+    bottom: 20px;
     right: 50px;
     color: white;
     text-decoration: none;
@@ -602,19 +609,24 @@
    }
 @media only screen and (max-width: 620px) {
    header.index h1 {
-    bottom: 30px;
+    bottom: 80px;
     right: 15px;
     font-size: 4em;
    }
    header.index h2 {
-    bottom: 25px;
+    bottom: 67px;
     right: 15px;
-    font-size: 1.4em;
+    font-size: 1.3em;
    }
    header.index h3 {
     right: 15px;
     bottom: 10px;
     font-size: 1.2em;
+   }
+   header.index img#logo {
+    bottom: 45px;
+    right: 15px;
+    width: 200px;
    }
    img.indexbanner {
     border-bottom: .5em solid #444444;
