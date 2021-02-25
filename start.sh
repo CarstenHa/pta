@@ -78,6 +78,9 @@ while [ ! "$?" == "0" ]; do
  let pingcounter++
   if [ "$pingcounter" -gt "3" ]; then
    echo "Kann overpass-api.de nicht erreichen. Skript wird abgebrochen."
+   if [ -e "./tools/mail/sendamail" ]; then
+    ./tools/mail/sendamail -p
+   fi
    exit 1
   fi
  sleep 20
@@ -453,7 +456,10 @@ while true; do
 
          if [ "$killthisscript" == "yes" ]; then
           echo "Es konnten nicht alle OSM-Daten vollständig heruntergeladen werden. Skript wird abgebrochen."
-          echo "Folgende Dateien sind unter anderem betroffen: ${kindofosm}"
+          echo "Folgende Dateien sind unter anderem betroffen: $(echo "${kindofosm}" | sed 's/^, //')"
+          if [ -e "./tools/mail/sendamail" ]; then
+           ./tools/mail/sendamail -d
+          fi
           exit 1
          fi
 

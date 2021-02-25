@@ -185,6 +185,17 @@
    div.gtfsshapes {
     background-size: 12% 12%;
    }
+   td.osmtabgtfs {
+    background-image: url('../images/gtfs2.svg');
+    background-position: center;
+    background-size: 80% 80%;
+    background-repeat: no-repeat;
+    text-align: center;
+    background-color: #ecf4e2;
+   }
+   td.osmtabgtfs .fa-list {
+    margin-right: 2em;
+   }
    .index {
     margin: 0;
     padding: 0;

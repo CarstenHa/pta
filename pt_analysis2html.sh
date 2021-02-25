@@ -451,12 +451,12 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     if [ -n "$shapeid" -a -e "./htmlfiles/gtfs/${shapeid}.html" ]; then
 
       if [ -e "./htmlfiles/gtfs/maps/${shapeid}.html" ]; then
-       echo "   <td><a href=\"gtfs/${shapeid}.html\">GTFS data</a> <a href=\"gtfs/maps/${shapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td>" >>./"$htmlname"
+       echo "   <td class=\"osmtabgtfs\"><a title=\"GTFS list\" href=\"gtfs/${shapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a><a title=\"GTFS route (shape) on map\" href=\"gtfs/maps/${shapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td>" >>./"$htmlname"
       else
-       echo "   <td><a href=\"gtfs/${shapeid}.html\">GTFS data</a></td>" >>./"$htmlname"
+       echo "   <td class=\"osmtabgtfs\"><a title=\"GTFS list\" href=\"gtfs/${shapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td>" >>./"$htmlname"
       fi
 
-    else echo "   <td>No GTFS data</td>" >>./"$htmlname"
+    else echo "   <td>No GTFS</td>" >>./"$htmlname"
     fi
     echo "  </tr>" >>./"$htmlname"
 
@@ -886,6 +886,7 @@ echo "  <p>Fernbus-Routen sind nicht Teil des Takst Sjælland und sind nicht vol
 echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und ist nur als Ergänzung zu anderen Analysetools zu sehen, wie zum Beispiel den <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSM-Inspector</a>.</p>"
 echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
 echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
+echo "  <p>GTFS is not part of Openstreetmap. For more Information, see <a href=\"https://carstenha.github.io/pta/index.html\">https://carstenha.github.io/pta/index.html</a></p>"
 echo "  <p>&nbsp;</p>"
 echo "  <p><a href=\"https://carstenha.github.io/pta/\">Repository-Website</a></p>"
 echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
