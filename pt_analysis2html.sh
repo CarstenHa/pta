@@ -18,6 +18,12 @@ if [ ! -e ./relmemberlist.sh ]; then
  echo "Für die Erstellung ist das Skript ./relmemberlist.sh notwendig. Skript ist nicht im Verzeichnis $PWD vorhanden. Skript wird abgebrochen!" && exit 2
 fi
 
+if [ -e ./tools/plugins/agencycheck ]; then
+ source ./tools/plugins/agencycheck
+else
+ echo "Hinweis: Plugin agencycheck nicht gefunden."
+fi
+
 # Bei seperater Ausführung dieses Skriptes, muss erst noch relmem_bus_takst.lst erstellt werden (siehe auch Kommentare zur export-Variablen in start.sh).
 if [ "$whichprocess" != "all" ]; then
  echo "Routen werden mit relmemberlist.sh in ein besser auswertbares Format umgeschrieben ..."
@@ -117,8 +123,8 @@ echo "<div id=\"stat\" class=\"hide\">" >>./"$htmlname"
 echo " <i id=\"on\" class=\"fa-div fa fa-plus fa-1x\"></i>" >>./"$htmlname"
 echo " <i id=\"off\" class=\"fa-div fa fa-minus fa-1x\"></i>" >>./"$htmlname"
 echo " <h4>Statistics</h4>" >>./"$htmlname"
-echo " <p>Name of the evaluated file: "$1"</p>" >>./"$htmlname"
-echo " <p>Result of the found bus routes in OSM data: ${anzbusrel}</p>" >>./"$htmlname"
+echo " <p>Name of the evaluated file: "$1"<br>" >>./"$htmlname"
+echo "    Evaluated bus routes: ${anzbusrel}</p>" >>./"$htmlname"
 if [ -e "./htmlfiles/gtfsroutes.html" ]; then
  moviaroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
  echo " <p>Movia's bus routes in OSM data: ${moviaroutes}<br>" >>./"$htmlname"
@@ -456,7 +462,15 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
        echo "   <td class=\"osmtabgtfs\"><a title=\"GTFS list\" href=\"gtfs/${shapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td>" >>./"$htmlname"
       fi
 
-    else echo "   <td>No GTFS</td>" >>./"$htmlname"
+    else 
+    
+     if [ -e ./tools/plugins/routecheck ]; then
+      source ./tools/plugins/routecheck
+     else
+      echo "Hinweis: Plugin routecheck nicht gefunden."
+      echo "   <td>No GTFS</td>" >>./"$htmlname"
+     fi
+     
     fi
     echo "  </tr>" >>./"$htmlname"
 
