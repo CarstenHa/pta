@@ -98,6 +98,12 @@ echo " <h2 style=\"text-align: center;\">(in ref order)</h2>" >>./"$htmlname2"
 echo "<h1>Public Transport - Sjælland, Lolland, Falster und Møn</h1>" >>./"$htmlname"
 echo " <h2 style=\"text-align: center;\">OSM data analysis - Takst Sjælland (Bus)</h2>" >>./"$htmlname"
 echo "<div class=\"headerallg\">" >>./"$htmlname"
+echo " <p>" >>./"$htmlname"
+echo "  <img id=\"ptastoplogo\" src=\"images/ptastop.svg\"><span>OSM</span><a href=\"stop_areas.html\">pta stop area analysis</a><br>" >>./"$htmlname"
+echo "  <img id=\"ptagtfslogo\" src=\"images/gtfs.svg\"><span>GTFS</span><a href=\"gtfsroutes.html\">pta gtfs analysis</a>" >>./"$htmlname"
+echo "  <a href=\"../index.html\"><img id=\"logo\" src=\"images/logo.svg\"></a>" >>./"$htmlname"
+echo " </p>" >>./"$htmlname"
+echo " <hr>" >>./"$htmlname"
 echo " <p><strong>General information:</strong></p>" >>./"$htmlname"
 
 # Überprüfungen, ob Relationen in Daten existieren.

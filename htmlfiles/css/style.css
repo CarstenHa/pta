@@ -94,7 +94,8 @@
     height: 2em; 
     overflow: hidden;
    }
-   div#stat hr {
+   div#stat hr,
+   div.headerallg hr {
     background-color: #d6d6d6;
    }
    div#stat.hide p,
@@ -207,6 +208,13 @@
     padding: 0;
     border-bottom: 1em solid #444444;
     width: 100%;
+    height: auto;
+   }
+   .headerallg img#logo {
+    position: absolute;
+    right: 1.2em;
+    top: 2em;
+    width: 140px;
     height: auto;
    }
    header.index img#logo {
@@ -466,26 +474,32 @@
     border: 1px solid #ddd;
     background-color: #eeeeee;
     border-radius: 10px;
+    position: relative;
    }
    div.headergtfs {
     margin: 1em 0;
     background-color: #ecf4e2;
     position: relative;
    }
-   div.headergtfs img {
+   div.headerallg img {
     vertical-align: middle;
    }
-   div.headergtfs img#ptaroutelogo {
+   div.headerallg img#ptaroutelogo {
     height: 2.2em;
     width: auto;
     margin: .4em .6em .4em .8em;
    }
-   div.headergtfs img#ptastoplogo {
+   div.headerallg img#ptastoplogo {
     height: 1.6em;
     width: auto;
     margin: .4em .9em .4em 1em;
    }
-   div.headergtfs span {
+   div.headerallg img#ptagtfslogo {
+    height: 1.6em;
+    width: auto;
+    margin: .4em .9em .4em 1em;
+   }
+   div.headerallg span {
     font-family: 'Exo',sans-serif;
     font-weight: 800;
     font-size: .7em;
@@ -496,13 +510,13 @@
                 -1px  1px 1px #333333,
                 -1px -1px 1px #333333;
    }
-   div.headergtfs span:nth-of-type(1) {
+   div.headerallg span:nth-of-type(1) {
     position: absolute;
     top: 3em;
     left: 1.4em;
     z-index: 1;
    }
-   div.headergtfs span:nth-of-type(2) {
+   div.headerallg span:nth-of-type(2) {
     position: absolute;
     top: 6.9em;
     left: 1.4em;
@@ -609,9 +623,9 @@
    }
 @media only screen and (max-width: 620px) {
    header.index h1 {
-    bottom: 80px;
+    bottom: 75px;
     right: 15px;
-    font-size: 4em;
+    font-size: 3em;
    }
    header.index h2 {
     bottom: 67px;
