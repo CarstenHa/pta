@@ -267,6 +267,39 @@
     font-size: 1.3em;
     margin: 2em 20% 2em 20%;
    }
+   figure#sitelogos {
+    margin: 0;
+    padding: 0;
+   }
+   figure#sitelogos figure {
+    display: inline-block;
+    width: 30%;
+    position: relative;
+    padding-left: 2em;
+    margin: 0;
+   }
+   figure#sitelogos img {
+    width: 70%;
+   }
+   figure#sitelogos figcaption {
+    position: absolute;
+    top: 18%;
+    left: 2%;
+    font-family: 'Exo',sans-serif;
+    font-weight: 800;
+    font-size: 2em;
+    /* Imitiert mit Hilfe von text-shadow einen Outline-Effekt. */
+    text-shadow: 1px  1px 1px #333333,
+                 1px -1px 1px #333333,
+                -1px  1px 1px #333333,
+                -1px -1px 1px #333333;
+   }
+   figure#sitelogos figcaption.fcosm {
+    color: #d5d2d2;
+   }
+   figure#sitelogos figcaption.fcgtfs {
+    color: #cbdab7;
+   }
    h1 {
     font-family: 'Exo',sans-serif;
     font-weight: 600;
