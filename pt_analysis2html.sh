@@ -18,12 +18,6 @@ if [ ! -e ./relmemberlist.sh ]; then
  echo "Für die Erstellung ist das Skript ./relmemberlist.sh notwendig. Skript ist nicht im Verzeichnis $PWD vorhanden. Skript wird abgebrochen!" && exit 2
 fi
 
-if [ -e ./tools/plugins/agencycheck ]; then
- source ./tools/plugins/agencycheck
-else
- echo "Hinweis: Plugin agencycheck nicht gefunden."
-fi
-
 # Bei seperater Ausführung dieses Skriptes, muss erst noch relmem_bus_takst.lst erstellt werden (siehe auch Kommentare zur export-Variablen in start.sh).
 if [ "$whichprocess" != "all" ]; then
  echo "Routen werden mit relmemberlist.sh in ein besser auswertbares Format umgeschrieben ..."
@@ -470,12 +464,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     else 
     
-     if [ -e ./tools/plugins/routecheck ]; then
-      source ./tools/plugins/routecheck
-     else
-      echo "Hinweis: Plugin routecheck nicht gefunden."
       echo "   <td>No GTFS</td>" >>./"$htmlname"
-     fi
      
     fi
     echo "  </tr>" >>./"$htmlname"
