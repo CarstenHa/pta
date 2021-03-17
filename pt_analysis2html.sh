@@ -282,7 +282,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     if [ -z "$routecolour" ]; then
      echo "   <td> - </td>" >>./"$htmlname"
     else 
-      if [ $(echo "$networkrow" | grep 'v='\''.*\<Takst Sjælland\>.*'\''' | wc -l) -gt "0" ]; then
+      if [ $(echo "$networkrow" | egrep -i 'v='\''.*\<Takst Sjælland\>|\<Movia\>.*'\''' | wc -l) -gt "0" ]; then
 
         # Prüft die richtige Routenfarbe zu der entsprechenden Buskategorie (A-/E-/S-/R-/C-/N- und normale Busse).
         lastrefsign="$(echo "$refnumber" | sed 's/.*\(.$\)/\1/')"
