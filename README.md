@@ -40,6 +40,8 @@ https://wiki.openstreetmap.org/wiki/Osmconvert
 
 * In dem Ordner 'config' ist die Datei 'real_bus_stops.lst'. Diese Datei umbenennen in 'real_bus_stops.cfg'. Diese neue Datei kann dann mit Daten gefüttert werden. Nähere Erläuterungen dazu befinden sich in der Datei selber.
 
+* Außerdem gibt es in dem Ordner 'config' die Datei 'invalidroutes.lst'. Auch diese Datei umbenennen in 'invalidroutes.cfg'. Diese Datei ist vorgesehen für ungültige und veraltete Routen. Auch in dieser Datei stehen weitere Erläuterungen im Kopf der Datei.
+
 ### 2. Ausführung
 
 * Start des Erstellungsprozesses:  

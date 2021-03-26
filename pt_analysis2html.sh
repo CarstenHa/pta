@@ -33,6 +33,7 @@ ptdatumjetzt=`date +%Y%m%d_%H%M`
 backupordner="./backup"
 htmlname="htmlfiles/takst_sjaelland.html"
 htmlname2="htmlfiles/stop_platform.html"
+invroutescfg="config/invalidroutes.cfg"
 relationlist="$(egrep -o 'relation id='\''[^'\'']*'\''' "$1" | sed 's/relation id='\''\(.*\)'\''/\1/')"
 anzbusrel="$(cat "$1" | grep '<tag k='\''route'\'' v='\''bus'\'' />' | wc -l)"
 
@@ -464,7 +465,25 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     else 
     
-      echo "   <td>No GTFS</td>" >>./"$htmlname"
+      invrouteline="$(grep '^'"$relnumber"'' "$invroutescfg")"
+      if [ -n "$invrouteline" ]; then
+      
+       invstatus="$(echo "$invrouteline" | cut -d' ' -f4)"
+       if [ "$invstatus" == "1" ]; then
+        echo "   <td class=\"red\">Route doesn't exist</td>" >>./"$htmlname"
+       elif [ "$invstatus" == "2" ]; then
+        echo "   <td class=\"red\">Route variant doesn't exist</td>" >>./"$htmlname"
+       else
+        echo "   <td>No GTFS</td>" >>./"$htmlname"
+        echo "Fehlender oder ungültiger Status in Datei ${invroutescfg} (RelationID: ${relnumber})."
+       fi
+      
+      else
+      
+       echo "   <td>No GTFS</td>" >>./"$htmlname"
+       echo "Route ${refnumber} (RelationID: ${relnumber}) noch nicht in .cfg-Datei aufgenommen."
+       
+      fi
      
     fi
     echo "  </tr>" >>./"$htmlname"

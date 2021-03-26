@@ -1,0 +1,11 @@
+# Example of invalidroutes.cfg
+# row 1: Route description (Bus X: from => to)
+# row 2 (field delimiter is a space):
+# column 1: RelationID
+# column 2: Last check date (format YYYY-MM-DD)
+# column 3: ref-value
+# column 4: Status:
+#           0 = deleted
+#           1 = Route doesn't exist
+#           2 = Route variant doesn't exist
+
