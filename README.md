@@ -18,12 +18,10 @@ usw.
 In den HTML-Seiten nach der Auswertung mit diesem Tool werden die stops und platforms zur besseren Übersichtlichkeit in getrennten Tabellen angezeigt.  
 Außerdem wird zum Beispiel das OSM-tag 'check_date=*' mit der Fahrplanperiode verglichen und vieles mehr ...
 
-Die generierten HTML-Seiten, die ein Teil dieses Tools sind, finden Sie übrigens unter:  
-https://carstenha.github.io/pta/htmlfiles/takst_sjaelland.html  
+Die generierten HTML-Seiten sowie diese Informationen erreichen Sie übrigens unter:  
+https://carstenha.github.io/pta/  
 Den Programmcode und weitere Informationen finden Sie unter:  
 https://github.com/CarstenHa/pta  
-Diese Informationen finden Sie unter:  
-https://carstenha.github.io/pta/
 
 Für alle, die dieses Tool für andere Verkehrsgebiete umschreiben wollen, gibt es ein kleines Wiki, wo die einzelnen Skripte etwas näher vorgestellt werden.  
 https://github.com/CarstenHa/pta/wiki
