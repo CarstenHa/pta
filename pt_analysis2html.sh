@@ -382,7 +382,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     # Zeile 2 der zweiten Tabelle:
     echo "  <tr>" >>./"$htmlname"
-    echo "   <th style=\"font-weight: normal;\">Stop/Platform:</th>" >>./"$htmlname"
+    echo "   <th style=\"font-weight: normal;\">Number of stops/platforms:</th>" >>./"$htmlname"
     unset realbusstop
     unset shapeid
     unset osmstop
