@@ -9,6 +9,21 @@
    <link rel="stylesheet" href="../../css/font-awesome.css">
    <link rel="stylesheet" href="css/ol.css">
    <link rel="stylesheet" href="css/map.css">
+   <style>
+     div.headerallg {
+      margin: 0 -.4em;
+      padding: 0.1em 1em 0.1em 1em;
+      border: 1px solid #ddd;
+      background-color: #eeeeee;
+      border-radius: 10px;
+      position: relative;
+     }
+     div.headergtfs {
+      margin: 1em 0;
+      background-color: #ecf4e2;
+      position: relative;
+     }
+   </style>
   </head>
   <body>
   <header>
@@ -16,6 +31,12 @@
    <h2 style="text-align: center;">GTFS data: rejseplanen.dk (CC-BY-ND 3.0)</h2>
   </header>
   <main>
+   <div class="headerallg headergtfs">
+    <p>
+     <strong>Note</strong><br>
+     An error was probably found in this GTFS data. Please use additional sources to check this route.
+    </p>
+   </div>
    <div class="showgtfs">
     <h4>191 Lyngby St. (Jernbanepladsen) => Sorgenfri St. (Hummeltoftevej) - ShapeID: 890 - <a href="../@shapeid2.html">List</a> - <a href="javascript:history.back()">back</a></h4>
     <div id="map" class="map">

@@ -9,4 +9,5 @@ alternativedownload.sh
 exclude.lst
 zipall.sh
 tools/scripte/
+tools/codebausteine/
 ptasync
