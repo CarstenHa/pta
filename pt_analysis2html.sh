@@ -31,15 +31,14 @@ source ./config/tt_period.cfg
 # Belegung der Variablen
 ptdatumjetzt=`date +%Y%m%d_%H%M`
 backupordner="./backup"
-htmlname="htmlfiles/takst_sjaelland.html"
-htmlname2="htmlfiles/stop_platform.html"
+htmlname="htmlfiles/osmroutes.html"
 invroutescfg="config/invalidroutes.cfg"
 relationlist="$(egrep -o 'relation id='\''[^'\'']*'\''' "$1" | sed 's/relation id='\''\(.*\)'\''/\1/')"
 anzbusrel="$(cat "$1" | grep '<tag k='\''route'\'' v='\''bus'\'' />' | wc -l)"
 
 osmdatamaster="./osmdata/route_master_bus.osm"
 
-echo "Beginn der Erstellung der HTML-Seiten $htmlname und $htmlname2 durch $0. Der Vorgang kann einige Minuten dauern ..."
+echo "Beginn der Erstellung der HTML-Seiten $htmlname und der OSM-Haltestellendateien durch $0. Der Vorgang kann einige Minuten dauern ..."
 
 # Relationsnummern der Masterrouten ermitteln.
 echo "Relationsnummern der Masterrouten werden ermittelt ..."
@@ -57,19 +56,17 @@ findmasterrelbereich="$(sed -n '/<relation id='\'''"$findmasterrelnumber"''\''/,
 done
 echo "Relationsnummern der Masterrouten ermitteln erfolgreich beendet."
 
-# Backup der aktuellen HTML-Datei anlegen.
+# Backup der aktuellen HTML-Dateien anlegen.
 if [ -e ./"$htmlname" ]; then
  cp ./"$htmlname" "$backupordner"/`date +%Y%m%d_%H%M`_"$(basename $htmlname)"
 fi
-if [ -e ./"$htmlname2" ]; then
- cp ./"$htmlname2" "$backupordner"/`date +%Y%m%d_%H%M`_"$(basename $htmlname2)"
-fi
+zip "$backupordner"/`date +%Y%m%d_%H%M`_stopplatform.zip ./htmlfiles/osm/*
+rm -f ./htmlfiles/osm/*
 
 # Erster Teil der HTML-Seiten wird erstellt.
-echo "<!DOCTYPE html>" >./"$htmlname"
-echo "<!DOCTYPE html>" >./"$htmlname2"
 
 htmlkopf() {
+echo "<!DOCTYPE html>"
 echo "<html lang=\"de\">"
 echo "<head>"
 echo "  <meta content=\"text/html; charset=utf-8\" http-equiv=\"content-type\">"
@@ -78,28 +75,44 @@ echo "  <meta name=\"robots\" content=\"nofollow\">"
 echo "  <link rel=\"stylesheet\" href=\"css/fonts.css\">"
 echo "  <link rel=\"stylesheet\" href=\"css/font-awesome.css\">"
 echo "  <link rel=\"stylesheet\" href=\"css/style.css\">"
+echo "  <script src=\"script/showall.js\"></script>"
+echo "  <script src=\"script/showhidestats.js\"></script>"
 echo "</head>"
 echo "<body>"
 echo " <div class=\"routes\"></div>"
+echo "<header>"
+echo "<h1>Public Transport - Sjælland, Lolland, Falster und Møn</h1>"
+echo " <h2 style=\"text-align: center;\">OSM data analysis - Takst Sjælland (Bus)</h2>"
+echo "<div class=\"headerallg\">"
+echo " <p>"
+echo "  <img id=\"ptastoplogo\" src=\"images/ptastop.svg\"><span>OSM</span><a href=\"stop_areas.html\">pta stop area analysis</a><br>"
+echo "  <img id=\"ptagtfslogo\" src=\"images/gtfs.svg\"><span>GTFS</span><a href=\"gtfsroutes.html\">pta gtfs analysis</a>"
+echo "  <a href=\"../index.html\"><img id=\"logo\" src=\"images/logo.svg\"></a>"
+echo " </p>"
+echo " <hr>"
+echo " <p><strong>General information:</strong></p>"
 }
-htmlkopf >>./"$htmlname"
-# Javascript wird eingebunden.
-sed -i 's/<\/head>/  <script src="script\/showall.js"><\/script>\n  <script src="script\/showhidestats.js"><\/script>\n<\/head>/' ./"$htmlname"
+# Seitenkopf für OSM-Haltestellendateien
+htmlkopf2() {
+echo "<!DOCTYPE html>"
+echo "<html lang=\"de\">"
+echo "<head>"
+echo "  <meta content=\"text/html; charset=utf-8\" http-equiv=\"content-type\">"
+echo "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+echo "  <meta name=\"robots\" content=\"nofollow\">"
+echo "  <link rel=\"stylesheet\" href=\"../css/fonts.css\">"
+echo "  <link rel=\"stylesheet\" href=\"../css/font-awesome.css\">"
+echo "  <link rel=\"stylesheet\" href=\"../css/style.css\">"
+echo "</head>"
+echo "<body>"
+echo " <div class=\"routes\"></div>"
+echo "<header>"
+echo "<h1>OSM Stop/Platform-Analysis</h1>"
+echo "</header>"
+echo "<main>"
+}
 
-htmlkopf >>./"$htmlname2"
-echo "<header>" | tee -a ./"$htmlname" ./"$htmlname2" &>/dev/null
-echo "<h1>Stop/Platform-Analysis</h1>" >>./"$htmlname2"
-echo " <h2 style=\"text-align: center;\">(in ref order)</h2>" >>./"$htmlname2"
-echo "<h1>Public Transport - Sjælland, Lolland, Falster und Møn</h1>" >>./"$htmlname"
-echo " <h2 style=\"text-align: center;\">OSM data analysis - Takst Sjælland (Bus)</h2>" >>./"$htmlname"
-echo "<div class=\"headerallg\">" >>./"$htmlname"
-echo " <p>" >>./"$htmlname"
-echo "  <img id=\"ptastoplogo\" src=\"images/ptastop.svg\"><span>OSM</span><a href=\"stop_areas.html\">pta stop area analysis</a><br>" >>./"$htmlname"
-echo "  <img id=\"ptagtfslogo\" src=\"images/gtfs.svg\"><span>GTFS</span><a href=\"gtfsroutes.html\">pta gtfs analysis</a>" >>./"$htmlname"
-echo "  <a href=\"../index.html\"><img id=\"logo\" src=\"images/logo.svg\"></a>" >>./"$htmlname"
-echo " </p>" >>./"$htmlname"
-echo " <hr>" >>./"$htmlname"
-echo " <p><strong>General information:</strong></p>" >>./"$htmlname"
+htmlkopf >./"$htmlname"
 
 # Überprüfungen, ob Relationen in Daten existieren.
 # Die anderen Relationen (10020275/10002530) brauchen hier nicht überprüft werden. Dies wird durch start.sh geregelt.
@@ -118,8 +131,8 @@ echo " <p><a href=\"https://www.openstreetmap.org/relation/10020275\">Relation T
 echo "</div>" >>./"$htmlname"
 echo " <h2>1. Bus routes:</h2>" >>./"$htmlname"
 echo " <p><a href=\"https://www.openstreetmap.org/relation/10002530\">Relation Takst Sjælland - Bus</a>: 10002530</p>" >>./"$htmlname"
-echo "</header>" | tee -a ./"$htmlname" ./"$htmlname2" &>/dev/null
-echo "<main>" | tee -a ./"$htmlname" ./"$htmlname2" &>/dev/null
+echo "</header>" >>./"$htmlname"
+echo "<main>" >>./"$htmlname"
 echo "<div id=\"stat\" class=\"hide\">" >>./"$htmlname"
 echo " <i id=\"on\" class=\"fa-div fa fa-plus fa-1x\"></i>" >>./"$htmlname"
 echo " <i id=\"off\" class=\"fa-div fa fa-minus fa-1x\"></i>" >>./"$htmlname"
@@ -150,7 +163,7 @@ echo "</div>" >>./"$htmlname"
 echo "<hr>" >>./"$htmlname"
 echo "<div class=\"navi\">" >>./"$htmlname"
 echo " <button id=\"button\">Show all</button>" >>./"$htmlname"
-echo " <a class=\"neuladen\" href=\"takst_sjaelland.html\">Hide all</a>" >>./"$htmlname"
+echo " <a class=\"neuladen\" href=\"osmroutes.html\">Hide all</a>" >>./"$htmlname"
 echo "</div>" >>./"$htmlname"
 # Achtung beim Generieren neuer Zeilen nach der vorherigen Zeile. Den folgenden Kommentar beachten! Der definiert die spätere Löschung des ersten Schluss-Tags (</div>) der Klasse .masterroute. (Siehe ca. Zeilen 153 ff. und 843 ff.)
 echo "<!--@ptalinedelete-->" >>./"$htmlname"
@@ -180,7 +193,7 @@ unset anzrel
 anzrel="$(echo "$relationlist" | wc -l)"
 
 for ((i=1 ; i<=(("$anzrel")) ; i++)); do
-  
+
   echo "Route ${i}/${anzrel} wird analysiert ..."
   routebegin=`date +%s`
 
@@ -197,7 +210,10 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
   # Variable, um Network-Tags zu lokalisieren, die als Flixbus/Swebus getaggt sind.
   no_ts_tag="$(echo "$relbereich" | egrep 'tag k='\''network'\'' v='\''(Flix|Swe)bus'\''' | wc -l)"
 
-# *** Busrelationen werden analysiert. Zweiter Teil der HTML-Seite ($htmlname) wird erstellt. ***
+  # Namen der OSM-Haltestellenseiten werden definiert
+  htmlname2="htmlfiles/osm/${relnumber}.html"
+
+  # *** Busrelationen werden analysiert. Zweiter Teil der HTML-Seite ($htmlname) wird erstellt. ***
 
   if [ $(echo "$relbereich" | grep '<tag k='\''route'\'' v='\''bus'\'' />' | wc -l) == "1" ]; then
 
@@ -448,19 +464,19 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo "  <tr>" >>./"$htmlname"
     echo "   <th style=\"font-weight: normal;\">stop/platform-Analysis/GTFS:</th>" >>./"$htmlname"
     if [ -n "$osmstoplist" ]; then
-     echo "   <td class=\"@stoperrorcheck${i} small\"><a href=\"stop_platform.html#st_ar1"$i"\">Stop-analysis</a></td>" >>./"$htmlname"
+     echo "   <td class=\"@stoperrorcheck${i} small\"><a href=\"osm/${relnumber}.html#st_ar1\">Stop-analysis</a></td>" >>./"$htmlname"
     else echo "   <td class=\"small\">No stops</td>" >>./"$htmlname"
     fi
     if [ -n "$osmplatformlist" ]; then
-     echo "   <td class=\"@platformerrorcheck${i} small\"><a href=\"stop_platform.html#st_ar2"$i"\">Platform-analysis</a></td>" >>./"$htmlname"
+     echo "   <td class=\"@platformerrorcheck${i} small\"><a href=\"osm/${relnumber}.html#st_ar2\">Platform-analysis</a></td>" >>./"$htmlname"
     else echo "   <td class=\"small\">No platforms</td>" >>./"$htmlname"
     fi
     if [ -n "$shapeid" -a -e "./htmlfiles/gtfs/${shapeid}.html" ]; then
 
       if [ -e "./htmlfiles/gtfs/maps/${shapeid}.html" ]; then
-       echo "   <td class=\"osmtabgtfs\"><a title=\"GTFS list\" href=\"gtfs/${shapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a><a title=\"GTFS route (shape) on map\" href=\"gtfs/maps/${shapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td>" >>./"$htmlname"
+       echo "   <td class=\"osmtabgtfs\"><a title=\"GTFS list\" href=\"gtfs/${shapeid}.html#st_ar2\"><i class=\"fa-td fa fa-list fa-1x\"></i></a><a title=\"GTFS route (shape) on map\" href=\"gtfs/maps/${shapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td>" >>./"$htmlname"
       else
-       echo "   <td class=\"osmtabgtfs\"><a title=\"GTFS list\" href=\"gtfs/${shapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td>" >>./"$htmlname"
+       echo "   <td class=\"osmtabgtfs\"><a title=\"GTFS list\" href=\"gtfs/${shapeid}.html#st_ar2\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td>" >>./"$htmlname"
       fi
 
     else 
@@ -519,24 +535,25 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
   # **** Analyse der stops/platforms, und Überprüfung ob diese Mitglied in einer stop_area sind. Start der Erstellung von $htmlname2. ****
 
   # *** Stops ***
-  echo " <div class=\"stopplat\">" >>./"$htmlname2"
+  echo " <div class=\"stopplat\">" >>"$htmlname2"
   
   # Überschrift
   if [ "$(echo "$relbereich" | grep '<tag k='\''name'\''' | wc -l)" -gt "0" ]; then
-   echo " <h4 id=\"st_ar1"$i"\">Stop_positions - RelationID: $relnumber - $(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/') - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname2"
-  else echo " <h4 id=\"st_ar1"$i"\">Stop_positions - RelationID: $relnumber - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname2"
+   echo " <h4>RelationID: $relnumber - $(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/') - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>"$htmlname2"
+  else echo " <h4>RelationID: $relnumber - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>"$htmlname2"
   fi
+  echo " <h5 id=\"st_ar1\">Stop_positions:</h5>" >>"$htmlname2"
 
   if [ -n "$osmstoplist" ]; then
 
-    echo "  <table class=\"stop_plat\">" >>./"$htmlname2"
-    echo "  <tr>" >>./"$htmlname2"
-    echo "   <th> </th>" >>./"$htmlname2"
-    echo "   <td class=\"small grey\">StopID / Member in any stop_area (green: integrated in TS-Stoppested-Relation):</td>" >>./"$htmlname2"
-    echo "   <td class=\"small grey\">Name stop_position (if available):</td>" >>./"$htmlname2"
-    echo "   <td class=\"small grey\">OSM-Element:</td>" >>./"$htmlname2"
-    echo "   <td class=\"grey\">Tag/Role-Check:</td>" >>./"$htmlname2"
-    echo "  </tr>" >>./"$htmlname2"
+    echo "  <table class=\"stop_plat\">" >>"$htmlname2"
+    echo "  <tr>" >>"$htmlname2"
+    echo "   <th> </th>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">StopID / Member in any stop_area (green: integrated in TS-Stoppested-Relation):</td>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">Name stop_position (if available):</td>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">OSM-Element:</td>" >>"$htmlname2"
+    echo "   <td class=\"grey\">Tag/Role-Check:</td>" >>"$htmlname2"
+    echo "  </tr>" >>"$htmlname2"
 
     stoperrorrolecounter=0
     stoperrorelementcounter=0
@@ -556,8 +573,8 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     tagcheckstop="$(echo "$relmemberstops" | cut -d: -f5 | sed -n ''$g'p')"
     # Weitere Überprüfung können definiert werden (bus=yes, weitere Haltestellen, die nicht die Rolle stop haben, usw.).
 
-    echo "  <tr>" >>./"$htmlname2"
-    echo "   <th style=\"font-weight: normal;\">Stop $(echo "$g"):</th>" >>./"$htmlname2"
+    echo "  <tr>" >>"$htmlname2"
+    echo "   <th style=\"font-weight: normal;\">Stop $(echo "$g"):</th>" >>"$htmlname2"
 
      # Ist wahr, wenn Fund in stop_areas.osm gefunden wird.
      # Außerdem wird dann weiter auf ein Vorkommen in takst_stoppested.osm geprüft! Wenn hier ein Fund entdeckt wird, wird die ganze Zeile grün hinterlegt.
@@ -565,64 +582,64 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
         # RelationsID und Vorkommen in TS-Stoppested wird ermittelt.
         if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-        echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmstopelement/"$osmstoprelid"\">"$osmstoprelid"</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>./"$htmlname2"
-       else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmstopelement/"$osmstoprelid"\">"$osmstoprelid"</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>./"$htmlname2"
+        echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
+       else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
        fi
 
        # Name des stops wird ermittelt.
        # Klasse stn_f ist für Verarbeitung mit anderen Programmen.
        if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-        echo "   <td class=\"small withcolour stn_f\">"$osmstopname"</td>" >>./"$htmlname2"
-       else echo "   <td class=\"small stn_f\">"$osmstopname"</td>" >>./"$htmlname2"
+        echo "   <td class=\"small withcolour stn_f\">${osmstopname}</td>" >>"$htmlname2"
+       else echo "   <td class=\"small stn_f\">${osmstopname}</td>" >>"$htmlname2"
        fi
 
        # Art des OSM-Elements (node/way/relation) wird in Datei geschrieben, und wenn es kein node ist, wird Fehler ausgegeben.
        if [ "$osmstopelement" == "node" ]; then
         if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-         echo "   <td class=\"small withcolour\">"$osmstopelement"</td>" >>./"$htmlname2"
-        else echo "   <td class=\"small\">"$osmstopelement"</td>" >>./"$htmlname2"
+         echo "   <td class=\"small withcolour\">${osmstopelement}</td>" >>"$htmlname2"
+        else echo "   <td class=\"small\">${osmstopelement}</td>" >>"$htmlname2"
         fi
-       else echo "   <td class=\"small red\">Wrong element ("$osmstopelement")! It must be a node.</td>" >>./"$htmlname2"
+       else echo "   <td class=\"small red\">Wrong element (${osmstopelement})! It must be a node.</td>" >>"$htmlname2"
         let stoperrorelementcounter++
        fi
 
        # Tag-Check
        if [ -z "$tagcheckstop" ]; then
-       echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>./"$htmlname2"
+       echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>"$htmlname2"
        let stoperrorrolecounter++
        else 
         if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-         echo "   <td class=\"small withcolour\">Ok</td>" >>./"$htmlname2"
-        else echo "   <td class=\"small\">Ok</td>" >>./"$htmlname2"
+         echo "   <td class=\"small withcolour\">Ok</td>" >>"$htmlname2"
+        else echo "   <td class=\"small\">Ok</td>" >>"$htmlname2"
         fi
        fi
 
      # Ist wahr, wenn KEIN Fund in stop_areas.osm gefunden wird.
      elif [ $(grep "$osmstoprelid" ./osmdata/stop_areas.osm | wc -l) == "0" ]; then
 
-      echo "   <td class=\"small\"><a href =\"https://www.openstreetmap.org/$osmstopelement/"$osmstoprelid"\">"$osmstoprelid"</a> / No</td>" >>./"$htmlname2"
+      echo "   <td class=\"small\"><a href =\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / No</td>" >>"$htmlname2"
       # Klasse stn_f ist für Verarbeitung mit anderen Programmen.
-      echo "   <td class=\"small stn_f\">"$osmstopname"</td>" >>./"$htmlname2"
+      echo "   <td class=\"small stn_f\">${osmstopname}</td>" >>"$htmlname2"
       if [ "$osmstopelement" == "node" ]; then
-       echo "   <td class=\"small\">"$osmstopelement"</td>" >>./"$htmlname2"
-      else echo "   <td class=\"small red\">Wrong element ("$osmstopelement")! It must be a node.</td>" >>./"$htmlname2"
+       echo "   <td class=\"small\">${osmstopelement}</td>" >>"$htmlname2"
+      else echo "   <td class=\"small red\">Wrong element (${osmstopelement})! It must be a node.</td>" >>"$htmlname2"
         let stoperrorelementcounter++
       fi
       # Tag-Check
       if [ -z "$tagcheckstop" ]; then
-       echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>./"$htmlname2"
+       echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>"$htmlname2"
        let stoperrorrolecounter++
-      else echo "   <td class=\"small\">Ok</td>"  >>./"$htmlname2"
+      else echo "   <td class=\"small\">Ok</td>"  >>"$htmlname2"
       fi
 
      fi
 
-     echo "  </tr>" >>./"$htmlname2"
+     echo "  </tr>" >>"$htmlname2"
 
     # Ende der for-Schleife (g)
     done
 
-  echo " </table>" >>./"$htmlname2"
+  echo " </table>" >>"$htmlname2"
 
     # *** Ausgabe der stops-Fehler ***
 
@@ -633,51 +650,47 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
       # Platzhalter wird, wenn irgendein Fehler auftritt, durch CSS-Klasse ersetzt (else gelöscht).
       sed -i 's/@stoperrorcheck'${i}'/red/' ./"$htmlname" && \
 
-      echo "  <table class=\"third\">" >>./"$htmlname2"
-      echo "    <tr>" >>./"$htmlname2"
-      echo "     <th>Notes on the stops:</th>" >>./"$htmlname2"
-      echo "    </tr>" >>./"$htmlname2"
-      echo "    <tr>" >>./"$htmlname2"
-      echo "     <td class=\"red\">" >>./"$htmlname2"
+      echo "  <table class=\"third\">" >>"$htmlname2"
+      echo "    <tr>" >>"$htmlname2"
+      echo "     <th>Notes on the stops:</th>" >>"$htmlname2"
+      echo "    </tr>" >>"$htmlname2"
+      echo "    <tr>" >>"$htmlname2"
+      echo "     <td class=\"red\">" >>"$htmlname2"
        if [ "$stoperrorrolecounter" -gt "0" ]; then
-        echo "      - This route is missing $stoperrorrolecounter correct role(s).<br>" >>./"$htmlname2"
+        echo "      - This route is missing $stoperrorrolecounter correct role(s).<br>" >>"$htmlname2"
        fi
        if [ "$stoperrorelementcounter" -gt "0" ]; then
-        echo "      - $stoperrorelementcounter wrong element(s).<br>" >>./"$htmlname2"
+        echo "      - $stoperrorelementcounter wrong element(s).<br>" >>"$htmlname2"
        fi
        if [ "$anzstopnotptv2" -gt "0" ]; then
-        echo "      - $anzstopnotptv2 more stop-role(s) not PTv2 compatible ($(echo "$oppositelist" | cut -d: -f2,3,5 | grep 'stop' | sed 's/\(.*\):\(.*\):.*/<a href=\"https:\/\/www.openstreetmap.org\/\2\/\1\">\1<\/a>/')). Please check this in JOSM or another program." >>./"$htmlname2"
+        echo "      - $anzstopnotptv2 more stop-role(s) not PTv2 compatible ($(echo "$oppositelist" | cut -d: -f2,3,5 | grep 'stop' | sed 's/\(.*\):\(.*\):.*/<a href=\"https:\/\/www.openstreetmap.org\/\2\/\1\">\1<\/a>/')). Please check this in JOSM or another program." >>"$htmlname2"
        fi
-      echo "     </td>" >>./"$htmlname2"
-      echo "    </tr>" >>./"$htmlname2"
-      echo "   </table>" >>./"$htmlname2"
+      echo "     </td>" >>"$htmlname2"
+      echo "    </tr>" >>"$htmlname2"
+      echo "   </table>" >>"$htmlname2"
 
     else sed -i 's/@stoperrorcheck'${i}' //' ./"$htmlname"
 
     fi
         
 
-  else echo "<p>No stop_position in route.</p>" >>./"$htmlname2"
+  else echo "<p>No stop_position in route.</p>" >>"$htmlname2"
   fi
 
   # *** Platforms ***
 
-  # Überschrift
-  if [ "$(echo "$relbereich" | grep '<tag k='\''name'\''' | wc -l)" -gt "0" ]; then
-   echo " <h4 id=\"st_ar2"$i"\">Platforms - RelationID: $relnumber - $(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/') - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname2"
-  else echo " <h4 id=\"st_ar2"$i"\">Platforms - RelationID: $relnumber - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname2"
-  fi
+  echo " <h5 id=\"st_ar2\">Platforms:</h5>" >>"$htmlname2"
 
   if [ -n "$osmplatformlist" ]; then
 
-    echo "  <table class=\"stop_plat\">" >>./"$htmlname2"
-    echo "  <tr>" >>./"$htmlname2"
-    echo "   <th> </th>" >>./"$htmlname2"
-    echo "   <td class=\"small grey\">PlatformID / Member in any stop_area (green: integrated in TS-Stoppested-Relation):</td>" >>./"$htmlname2"
-    echo "   <td class=\"small grey\">Name platform (if available):</td>" >>./"$htmlname2"
-    echo "   <td class=\"small grey\">OSM-Element:</td>" >>./"$htmlname2"
-    echo "   <td class=\"grey\">Tag/Role-Check:</td>" >>./"$htmlname2"
-    echo "  </tr>" >>./"$htmlname2"
+    echo "  <table class=\"stop_plat\">" >>"$htmlname2"
+    echo "  <tr>" >>"$htmlname2"
+    echo "   <th> </th>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">PlatformID / Member in any stop_area (green: integrated in TS-Stoppested-Relation):</td>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">Name platform (if available):</td>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">OSM-Element:</td>" >>"$htmlname2"
+    echo "   <td class=\"grey\">Tag/Role-Check:</td>" >>"$htmlname2"
+    echo "  </tr>" >>"$htmlname2"
 
     for ((h=1 ; h<=(("$osmplatform")) ; h++)); do
 
@@ -698,8 +711,8 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     # Weitere Überprüfung können definiert werden (weitere Haltestellen, die nicht die Rolle platform haben, usw.).
 
-     echo "  <tr>" >>./"$htmlname2"
-     echo "   <th style=\"font-weight: normal;\">Platform $(echo "$h"):</th>" >>./"$htmlname2"
+     echo "  <tr>" >>"$htmlname2"
+     echo "   <th style=\"font-weight: normal;\">Platform $(echo "$h"):</th>" >>"$htmlname2"
 
      # Ist wahr, wenn Fund in stop_areas.osm gefunden wird.
 
@@ -707,38 +720,38 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
        # RelationsID und Vorkommen in TS-Stoppested wird ermittelt.
        if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-        echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/"$osmplatformrelid"\">"$osmplatformrelid"</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>./"$htmlname2"
-       else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/"$osmplatformrelid"\">"$osmplatformrelid"</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>./"$htmlname2"
+        echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
+       else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
        fi
 
        # Name der platform wird ermittelt.
        # Klasse pln_f ist für Verarbeitung mit anderen Programmen.
        if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-        echo "   <td class=\"small withcolour pln_f\">"$osmplatformname"</td>" >>./"$htmlname2"
-       else echo "   <td class=\"small pln_f\">"$osmplatformname"</td>" >>./"$htmlname2"
+        echo "   <td class=\"small withcolour pln_f\">${osmplatformname}</td>" >>"$htmlname2"
+       else echo "   <td class=\"small pln_f\">${osmplatformname}</td>" >>"$htmlname2"
        fi
  
        # Art des OSM-Elements (node/way/relation) wird in Datei geschrieben.
        if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
           if [ "$osmplatformelement" == "way" -a "$areacheck" == "yes" ]; then
-           echo "   <td class=\"small withcolour\">way + area=yes</td>" >>./"$htmlname2"
-          else echo "   <td class=\"small withcolour\">"$osmplatformelement"</td>" >>./"$htmlname2"
+           echo "   <td class=\"small withcolour\">way + area=yes</td>" >>"$htmlname2"
+          else echo "   <td class=\"small withcolour\">${osmplatformelement}</td>" >>"$htmlname2"
           fi
        else
           if [ "$osmplatformelement" == "way" -a "$areacheck" == "yes" ]; then
-           echo "   <td class=\"small\">way + area=yes</td>" >>./"$htmlname2"
-          else echo "   <td class=\"small\">"$osmplatformelement"</td>" >>./"$htmlname2"
+           echo "   <td class=\"small\">way + area=yes</td>" >>"$htmlname2"
+          else echo "   <td class=\"small\">${osmplatformelement}</td>" >>"$htmlname2"
           fi
        fi
 
        # Tag-Check
        if [ -z "$tagcheckplatform" ]; then
-        echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>./"$htmlname2"
+        echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>"$htmlname2"
         let platformerrorrolecounter++
        else
         if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
-         echo "   <td class=\"small withcolour\">Ok</td>" >>./"$htmlname2"
-        else echo "   <td class=\"small\">Ok</td>" >>./"$htmlname2"
+         echo "   <td class=\"small withcolour\">Ok</td>" >>"$htmlname2"
+        else echo "   <td class=\"small\">Ok</td>" >>"$htmlname2"
         fi
        fi
 
@@ -747,28 +760,28 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
      elif [ "$(grep "$osmplatformrelid" ./osmdata/stop_areas.osm | wc -l)" == "0" ]; then
 
 
-        echo "   <td class=\"small\"><a href =\"https://www.openstreetmap.org/$osmplatformelement/"$osmplatformrelid"\">"$osmplatformrelid"</a> / No</td>" >>./"$htmlname2"
+        echo "   <td class=\"small\"><a href =\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / No</td>" >>"$htmlname2"
         # Klasse pln_f ist für Verarbeitung mit anderen Programmen.
-        echo "   <td class=\"small pln_f\">"$osmplatformname"</td>" >>./"$htmlname2"
+        echo "   <td class=\"small pln_f\">${osmplatformname}</td>" >>"$htmlname2"
           if [ "$osmplatformelement" == "way" -a "$areacheck" == "yes" ]; then
-           echo "   <td class=\"small\">way + area=yes</td>" >>./"$htmlname2"
-          else echo "   <td class=\"small\">"$osmplatformelement"</td>" >>./"$htmlname2"
+           echo "   <td class=\"small\">way + area=yes</td>" >>"$htmlname2"
+          else echo "   <td class=\"small\">${osmplatformelement}</td>" >>"$htmlname2"
           fi
         # Tag-Check
         if [ -z "$tagcheckplatform" ]; then
-         echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>./"$htmlname2"
+         echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>"$htmlname2"
          let platformerrorrolecounter++
-        else echo "   <td class=\"small\">Ok</td>"  >>./"$htmlname2"
+        else echo "   <td class=\"small\">Ok</td>"  >>"$htmlname2"
         fi
 
      fi
 
-     echo "  </tr>" >>./"$htmlname2"
+     echo "  </tr>" >>"$htmlname2"
 
     # Ende der for-Schleife (h)
     done
 
-  echo " </table>" >>./"$htmlname2"
+  echo " </table>" >>"$htmlname2"
 
     # *** Ausgabe der platforms-Fehler ***
 
@@ -780,27 +793,27 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
       # Platzhalter wird, wenn irgendein Fehler auftritt, durch CSS-Klasse ersetzt (else gelöscht).
       sed -i 's/@platformerrorcheck'${i}'/red/' ./"$htmlname" && \
 
-      echo "  <table class=\"third\">" >>./"$htmlname2"
-      echo "    <tr>" >>./"$htmlname2"
-      echo "     <th>Notes on the platforms:</th>" >>./"$htmlname2"
-      echo "    </tr>" >>./"$htmlname2"
-      echo "    <tr>" >>./"$htmlname2"
-      echo "     <td class=\"red\">" >>./"$htmlname2"
+      echo "  <table class=\"third\">" >>"$htmlname2"
+      echo "    <tr>" >>"$htmlname2"
+      echo "     <th>Notes on the platforms:</th>" >>"$htmlname2"
+      echo "    </tr>" >>"$htmlname2"
+      echo "    <tr>" >>"$htmlname2"
+      echo "     <td class=\"red\">" >>"$htmlname2"
        if [ "$platformerrorrolecounter" -gt "0" ]; then
-        echo "      - This route is missing $platformerrorrolecounter correct role(s).<br>"  >>./"$htmlname2"
+        echo "      - This route is missing $platformerrorrolecounter correct role(s).<br>"  >>"$htmlname2"
        fi
        if [ "$anzplatformnotptv2" -gt "0" ]; then
-        echo "      - $anzplatformnotptv2 more platform-role(s) not PTv2 compatible ($(echo "$oppositelist" | cut -d: -f2,3,6 | grep 'platform' | sed 's/\(.*\):\(.*\):.*/<a href=\"https:\/\/www.openstreetmap.org\/\2\/\1\">\1<\/a>/')). Please check this in JOSM or another program." >>./"$htmlname2"
+        echo "      - $anzplatformnotptv2 more platform-role(s) not PTv2 compatible ($(echo "$oppositelist" | cut -d: -f2,3,6 | grep 'platform' | sed 's/\(.*\):\(.*\):.*/<a href=\"https:\/\/www.openstreetmap.org\/\2\/\1\">\1<\/a>/')). Please check this in JOSM or another program." >>"$htmlname2"
        fi
-      echo "     </td>" >>./"$htmlname2"
-      echo "    </tr>" >>./"$htmlname2"
-      echo "   </table>" >>./"$htmlname2"
+      echo "     </td>" >>"$htmlname2"
+      echo "    </tr>" >>"$htmlname2"
+      echo "   </table>" >>"$htmlname2"
 
     else sed -i 's/@platformerrorcheck'${i}' //' ./"$htmlname"
 
     fi
 
-  else echo "<p>No platform in route.</p>" >>./"$htmlname2"
+  else echo "<p>No platform in route.</p>" >>"$htmlname2"
 
   fi
 
@@ -810,40 +823,36 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     # *** Analyse der Wege mit der Rolle hail_and_ride ***
   
-    # Überschrift
-    if [ "$(echo "$relbereich" | grep '<tag k='\''name'\''' | wc -l)" -gt "0" ]; then
-     echo " <h4 id=\"st_ar3"$i"\">Ways with hail_and_ride - RelationID: $relnumber - $(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/') - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname2"
-    else echo " <h4 id=\"st_ar3"$i"\">Ways with hail_and_ride - RelationID: $relnumber - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname2"
-    fi
+    echo " <h5 id=\"st_ar3\">Ways with hail_and_ride:</h5>" >>"$htmlname2"
 
-    echo "  <table class=\"stop_plat\">" >>./"$htmlname2"
-    echo "  <tr>" >>./"$htmlname2"
-    echo "   <th> </th>" >>./"$htmlname2"
-    echo "   <td class=\"small grey\">WayID:</td>" >>./"$htmlname2"
-    echo "   <td class=\"small grey\">Position in route-relation:</td>" >>./"$htmlname2"
-    echo "   <td class=\"grey\">OSM-Element:</td>" >>./"$htmlname2"
-    echo "  </tr>" >>./"$htmlname2"
+    echo "  <table class=\"stop_plat\">" >>"$htmlname2"
+    echo "  <tr>" >>"$htmlname2"
+    echo "   <th> </th>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">WayID:</td>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">Position in route-relation:</td>" >>"$htmlname2"
+    echo "   <td class=\"grey\">OSM-Element:</td>" >>"$htmlname2"
+    echo "  </tr>" >>"$htmlname2"
 
     for ((r=1 ; r<=(("$osm_hail_and_ride")) ; r++)); do
      pos_har_rel="$(echo "$relmemberhail_and_ride" | cut -d: -f1 | sed -n ''$r'p')"
      osm_har_relid="$(echo "$relmemberhail_and_ride" | cut -d: -f2 | sed -n ''$r'p')"
      osmhail_and_rideelement="$(echo "$relmemberhail_and_ride" | cut -d: -f3 | sed -n ''$r'p')"
 
-     echo "  <tr>" >>./"$htmlname2"
-     echo "   <th style=\"font-weight: normal;\">Way with hail_and_ride $(echo "$r"):</th>" >>./"$htmlname2"
-     echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmhail_and_rideelement/$osm_har_relid\">$osm_har_relid</a></td>" >>./"$htmlname2"
-     echo "   <td class=\"small\">$pos_har_rel</td>" >>./"$htmlname2"
+     echo "  <tr>" >>"$htmlname2"
+     echo "   <th style=\"font-weight: normal;\">Way with hail_and_ride $(echo "$r"):</th>" >>"$htmlname2"
+     echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmhail_and_rideelement/$osm_har_relid\">$osm_har_relid</a></td>" >>"$htmlname2"
+     echo "   <td class=\"small\">$pos_har_rel</td>" >>"$htmlname2"
      if [ "$osmhail_and_rideelement" == "way" ]; then
-      echo "   <td>$osmhail_and_rideelement</td>" >>./"$htmlname2"
+      echo "   <td>$osmhail_and_rideelement</td>" >>"$htmlname2"
      else
-      echo "   <td class=\"red\"> This element ($osmhail_and_rideelement) has role hail_and_ride. Then it must be a way.</td>" >>./"$htmlname2"
+      echo "   <td class=\"red\"> This element ($osmhail_and_rideelement) has role hail_and_ride. Then it must be a way.</td>" >>"$htmlname2"
       let har_errorelementcounter++
      fi
-     echo "  </tr>" >>./"$htmlname2"
+     echo "  </tr>" >>"$htmlname2"
 
     done
 
-    echo "  </table>" >>./"$htmlname2"
+    echo "  </table>" >>"$htmlname2"
 
    fi
 
@@ -860,28 +869,28 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
      # Zelle erstreckt sich über die ersten beiden Spalten (colspan="2").
      sed -i 's/<!--@othernotes3'${i}'-->/<tr class="othernotes"><th style="font-weight: normal;">Other notes:<\/th><td class="small red" colspan="2"><a href="'"$(basename "$htmlname2")"'#othernotes3'${i}'">Other notes<\/a><\/td><\/tr>/' ./"$htmlname" && \
 
-     echo "  <table id=\"othernotes3${i}\" class=\"third\">" >>./"$htmlname2"
-     echo "    <tr>" >>./"$htmlname2"
-     echo "     <th>Other notes:</th>" >>./"$htmlname2"
-     echo "    </tr>" >>./"$htmlname2"
-     echo "    <tr>" >>./"$htmlname2"
-     echo "     <td class=\"red\">" >>./"$htmlname2"
+     echo "  <table id=\"othernotes3${i}\" class=\"third\">" >>"$htmlname2"
+     echo "    <tr>" >>"$htmlname2"
+     echo "     <th>Other notes:</th>" >>"$htmlname2"
+     echo "    </tr>" >>"$htmlname2"
+     echo "    <tr>" >>"$htmlname2"
+     echo "     <td class=\"red\">" >>"$htmlname2"
       if [ "$har_errorelementcounter" -gt "0" ]; then
-       echo "      - $har_errorelementcounter non-way element with role hail_and_ride.<br>"  >>./"$htmlname2"
+       echo "      - $har_errorelementcounter non-way element with role hail_and_ride.<br>"  >>"$htmlname2"
       fi
       if [ "$emptyrolecheck" -gt "0" ]; then
        noemptyrole="$(echo "$oppositelist" | sed '/^.*:.*:.*:.*:.*:.*:.*::.*$/d')"
        noemptyrolestring="$(echo "$noemptyrole" | cut -d: -f2,3 )"
-       echo "      - Others: $emptyrolecheck unknown role(s) ($(echo "$noemptyrolestring" | sed 's/\(.*\):\(.*\)/<a href=\"https:\/\/www.openstreetmap.org\/\2\/\1\">\1<\/a>/')). This role(s) must be empty."  >>./"$htmlname2"
+       echo "      - Others: $emptyrolecheck unknown role(s) ($(echo "$noemptyrolestring" | sed 's/\(.*\):\(.*\)/<a href=\"https:\/\/www.openstreetmap.org\/\2\/\1\">\1<\/a>/')). This role(s) must be empty."  >>"$htmlname2"
       fi
-      echo "     </td>" >>./"$htmlname2"
-      echo "    </tr>" >>./"$htmlname2"
-      echo "   </table>" >>./"$htmlname2"
+      echo "     </td>" >>"$htmlname2"
+      echo "    </tr>" >>"$htmlname2"
+      echo "   </table>" >>"$htmlname2"
 
     fi
 
   # Schließt div <class="stopplat"> in $htmlname2
-  echo " </div>" >>./"$htmlname2"
+  echo " </div>" >>"$htmlname2"
 
   # ***** Ende der Auswertungen für die Seite $htmlname2 *****
 
@@ -892,9 +901,40 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
    fi
   fi
+  
+  htmlfuss2() {
+   echo "</main>"
+   echo " <footer>"
+   echo "  <p>Hinweise:</p>"
+   echo "  <p>Abkürzung TS: Takst Sjælland</p>"
+   echo "  <p>Stops: Only PTv2-stops (node; public_transport=stop_position).</p>"
+   echo "  <p>Platforms: Only PTv2-platforms (node, way, relation; public_transport=platform).</p>"
+   echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und ist nur als Ergänzung zu anderen Analysetools zu sehen, wie zum Beispiel den <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSM-Inspector</a>.</p>"
+   echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
+   echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
+   echo "  <p>&nbsp;</p>"
+   echo "  <p><a href=\"https://carstenha.github.io/pta/\">Repository-Website</a></p>"
+   echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
+   echo "  <p>&nbsp;</p>"
+   echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
+   echo " </footer>"
+   echo "</body>"
+   echo "</html>"
+  }
 
-routezeitdiff=$((`date +%s`-"$routebegin"))
-printf "Route ${i}/${anzrel} analysiert nach %02dm:%02ds.\n" $(($routezeitdiff%3600/60)) $(($routezeitdiff%60))
+  # Dieser kleine Umweg über folgende Variable ist vorteilhaft, wenn mal eine externe Datei ausgewertet wird,
+  # werden weitere Relationen (Masterrouten, etc.) nicht berücksichtigt.
+  # Ansonsten könnten unvollständige HTML-Seiten erstellt werden.
+  htmlcheck="$(cat "$htmlname2" 2>/dev/null)"
+  if [ -n "$htmlcheck" ]; then
+   # *** OSM-Haltestellenseite wird generiert ***
+   htmlkopf2 >"$htmlname2"
+   echo "$htmlcheck" >>"$htmlname2"
+   htmlfuss2 >>"$htmlname2"
+  fi
+
+  routezeitdiff=$((`date +%s`-"$routebegin"))
+  printf "Route ${i}/${anzrel} analysiert nach %02dm:%02ds.\n" $(($routezeitdiff%3600/60)) $(($routezeitdiff%60))
 
 # Ende der for-Schleife (i)
 done
@@ -926,7 +966,6 @@ echo "</html>"
 }
 
 htmlfuss >>./"$htmlname"
-htmlfuss >>./"$htmlname2"
 
 # Hier werden die einzelnen Tabellen durchnummeriert. Der Platzhalter wird durch die neue Zeichenkette ersetzt.
 # Busrelationen
@@ -980,5 +1019,5 @@ if [ "$1" == "./osmdata/takst.osm" -o "$1" == "osmdata/takst.osm" ]; then
 else rm -f ./checksortlist.tmp
 fi
 
-echo "Ende der Erstellung der HTML-Seiten $htmlname und $htmlname2 durch $(basename $0)."
+echo "Ende der Erstellung der HTML-Seiten $htmlname und der OSM-Haltestellendateien durch $(basename $0)."
  

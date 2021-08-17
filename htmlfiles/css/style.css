@@ -341,9 +341,6 @@
    div.gtfs4 {
     background-color: #ecf4e2;
    }
-   div.stopplat:nth-child(even) {
-    background-color: #ececec;
-   }
    div.mastertabhg {
     background-color: #d6d6d6;
     border-radius: 0 0 10px 10px;

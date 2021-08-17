@@ -109,7 +109,7 @@ echo "<h1>Stop_areas - Sjælland, Lolland, Falster und Møn</h1>"
 echo " <h2 style=\"text-align: center;\">(in alphabetical order)</h2>"
 echo "  <div class=\"headerallg\">"
 echo "   <p>"
-echo "    <img id=\"ptaroutelogo\" src=\"images/ptaroute.svg\"><span>OSM</span><a href=\"takst_sjaelland.html\">pta routes analysis</a><br>"
+echo "    <img id=\"ptaroutelogo\" src=\"images/ptaroute.svg\"><span>OSM</span><a href=\"osmroutes.html\">pta routes analysis</a><br>"
 echo "    <img id=\"ptagtfslogo\" src=\"images/gtfs.svg\"><span>GTFS</span><a href=\"gtfsroutes.html\">pta gtfs analysis</a>"
 echo "    <a href=\"../index.html\"><img id=\"logo\" src=\"images/logo.svg\"></a>"
 echo "   </p>"
@@ -286,7 +286,7 @@ for ((b=1 ; b<=(("$anzsortrel")) ; b++)); do
      echo "$routenumber_subway" >>./"$htmlname"
     fi
     if [ "$(grep "$stopareamemberid" ./relmem_bus_takst.lst | wc -l)" -gt "0" ]; then
-     routenumber_bus="$(grep "$stopareamemberid" ./relmem_bus_takst.lst | cut -d':' -f1,2,3 | sort | uniq | sed 's/\(^.*\)[^:]*:\(.*\)[^:]*:\(.*$\)/    <div class=\"route\"><a href=\"takst_sjaelland.html#route\2\">\2<\/a><a href=\"https:\/\/www.openstreetmap.org\/relation\/\1\"><img class=\"routeiconbus\" src=\"images\/bus-24.svg\" alt=\"Bus \/ \3 \/ (\1)\" title=\"Bus \/ \3 \/ (\1)\"><\/a><\/div>/')"
+     routenumber_bus="$(grep "$stopareamemberid" ./relmem_bus_takst.lst | cut -d':' -f1,2,3 | sort | uniq | sed 's/\(^.*\)[^:]*:\(.*\)[^:]*:\(.*$\)/    <div class=\"route\"><a href=\"osmroutes.html#route\2\">\2<\/a><a href=\"https:\/\/www.openstreetmap.org\/relation\/\1\"><img class=\"routeiconbus\" src=\"images\/bus-24.svg\" alt=\"Bus \/ \3 \/ (\1)\" title=\"Bus \/ \3 \/ (\1)\"><\/a><\/div>/')"
      echo "$routenumber_bus" >>./"$htmlname"
     fi
     if [ "$(grep "$stopareamemberid" ./relmem_monorail_takst.lst | wc -l)" -gt "0" ]; then
