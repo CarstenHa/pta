@@ -435,6 +435,9 @@
    div.gtfs4 td.pta a {
     text-decoration: none;
    }
+   div.gtfs table:nth-of-type(2) tr:nth-child(odd) td:nth-child(2) {
+    background-color: #f9faf7;
+   }
    h3 .fa-chevron-down {
     position: absolute;
     right: 10px;
@@ -628,6 +631,12 @@
     border: 1px solid #666666;
     margin: .3em;
     padding: 0 .5em;
+   }
+   table.stop_plat tr:nth-child(even) td:nth-child(2),
+   table.stop_plat tr:nth-child(even) td:nth-child(3),
+   table.stop_plat tr:nth-child(even) td:nth-child(4),
+   table.stop_plat tr:nth-child(even) td:nth-child(5) {
+    background-color: #faf9f7;
    }
    img.routeicontrain,
    img.routeiconlightrail,
