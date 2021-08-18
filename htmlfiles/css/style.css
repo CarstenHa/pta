@@ -436,7 +436,7 @@
     text-decoration: none;
    }
    div.gtfs table:nth-of-type(2) tr:nth-child(odd) td:nth-child(2) {
-    background-color: #f6fdee;
+    background-color: #f7fbf1;
    }
    h3 .fa-chevron-down {
     position: absolute;
