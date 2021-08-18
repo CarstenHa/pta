@@ -435,8 +435,28 @@
    div.gtfs4 td.pta a {
     text-decoration: none;
    }
-   div.gtfs table:nth-of-type(2) tr:nth-child(odd) td:nth-child(2) {
+   /* Abwechselnde Zeilenfarbe in den einzelnen GTFS-Routen-Dateien */
+   div.gtfs table:nth-of-type(2) tr:nth-child(odd) td:nth-child(2),
+   /* Abwechselnde Zeilenfarbe in gtfsroutes.html */
+   div.gtfs2 table:nth-of-type(1) tr:nth-child(even) td:nth-child(2),
+   div.gtfs2 table:nth-of-type(1) tr:nth-child(even) td:nth-child(3),
+   div.gtfs2 table:nth-of-type(1) tr:nth-child(even) td:nth-child(4),
+   div.gtfs2 table:nth-of-type(1) tr:nth-child(even) td:nth-child(5),
+   div.gtfs2 table:nth-of-type(1) tr:nth-child(even) td:nth-child(6),
+   div.gtfs3 table:nth-of-type(1) tr:nth-child(even) td:nth-child(2),
+   div.gtfs3 table:nth-of-type(1) tr:nth-child(even) td:nth-child(3),
+   div.gtfs3 table:nth-of-type(1) tr:nth-child(even) td:nth-child(4),
+   div.gtfs3 table:nth-of-type(1) tr:nth-child(even) td:nth-child(5),
+   div.gtfs4 table:nth-of-type(1) tr:nth-child(even) td:nth-child(2),
+   div.gtfs4 table:nth-of-type(1) tr:nth-child(even) td:nth-child(3),
+   div.gtfs4 table:nth-of-type(1) tr:nth-child(even) td:nth-child(4),
+   div.gtfs4 table:nth-of-type(1) tr:nth-child(even) td:nth-child(5),
+   div.gtfs4 table:nth-of-type(1) tr:nth-child(even) td:nth-child(6),
+   div.gtfs4 table:nth-of-type(1) tr:nth-child(even) td:nth-child(7) {
     background-color: #f6f9f4;
+   }
+   div.gtfs4 table:nth-of-type(1) tr:nth-child(even) td:nth-child(8) {
+    background-color: #faf9f7;
    }
    h3 .fa-chevron-down {
     position: absolute;
@@ -632,6 +652,7 @@
     margin: .3em;
     padding: 0 .5em;
    }
+   /* Abwechselnde Zeilenfarbe in den einzelnen OSM-Haltestellen-Dateien */
    table.stop_plat tr:nth-child(even) td:nth-child(2),
    table.stop_plat tr:nth-child(even) td:nth-child(3),
    table.stop_plat tr:nth-child(even) td:nth-child(4),
