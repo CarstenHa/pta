@@ -58,7 +58,7 @@ done
 gtfslist="$(echo "$gtfshtmllist" | sed '/^$/d')"
 
 # Evtl. fehlende Webseiten werden anhand der config-Datei invalidroutes.cfg ermittelt.
-osmidlist2="$(cat config/invalidroutes.cfg | sed '/^#/d' | egrep ' 1|2 *$' | cut -f1 -d" ")"
+osmidlist2="$(cat config/invalidroutes.cfg | sed '/^#/d;/^$/d' | egrep ' 1|2 *$' | cut -f1 -d" ")"
 anzosmids2="$(echo "$osmidlist2" | sed '/^$/d' | wc -l)"
 for printline3 in $(seq 1 "$anzosmids2"); do
  osmid2="$(echo "$osmidlist2" | sed -n ''$printline3'p')"
@@ -92,7 +92,7 @@ if [ "$(echo "$allosmids" | sort -n)" == "$(echo "$osmhtmlnames" | sort -n)" ]; 
  echo "Alle OSM-Routen sind in den Dateien real_bus_stops.cfg und invalidroutes.cfg eingebunden."
 else
  let webcheckerrorcounter++
- uniqidlist="$(echo -e "${allosmids}\n${osmhtmlnames}" | sort -n | uniq -u)"
+ uniqidlist="$(echo -e "${allosmids}\n${osmhtmlnames}" | sed '/^$/d' | sort -n | uniq -u)"
  anzuniqids="$(echo "$uniqidlist" | sed '/^$/d' | wc -l)"
  echo -e "\nNeue OSM-Route(n): "
  for lastidcheck in $(seq 1 "$anzuniqids"); do
