@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx version="1.1" creator="rcompare">
+<!-- Data source: rejseplanen.dk (CC-BY-ND 3.0) -->
+<rte>
+<desc>Route 27</desc>
+<rtept lat="55.692064" lon="12.586981">
+</rtept>
+<rtept lat="55.695143" lon="12.598503">
+</rtept>
+<rtept lat="55.695143" lon="12.598503">
+</rtept>
+<rtept lat="55.695143" lon="12.598503">
+</rtept>
+<rtept lat="55.695115" lon="12.598851">
+</rtept>
+<rtept lat="55.695051" lon="12.598877">
+</rtept>
+<rtept lat="55.695013" lon="12.598937">
+</rtept>
+<rtept lat="55.695004" lon="12.598968">
+</rtept>
+<rtept lat="55.694993" lon="12.599031">
+</rtept>
+<rtept lat="55.695000" lon="12.599095">
+</rtept>
+<rtept lat="55.695016" lon="12.599144">
+</rtept>
+<rtept lat="55.695042" lon="12.599179">
+</rtept>
+<rtept lat="55.695095" lon="12.599215">
+</rtept>
+<rtept lat="55.695132" lon="12.599203">
+</rtept>
+<rtept lat="55.695159" lon="12.599173">
+</rtept>
+<rtept lat="55.695255" lon="12.599278">
+</rtept>
+<rtept lat="55.695727" lon="12.599735">
+</rtept>
+<rtept lat="55.695808" lon="12.599742">
+</rtept>
+<rtept lat="55.695954" lon="12.599963">
+</rtept>
+<rtept lat="55.696181" lon="12.600207">
+</rtept>
+<rtept lat="55.696351" lon="12.600238">
+</rtept>
+<rtept lat="55.697479" lon="12.600422">
+</rtept>
+<rtept lat="55.698482" lon="12.600562">
+</rtept>
+<rtept lat="55.698482" lon="12.600562">
+</rtept>
+<rtept lat="55.698482" lon="12.600562">
+</rtept>
+<rtept lat="55.698482" lon="12.600562">
+</rtept>
+<rtept lat="55.699997" lon="12.600701">
+</rtept>
+<rtept lat="55.702617" lon="12.600910">
+</rtept>
+<rtept lat="55.703263" lon="12.600954">
+</rtept>
+<rtept lat="55.703424" lon="12.600969">
+</rtept>
+<rtept lat="55.703421" lon="12.601064">
+</rtept>
+<rtept lat="55.703447" lon="12.601098">
+</rtept>
+<rtept lat="55.703501" lon="12.601119">
+</rtept>
+<rtept lat="55.703537" lon="12.601107">
+</rtept>
+<rtept lat="55.703547" lon="12.601060">
+</rtept>
+<rtept lat="55.703550" lon="12.600980">
+</rtept>
+<rtept lat="55.703552" lon="12.600917">
+</rtept>
+<rtept lat="55.703543" lon="12.600900">
+</rtept>
+<rtept lat="55.703526" lon="12.600883">
+</rtept>
+<rtept lat="55.703490" lon="12.600864">
+</rtept>
+<rtept lat="55.703444" lon="12.600907">
+</rtept>
+<rtept lat="55.703424" lon="12.600969">
+</rtept>
+<rtept lat="55.702482" lon="12.600898">
+</rtept>
+<rtept lat="55.702482" lon="12.600898">
+</rtept>
+</rte>
+<wpt lat="55.692063726267" lon="12.586981121018">
+<desc>Stop 1: Østerport St. (Oslo Plads)</desc>
+</wpt>
+<wpt lat="55.695143094018" lon="12.598503194991">
+<desc>Stop 2: Indiakaj</desc>
+</wpt>
+<wpt lat="55.698481606010" lon="12.600561686747">
+<desc>Stop 3: Langeliniekaj, Midt (Langeliniekaj)</desc>
+</wpt>
+<wpt lat="55.702482103589" lon="12.600898099866">
+<desc>Stop 4: Langeliniekaj, Østmolen (Langeliniekaj)</desc>
+</wpt>
+</gpx>
