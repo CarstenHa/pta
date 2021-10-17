@@ -18,7 +18,7 @@ usw.
 In den HTML-Seiten nach der Auswertung mit diesem Tool werden die stops und platforms zur besseren Übersichtlichkeit in getrennten Tabellen angezeigt.  
 Außerdem wird zum Beispiel das OSM-tag 'check_date=*' mit der Fahrplanperiode verglichen und vieles mehr ...
 
-Die generierten HTML-Seiten sowie diese Informationen erreichen Sie übrigens unter:  
+Die generierten HTML-Seiten erreichen Sie übrigens unter:  
 https://carstenha.github.io/ptaweb.dk.east.bus/  
 Den Programmcode und weitere Informationen finden Sie unter:  
 https://github.com/CarstenHa/pta  
