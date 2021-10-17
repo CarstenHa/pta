@@ -1,6 +1,12 @@
 config/real_bus_stops.cfg
 config/invalidroutes.cfg
-htmlfiles/impressum.html
+htmlfiles/*.html
+htmlfiles/osm/*.html
+htmlfiles/gtfs/*.html
+htmlfiles/gtfs/maps/*.html
+htmlfiles/gtfs/maps/*.gpx
+htmlfiles/gtfs/maps/*.js
+htmlfiles/gtfs/maps/LICENSE.md
 infos/
 README
 ablage/
