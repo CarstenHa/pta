@@ -18,6 +18,4 @@
 # 0 2 * * 0,3 cd ~/path/to/pta/ && ./ptacron
 # -----------------------------------------------------------------
 
-startdatum=`date +%Y%m%d_%H%M`
-
-nohup ./start.sh -a >./backup/${startdatum}_ptanalysis.log 2>&1 &
+nohup ./start.sh -a >/dev/null 2>&1 &
