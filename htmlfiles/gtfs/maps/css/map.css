@@ -30,6 +30,16 @@
      color: #222;
      text-align: left;
     }
+    header.gtfs {
+     position: relative;
+    }
+    header.gtfs img#logo {
+     position: absolute;
+     top: .4em;
+     right: 1em;
+     width: 140px;
+     height: auto;
+    }
     .map {
      width:100%;
      height:75vh;
@@ -73,3 +83,8 @@
      z-index: 2;
      max-width: 85%;
     }
+  @media only screen and (max-width: 620px) {
+    header.gtfs h1 {
+     padding-top: 1.8em;
+    }
+  }

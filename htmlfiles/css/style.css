@@ -223,6 +223,18 @@
     width: 140px;
     height: auto;
    }
+   header.osm,
+   header.gtfs {
+    position: relative;
+   }
+   header.osm img#logo,
+   header.gtfs img#logo {
+    position: absolute;
+    top: .4em;
+    right: .4em;
+    width: 140px;
+    height: auto;
+   }
    header.index img#logo {
     position: absolute;
     right: 50px;
@@ -714,6 +726,13 @@
     bottom: 45px;
     right: 15px;
     width: 200px;
+   }
+   header.osm h1,
+   header.gtfs h1 {
+    padding-top: 1.8em;
+   }
+   div.gtfsshapes {
+    background-position: 1.2em .4em;
    }
    img.indexbanner {
     border-bottom: .5em solid #444444;
