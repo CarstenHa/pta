@@ -10,14 +10,14 @@ backupordner="./backup"
 relationid="10020274"
 
 # ID-Liste wird ermittelt.
-stoplist="$(sed -n '/<relation id='\'''"$relationid"''\''/,/<\/relation>/p' ./osmdata/takst_stoppested.osm | grep -o 'ref=.[[:digit:]]*.' | grep -o '[[:digit:]]*')"
+stoplist="$(sed -n '/<relation id='\'''"$relationid"''\''/,/<\/relation>/p' ./osmdata/stoprelation.osm | grep -o 'ref=.[[:digit:]]*.' | grep -o '[[:digit:]]*')"
 echo -n >./stop_area.lst
 echo -n >./osmfilemiddle.txt
 
 # Der passende Name wird zur ID ermittelt. Dann wird eine Datei mit Namen und der dazugehörigen ID erstellt.
 anzrel="$(echo "$stoplist" | wc -l)"
 for ((a=1 ; a<=(("$anzrel")) ; a++)); do
-stopareaname="$(sed -n '/<relation id='\'''$(echo "$stoplist" | sed -n ''"$a"'p')''\''/,/<\/relation>/p' ./osmdata/takst_stoppested.osm | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/')"
+stopareaname="$(sed -n '/<relation id='\'''$(echo "$stoplist" | sed -n ''"$a"'p')''\''/,/<\/relation>/p' ./osmdata/stoprelation.osm | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/')"
 relid="$(echo "$stoplist" | sed -n "$a"p)"
 echo "$stopareaname $relid" >>./stop_area.lst
 done
@@ -33,8 +33,8 @@ echo "   <member type='relation' ref='$(echo "$sortierteliste" | sed -n ''"$b"'p
 done
 
 # Der obere und untere UNGEÄNDERTE Teil der OSM-Datei wird ermittelt.
-echo "$(sed -n '1,/<relation id='\'''"$relationid"''\''/p' ./osmdata/takst_stoppested.osm)" >./osmfilehead.txt
-echo "$(sed -n '/<relation id='\'''"$relationid"''\''/,$p' ./osmdata/takst_stoppested.osm)" >./osmfilefoot.txt
+echo "$(sed -n '1,/<relation id='\'''"$relationid"''\''/p' ./osmdata/stoprelation.osm)" >./osmfilehead.txt
+echo "$(sed -n '/<relation id='\'''"$relationid"''\''/,$p' ./osmdata/stoprelation.osm)" >./osmfilefoot.txt
 
 # Die alten Mitglieder der Relation werden aus dem Fussteil gelöscht.
 sed -i '1d' ./osmfilefoot.txt
@@ -43,21 +43,21 @@ while [ -n "$(sed -n '1p' ./osmfilefoot.txt | grep '<member ')" ]; do
 done
 
 # Neue Datei mit sortierter Relation wird erstellt.
-cat ./osmfilehead.txt ./osmfilemiddle.txt ./osmfilefoot.txt >./osmdata/takst_stoppested_sort.osm
+cat ./osmfilehead.txt ./osmfilemiddle.txt ./osmfilefoot.txt >./osmdata/stoprelation_sort.osm
 
 # Falls die Relation noch nicht auf action='modify' gesetzt ist, wird dieses nun gemacht. Jetzt kann die Datei mit JOSM hochgeladen werden.
-if [ -z "$(grep 'relation id='\'''"$relationid"''\''.*action=.modify.' ./osmdata/takst_stoppested_sort.osm)" ]; then
- sed -i 's/relation id='\'''"$relationid"''\''/relation id='\'''"$relationid"''\'' action='\''modify'\''/' ./osmdata/takst_stoppested_sort.osm
+if [ -z "$(grep 'relation id='\'''"$relationid"''\''.*action=.modify.' ./osmdata/stoprelation_sort.osm)" ]; then
+ sed -i 's/relation id='\'''"$relationid"''\''/relation id='\'''"$relationid"''\'' action='\''modify'\''/' ./osmdata/stoprelation_sort.osm
 fi
 
 # Diff wird angezeigt.
 echo ""
 echo "Vorgenommene Änderungen:"
 echo ""
-diff ./osmdata/takst_stoppested.osm ./osmdata/takst_stoppested_sort.osm | tee "$backupordner"/`date +%Y%m%d_%H.%M`_takst_stoppested_diff.lst
+diff ./osmdata/stoprelation.osm ./osmdata/stoprelation_sort.osm | tee "$backupordner"/`date +%Y%m%d_%H.%M`_takst_stoppested_diff.lst
 echo ""
-echo "$(sed -n '/<relation id='\'''"$relationid"''\''/,/<\/relation>/p' ./osmdata/takst_stoppested.osm | grep '<member' | wc -l) Mitglieder in takst_stoppested.osm"
-echo "$(sed -n '/<relation id='\'''"$relationid"''\''/,/<\/relation>/p' ./osmdata/takst_stoppested_sort.osm | grep '<member' | wc -l) Mitglieder in takst_stoppested_sort.osm"
+echo "$(sed -n '/<relation id='\'''"$relationid"''\''/,/<\/relation>/p' ./osmdata/stoprelation.osm | grep '<member' | wc -l) Mitglieder in stoprelation.osm"
+echo "$(sed -n '/<relation id='\'''"$relationid"''\''/,/<\/relation>/p' ./osmdata/stoprelation_sort.osm | grep '<member' | wc -l) Mitglieder in stoprelation_sort.osm"
 echo ""
 
 # aufräumen

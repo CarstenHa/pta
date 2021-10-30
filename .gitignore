@@ -1,5 +1,6 @@
-config/real_bus_stops.cfg
-config/invalidroutes.cfg
+config/*.cfg
+config/ptarea1/invalidroutes.cfg
+config/ptarea1/real_bus_stops.cfg
 htmlfiles/*.html
 htmlfiles/osm/*.html
 htmlfiles/gtfs/*.html
@@ -17,3 +18,4 @@ zipall.sh
 tools/scripte/
 tools/codebausteine/
 ptasync
+

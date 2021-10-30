@@ -21,7 +21,7 @@ fi
 # Bei seperater Ausführung dieses Skriptes, muss erst noch relmem_bus_takst.lst erstellt werden (siehe auch Kommentare zur export-Variablen in start.sh).
 if [ "$whichprocess" != "all" ]; then
  echo "Routen werden mit relmemberlist.sh in ein besser auswertbares Format umgeschrieben ..."
- ./relmemberlist.sh -d ./osmdata/takst.osm >./relmem_bus_takst.lst
+ ./relmemberlist.sh -d ./osmdata/route_bus.osm >./relmem_bus_takst.lst
  echo "Bearbeitung mit relmemberlist.sh beendet."
 fi
 
@@ -281,7 +281,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
    echo "  </tr>" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
    echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in TS-Bus-Relation)</span>:</th>" >>./"$htmlname"
-   if [ "$(grep 'id='\'''"$relnumber"''\''' ./osmdata/takst_busrelation.osm | wc -l)" -gt "0" ]; then
+   if [ "$(grep 'id='\'''"$relnumber"''\''' ./osmdata/route_busrelation.osm | wc -l)" -gt "0" ]; then
     echo "   <td class=\"withcolour\">$(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/')</td>" >>./"$htmlname"
    else echo "   <td>$(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/')</td>" >>./"$htmlname"
    fi
@@ -578,25 +578,25 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo "   <th style=\"font-weight: normal;\">Stop $(echo "$g"):</th>" >>"$htmlname2"
 
      # Ist wahr, wenn Fund in stop_areas.osm gefunden wird.
-     # Außerdem wird dann weiter auf ein Vorkommen in takst_stoppested.osm geprüft! Wenn hier ein Fund entdeckt wird, wird die ganze Zeile grün hinterlegt.
+     # Außerdem wird dann weiter auf ein Vorkommen in stoprelation.osm geprüft! Wenn hier ein Fund entdeckt wird, wird die ganze Zeile grün hinterlegt.
      if [ $(grep "$osmstoprelid" ./osmdata/stop_areas.osm | wc -l) -gt "0" ]; then
 
         # RelationsID und Vorkommen in TS-Stoppested wird ermittelt.
-        if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+        if [ "$(grep "$osmstoprelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
         echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
        else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
        fi
 
        # Name des stops wird ermittelt.
        # Klasse stn_f ist für Verarbeitung mit anderen Programmen.
-       if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+       if [ "$(grep "$osmstoprelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
         echo "   <td class=\"small withcolour stn_f\">${osmstopname}</td>" >>"$htmlname2"
        else echo "   <td class=\"small stn_f\">${osmstopname}</td>" >>"$htmlname2"
        fi
 
        # Art des OSM-Elements (node/way/relation) wird in Datei geschrieben, und wenn es kein node ist, wird Fehler ausgegeben.
        if [ "$osmstopelement" == "node" ]; then
-        if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+        if [ "$(grep "$osmstoprelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
          echo "   <td class=\"small withcolour\">${osmstopelement}</td>" >>"$htmlname2"
         else echo "   <td class=\"small\">${osmstopelement}</td>" >>"$htmlname2"
         fi
@@ -609,7 +609,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
        echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>"$htmlname2"
        let stoperrorrolecounter++
        else 
-        if [ "$(grep "$osmstoprelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+        if [ "$(grep "$osmstoprelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
          echo "   <td class=\"small withcolour\">Ok</td>" >>"$htmlname2"
         else echo "   <td class=\"small\">Ok</td>" >>"$htmlname2"
         fi
@@ -720,20 +720,20 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
      if [ "$(grep "$osmplatformrelid" ./osmdata/stop_areas.osm | wc -l)" -gt "0" ]; then
 
        # RelationsID und Vorkommen in TS-Stoppested wird ermittelt.
-       if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+       if [ "$(grep "$osmplatformrelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
         echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
        else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
        fi
 
        # Name der platform wird ermittelt.
        # Klasse pln_f ist für Verarbeitung mit anderen Programmen.
-       if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+       if [ "$(grep "$osmplatformrelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
         echo "   <td class=\"small withcolour pln_f\">${osmplatformname}</td>" >>"$htmlname2"
        else echo "   <td class=\"small pln_f\">${osmplatformname}</td>" >>"$htmlname2"
        fi
  
        # Art des OSM-Elements (node/way/relation) wird in Datei geschrieben.
-       if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+       if [ "$(grep "$osmplatformrelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
           if [ "$osmplatformelement" == "way" -a "$areacheck" == "yes" ]; then
            echo "   <td class=\"small withcolour\">way + area=yes</td>" >>"$htmlname2"
           else echo "   <td class=\"small withcolour\">${osmplatformelement}</td>" >>"$htmlname2"
@@ -750,7 +750,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
         echo "   <td class=\"small red\">Role is wrong or missing.</td>" >>"$htmlname2"
         let platformerrorrolecounter++
        else
-        if [ "$(grep "$osmplatformrelid" ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+        if [ "$(grep "$osmplatformrelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
          echo "   <td class=\"small withcolour\">Ok</td>" >>"$htmlname2"
         else echo "   <td class=\"small\">Ok</td>" >>"$htmlname2"
         fi
@@ -985,9 +985,9 @@ rm -f ./sortlist.tmp
 mv ./relmasterlist.tmp "$backupordner"/"$ptdatumjetzt"_relmasterlist.lst
 mv ./relmem_bus_takst.lst "$backupordner"/"$ptdatumjetzt"_relmem_bus_takst.lst
 
-# Es wird auf neue bzw. gelöschte Routen überprüft (Nur bei takst.osm).
+# Es wird auf neue bzw. gelöschte Routen überprüft (Nur bei route_bus.osm).
 # Es wird die letzte Version von checksortlist.lst aus dem Backup-Ordner mit der aktuellen Version (.tmp) verglichen.
-if [ "$1" == "./osmdata/takst.osm" -o "$1" == "osmdata/takst.osm" ]; then
+if [ "$1" == "./osmdata/route_bus.osm" -o "$1" == "osmdata/route_bus.osm" ]; then
  echo ""
  echo "*** Routenvergleich ***"
  echo ""

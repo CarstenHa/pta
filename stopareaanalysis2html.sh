@@ -9,14 +9,14 @@
 # Hier werden die Routen in ein besser auswertbares Format geschrieben.
 # Die Datei relmem_bus_takst.lst wird später bei der Auswertung der stop_areas benötigt. Dort werden die Routen ermittelt.
 echo "Routen werden mit relmemberlist.sh in ein besser auswertbares Format umgeschrieben ..."
-./relmemberlist.sh -d ./osmdata/takst.osm >./relmem_bus_takst.lst
-./relmemberlist.sh -d ./osmdata/takst_train.osm >./relmem_train_takst.lst
-./relmemberlist.sh -d ./osmdata/takst_light_rail.osm >./relmem_light_rail_takst.lst
-./relmemberlist.sh -d ./osmdata/takst_subway.osm >./relmem_subway_takst.lst
-./relmemberlist.sh -d ./osmdata/takst_monorail.osm >./relmem_monorail_takst.lst
-./relmemberlist.sh -d ./osmdata/takst_tram.osm >./relmem_tram_takst.lst
-./relmemberlist.sh -d ./osmdata/takst_trolleybus.osm >./relmem_trolleybus_takst.lst
-./relmemberlist.sh -d ./osmdata/takst_ferry.osm >./relmem_ferry_takst.lst
+./relmemberlist.sh -d ./osmdata/route_bus.osm >./relmem_bus_takst.lst
+./relmemberlist.sh -d ./osmdata/route_train.osm >./relmem_train_takst.lst
+./relmemberlist.sh -d ./osmdata/route_light_rail.osm >./relmem_light_rail_takst.lst
+./relmemberlist.sh -d ./osmdata/route_subway.osm >./relmem_subway_takst.lst
+./relmemberlist.sh -d ./osmdata/route_monorail.osm >./relmem_monorail_takst.lst
+./relmemberlist.sh -d ./osmdata/route_tram.osm >./relmem_tram_takst.lst
+./relmemberlist.sh -d ./osmdata/route_trolleybus.osm >./relmem_trolleybus_takst.lst
+./relmemberlist.sh -d ./osmdata/route_ferry.osm >./relmem_ferry_takst.lst
 echo "Bearbeitung mit relmemberlist.sh beendet."
 
 if [ ! -e ./relmem_bus_takst.lst ]; then
@@ -160,7 +160,7 @@ for ((b=1 ; b<=(("$anzsortrel")) ; b++)); do
    echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in TS-Stoppested-Relation)</span>:</th>" >>./"$htmlname"
    if [ -z "$relsortname" ]; then
     echo "   <td class=\"yellow\">(Name is missing.)</td>" >>./"$htmlname"
-   elif [ "$(grep '<relation.*id='\'''"$relsortnumber"''\''' ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+   elif [ "$(grep '<relation.*id='\'''"$relsortnumber"''\''' ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
     echo "   <td class=\"withcolour\" style=\"font-weight: bold;\">$relsortname</td>" >>./"$htmlname"
    else echo "   <td style=\"font-weight: bold;\">$relsortname</td>" >>./"$htmlname"
    fi
@@ -326,7 +326,7 @@ for ((b=1 ; b<=(("$anzsortrel")) ; b++)); do
    else echo "    <td class=\"small red\">Incorrect roles: $(($incstoprolecounter+$incplatformrolecounter+$incstationrolecounter))</td>" >>./"$htmlname"
    fi
 
-   if [ "$(grep '<relation.*id='\'''"$relsortnumber"''\''' ./osmdata/takst_stoppested.osm | wc -l)" -gt "0" ]; then
+   if [ "$(grep '<relation.*id='\'''"$relsortnumber"''\''' ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
     echo "    <td class=\"withcolour\">TS integrated: <span style=\"font-weight: bold;\">Yes</span></td>" >>./"$htmlname"
    else echo "    <td class=\"yellow\">TS integrated: No</td>" >>./"$htmlname"
    fi
