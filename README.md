@@ -19,26 +19,34 @@ In den HTML-Seiten nach der Auswertung mit diesem Tool werden die stops und plat
 Außerdem wird zum Beispiel das OSM-tag 'check_date=*' mit der Fahrplanperiode verglichen und vieles mehr ...
 
 Die generierten HTML-Seiten erreichen Sie übrigens unter:  
-https://carstenha.github.io/ptaweb.dk.east.bus/  
+<https://carstenha.github.io/ptaweb.dk.east.bus/>  
 Den Programmcode und weitere Informationen finden Sie unter:  
-https://github.com/CarstenHa/pta  
+<https://github.com/CarstenHa/pta>  
 
 Für alle, die dieses Tool für andere Verkehrsgebiete umschreiben wollen, gibt es ein kleines Wiki, wo die einzelnen Skripte etwas näher vorgestellt werden.  
-https://github.com/CarstenHa/pta/wiki
+<https://github.com/CarstenHa/pta/wiki>
 
 ### 1. Vorbereitende Schritte
 
 Um dieses Tool nutzen zu können, müssen einige Schritte vorher durchgeführt werden:
 
 * Das Programm Osmosis muss herunter geladen, entpackt und in das Verzeichnis 'tools/osmosis' verschoben werden. Informationen zu dem Programm finden sich unter:  
-https://wiki.openstreetmap.org/wiki/Osmosis
+<https://wiki.openstreetmap.org/wiki/Osmosis>
 
 * Das Programm Osmconvert muss heruntergeladen und in das Verzeichnis 'tools/osmconvert' verschoben werden. Informationen zu dem Programm finden sich unter:  
-https://wiki.openstreetmap.org/wiki/Osmconvert
+<https://wiki.openstreetmap.org/wiki/Osmconvert>
 
-* In dem Ordner 'config' ist die Datei 'real_bus_stops.lst'. Diese Datei umbenennen in 'real_bus_stops.cfg'. Diese neue Datei kann dann mit Daten gefüttert werden. Nähere Erläuterungen dazu befinden sich in der Datei selber.
+* In dem Ordner 'config/template' liegen eine Reihe von .cfg-Dateien als Vorlagen. Diese neuen Dateien können dann mit Daten gefüttert werden und in einen Ordner `config/ptarea?/` abgelegt werden. Zahlreiche Erläuterungen dazu befinden sich in den Dateien selber.
 
-* Außerdem gibt es in dem Ordner 'config' die Datei 'invalidroutes.lst'. Auch diese Datei umbenennen in 'invalidroutes.cfg'. Diese Datei ist vorgesehen für ungültige und veraltete Routen. Auch in dieser Datei stehen weitere Erläuterungen im Kopf der Datei.
+Folgende config-Dateien gibt es:
+
+* real_bus_stops.cfg - Datei mit gültigen Routen eines Verkehrsgebietes.
+
+* invalidroutes.cfg - Diese Datei ist vorgesehen für ungültige und veraltete Routen eines Verkehrsgebietes.
+
+* ptarea.cfg - Wichtige config-Datei für start.sh mit zahlreichen Variablen für Geokoordinaten eines Verkehrsgebietes, den Downloadprozess der OSM-Daten, sowie für die weiteren Arbeitsschritte.
+
+* tt_period.cfg - Daten zur aktuellen Fahrplanperiode sowie weiterer Quellcode.
 
 ### 2. Ausführung
 
@@ -51,17 +59,17 @@ https://wiki.openstreetmap.org/wiki/Osmconvert
 ### 3. Lizenzhinweise
 
 Die GTFS-Kartenansicht wird mit Openlayers realisiert.
-Der Code von Openlayers (https://openlayers.org/) steht unter der Lizenz 2-Clause BSD (https://tldrlegal.com/license/bsd-2-clause-license-(freebsd))
+Der Code von Openlayers (<https://openlayers.org/>) steht unter der Lizenz 2-Clause BSD (<https://tldrlegal.com/license/bsd-2-clause-license-(freebsd)>)
 
-Font Rubik: Copyright 2015 The Rubik Project Authors (https://github.com/googlefonts/rubik). The font is licensed under the SIL Open Font License.  
-http://scripts.sil.org/OFL
+Font Rubik: Copyright 2015 The Rubik Project Authors (<https://github.com/googlefonts/rubik>). The font is licensed under the SIL Open Font License.  
+<http://scripts.sil.org/OFL>
 
-Font Awesome: Font Awesome by Dave Gandy (http://fontawesome.io). The font is licensed under the SIL Open Font License 1.1 (http://scripts.sil.org/OFL). CSS files are licensed under MIT License (http://opensource.org/licenses/mit-license.html)
+Font Awesome: Font Awesome by Dave Gandy (<http://fontawesome.io>). The font is licensed under the SIL Open Font License 1.1 (<http://scripts.sil.org/OFL>). CSS files are licensed under MIT License (<http://opensource.org/licenses/mit-license.html>)
 
-Font Exo2: Copyright (c) 2013, Natanael Gama (www.ndiscovered.com info(at)ndiscovered.com), with Reserved Font Name Exo. This Font Software is licensed under the SIL Open Font License, Version 1.1. http://scripts.sil.org/OFL
+Font Exo2: Copyright (c) 2013, Natanael Gama (www.ndiscovered.com info(at)ndiscovered.com), with Reserved Font Name Exo. This Font Software is licensed under the SIL Open Font License, Version 1.1. <http://scripts.sil.org/OFL>
 
 CarstenHa/pta is licensed under the GNU Lesser General Public License v3.0  
-https://github.com/CarstenHa/pta/blob/master/LICENSE
+<https://github.com/CarstenHa/pta/blob/master/LICENSE>
 
 
 

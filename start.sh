@@ -196,7 +196,7 @@ echo "*** Processing route_bus_raw.osm/route_bus.osm ***"
 
 wget -O ./osmdata/route_bus_raw.osm "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox}) [\"type\"=\"route\"][\"route\"=\"bus\"];>;);out meta;"
 # Wichtig, das osmconvert VOR der Bearbeitung mit sed ausgeführt wird. Ansonsten wird die Syntax wieder in Gänsefüsschen umgeschrieben.
-tools/osmconvert/osmconvert -v ./osmdata/route_bus_raw.osm --complex-ways --complete-ways -B=tools/poly/takst.poly -o=./osmdata/route_bus.osm
+tools/osmconvert/osmconvert -v ./osmdata/route_bus_raw.osm --complex-ways --complete-ways -B="tools/poly/${areapolyfile}" -o=./osmdata/route_bus.osm
 # Für Skript pt_analysis2html muss Datei noch wie folgt bearbeitet werden (damit die Datei konform mit JOSM-Api-Abfrage-Datei ist):
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
 sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_bus.osm
@@ -206,7 +206,7 @@ areatrain() {
 echo "*** Processing route_train_raw.osm/route_train.osm ***"
 wget -O ./osmdata/route_train_raw.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"train\"];>;);out meta;"
 # Wichtig, das osmconvert VOR der Bearbeitung mit sed ausgeführt wird. Ansonsten wird die Syntax wieder in Gänsefüsschen umgeschrieben.
-tools/osmconvert/osmconvert -v ./osmdata/route_train_raw.osm --complex-ways --complete-ways -B=tools/poly/takst.poly -o=./osmdata/route_train.osm
+tools/osmconvert/osmconvert -v ./osmdata/route_train_raw.osm --complex-ways --complete-ways -B="tools/poly/${areapolyfile}" -o=./osmdata/route_train.osm
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
 sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_train.osm
 }
@@ -257,7 +257,7 @@ stopareas() {
 echo "*** Processing stop_area_bbox/stop_areas.osm ***"
 wget -O ./osmdata/stop_area_bbox.osm "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox})[\"public_transport\"=\"stop_area\"];>>;);out meta;"
 # Wichtig, das osmconvert VOR der Bearbeitung mit sed ausgeführt wird. Ansonsten wird die Syntax wieder in Gänsefüsschen umgeschrieben.
-tools/osmconvert/osmconvert -v ./osmdata/stop_area_bbox.osm --complex-ways --complete-ways -B=tools/poly/takst.poly -o=./osmdata/stop_areas.osm
+tools/osmconvert/osmconvert -v ./osmdata/stop_area_bbox.osm --complex-ways --complete-ways -B="tools/poly/${areapolyfile}" -o=./osmdata/stop_areas.osm
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
 sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/stop_areas.osm
 }
