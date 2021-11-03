@@ -10,6 +10,8 @@
 
 startdatum=`date +%Y%m%d_%H%M`
 exec &> >(tee ./backup/${startdatum}_ptanalysis.log)
+# Verhindert, das die Eingabeaufforderung vor weiteren Ausgaben ausgegeben wird.
+sleep 1
 
 if [ ! -e "./tools/osmconvert/osmconvert" ]; then
  echo "Das Programm osmconvert fehlt im Ordner tools/osmconvert/"
@@ -62,6 +64,10 @@ do
           echo ""
           echo "    Zeigt Hilfe an."
           echo ""
+          echo "-l"
+          echo ""
+          echo "   listet das zur Zeit aktive Verkehrsgebiet auf."
+          echo ""
           echo "-p [list|pull]"
           echo ""
           echo "    Download/Auflisten von optionalen Relationen."
@@ -70,6 +76,9 @@ do
           echo "    Mit \"pull\" werden die optionalen Relationen runtergeladen."
           echo ""
           exit
+       ;;
+       l) # Listet das aktuell aktive Verkehrsgebiet auf
+          showtparea="yes"
        ;;
        p) # Download/Anzeigen von optionalen Relationen
           if [ "$OPTARG" == "pull" ]; then
@@ -104,6 +113,11 @@ if [ ! -e ./config/ptarea.cfg -o "$changeptarea" == "yes" ]; then
 fi
 
 source ./config/ptarea.cfg
+
+if [ "$showtparea" == "yes" ]; then
+ echo "Aktuelles Verkehrsgebiet: ${ptarealong}"
+ exit
+fi
 
 # Auflisten/Downloaden von optionalen Relationen
 if [ "$pkind" == "pull" -o "$pkind" == "list" ]; then
