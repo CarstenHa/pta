@@ -25,6 +25,25 @@ if [ "$whichprocess" != "all" ]; then
  echo "Bearbeitung mit relmemberlist.sh beendet."
 fi
 
+# config-Dateien in Arbeitsordner kopieren
+if [ ! -e ./config/ptarea.cfg ]; then
+ read -p "Bitte Gebiet angeben: " areaarg
+ ptareacfgfile="$(egrep -H '^ptareashort=["'\'']*'"$areaarg"'["'\'']*$' ./config/ptarea*/ptarea.cfg | cut -f1 -d:)"
+ if [ "$(echo "$ptareacfgfile" | sed '/^$/d' | wc -l)" == 1 ]; then
+  echo -e "Verarbeitung wird vorbereitet.\nLöschen der alten config-Dateien:"
+  rm -vf ./config/*.cfg
+  ptareadir="$(dirname "$ptareacfgfile")"
+  echo "Kopieren der neuen config-Dateien:"
+  cp -vf "${ptareadir}"/*.cfg ./config/
+ else
+  echo "Kein passendes Verkehrsgebiet gefunden. Mögliche Bezeichnungen sind:"
+  sed -n 's/^ptareashort=["'\'']*\([[:alnum:]]*\)["'\'']*$/\1/p' ./config/ptarea*/ptarea.cfg
+  exit 1
+ fi
+fi
+
+source ./config/ptarea.cfg
+
 # Code zum Definieren des Fahrplanzeitraums wird eingebunden.
 source ./config/tt_period.cfg
 
@@ -81,8 +100,8 @@ echo "</head>"
 echo "<body>"
 echo " <div class=\"routes\"></div>"
 echo "<header>"
-echo "<h1>Public Transport - Sjælland, Lolland, Falster und Møn</h1>"
-echo " <h2 style=\"text-align: center;\">OSM data analysis - Takst Sjælland (Bus)</h2>"
+echo "<h1>${ptareadescription}</h1>"
+echo " <h2 style=\"text-align: center;\">${secondheadline}</h2>"
 echo "<div class=\"headerallg\">"
 echo " <p>"
 echo "  <img id=\"ptastoplogo\" src=\"images/ptastop.svg\"><span>OSM</span><a href=\"stop_areas.html\">pta stop area analysis</a><br>"
@@ -116,22 +135,22 @@ echo "<main>"
 htmlkopf >./"$htmlname"
 
 # Überprüfungen, ob Relationen in Daten existieren.
-# Die anderen Relationen (10020275/10002530) brauchen hier nicht überprüft werden. Dies wird durch start.sh geregelt.
-if [ -n "$(grep '<relation.*id=['\''\"]10285271['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
- echo " <p><a href=\"https://www.openstreetmap.org/relation/10285271\">Kollektiv trafik i Danmark</a>: 10285271</p>" >>./"$htmlname"
+# Die anderen Relationen (bei Takst Sjaelland z.B. 10020275/10002530) brauchen hier nicht überprüft werden. Dies wird durch start.sh geregelt.
+if [ -n "$(grep '<relation.*id=['\''\"]'"$ptareafirstlevelrelid"'['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
+ echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareafirstlevelrelid}\">${ptareafirstleveldesc}</a>: ${ptareafirstlevelrelid}</p>" >>./"$htmlname"
 else
- echo " <p>Kollektiv trafik i Danmark: Relation not found</p>" >>./"$htmlname"
+ echo " <p>${ptareafirstleveldesc}: Relation not found</p>" >>./"$htmlname"
 fi
-if [ -n "$(grep '<relation.*id=['\''\"]9983018['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
- echo " <p><a href=\"https://www.openstreetmap.org/relation/9983018\">Relation Takst Sjælland</a>: 9983018</p>" >>./"$htmlname"
+if [ -n "$(grep '<relation.*id=['\''\"]'"$ptareasecondlevelrelid"'['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
+ echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareasecondlevelrelid}\">${ptareasecondleveldesc}</a>: ${ptareasecondlevelrelid}</p>" >>./"$htmlname"
 else
- echo " <p>Relation Takst Sjælland: Relation not found</p>" >>./"$htmlname"
+ echo " <p>${ptareasecondleveldesc}: Relation not found</p>" >>./"$htmlname"
 fi
 
-echo " <p><a href=\"https://www.openstreetmap.org/relation/10020275\">Relation Takst Sjælland - Stoppested</a>: 10020275</p>" >>./"$htmlname"
+echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareastoprelid}\">${ptareastopreldesc}</a>: ${ptareastoprelid}</p>" >>./"$htmlname"
 echo "</div>" >>./"$htmlname"
 echo " <h2>1. Bus routes:</h2>" >>./"$htmlname"
-echo " <p><a href=\"https://www.openstreetmap.org/relation/10002530\">Relation Takst Sjælland - Bus</a>: 10002530</p>" >>./"$htmlname"
+echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareabusrelid}\">${ptareabusreldesc}</a>: ${ptareabusrelid}</p>" >>./"$htmlname"
 echo "</header>" >>./"$htmlname"
 echo "<main>" >>./"$htmlname"
 echo "<div id=\"stat\" class=\"hide\">" >>./"$htmlname"
@@ -141,10 +160,10 @@ echo " <h4>Statistics</h4>" >>./"$htmlname"
 echo " <p>Name of the evaluated file: "$1"<br>" >>./"$htmlname"
 echo "    Evaluated bus routes: ${anzbusrel}</p>" >>./"$htmlname"
 if [ -e "./htmlfiles/gtfsroutes.html" ]; then
- moviaroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
- echo " <p>Movia's bus routes in OSM data: ${moviaroutes}<br>" >>./"$htmlname"
+ agencyroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
+ echo " <p>Bus routes (${ptagencyname}) in OSM data: ${agencyroutes}<br>" >>./"$htmlname"
  anzmissingroutes="$(grep 'gtfsid[12]tab' ./htmlfiles/gtfsroutes.html | wc -l)"
- echo "    Ca. $((100*${moviaroutes}/${anzmissingroutes}))% of Movia's bus routes are created in whole or in part.</p>" >>./"$htmlname"
+ echo "    Ca. $((100*${agencyroutes}/${anzmissingroutes}))% of bus routes (${ptagencyname}) are created in whole or in part.</p>" >>./"$htmlname"
  echo " <p>Which routes are missing, see:<br>" >>./"$htmlname"
  echo "    List of <a href=\"gtfsroutes.html\">GTFS routes</a> (shapes).</p>" >>./"$htmlname"
 fi
@@ -203,14 +222,21 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
   unset routecolour
   unset refnumber
   unset networkrow
+  unset extagency
   relnumber=$(echo "$relationlist" | sed -n ""$i"p")
   relbereich=$(sed -n "/<relation id=."$relnumber"/,/<\/relation>/p" "$1")
   routecolour="$(echo "$relbereich" | grep '<tag k='\''colour'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/')"
   refnumber="$(echo "$relbereich" | grep '<tag k='\''ref'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/')"
   networkrow="$(echo "$relbereich" | grep 'tag k='\''network'\''')"
-  # Variable, um Network-Tags zu lokalisieren, die als Flixbus/Swebus getaggt sind.
-  no_ts_tag="$(echo "$relbereich" | egrep 'tag k='\''network'\'' v='\''(Flix|Swe)bus'\''' | wc -l)"
-
+  # Variable (no_ts_tag), um Verkehrsunternehmen zu lokalisieren, die nicht dem Verkehrsverbund zugehören.
+  no_ts_tag=0
+  for searchextagency in ${extagencies[@]}; do
+   no_ts_count="$(echo "$relbereich" | egrep -ic 'tag k='\''network'\'' v='\''.*'"${searchextagency}"'.*'\''')"
+   if [ "$no_ts_count" -gt "0" ]; then
+    let no_ts_tag++
+    [ "$no_ts_tag" == 1 ] && extagency="$searchextagency"
+   fi
+  done
   # Namen der OSM-Haltestellenseiten werden definiert
   htmlname2="htmlfiles/osm/${relnumber}.html"
 
@@ -224,7 +250,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo " </div>" >>./"$htmlname"
     export busueber="$refnumber"
     # Überschrift wird aus ref der normalen Route ermittelt, nicht aus ref der Masterroute.
-    # Wenn Network-Tag Flixbus/Swebus gefunden wird, wird der Hintergrund von h3 hell (1/3)
+    # Wenn nicht zum Verbund dazugehöriges Verkehrsunternehmen gefunden wird, wird der Hintergrund von h3 hell (1/3)
      if [ "$no_ts_tag" -gt "0" ]; then
       echo " <a class=\"masterueber\" href=\"#route$refnumber\"><h3 class=\"bgueberhell\">Bus $busueber<i class=\"fa-h3 fa fa-chevron-down fa-1x\"></i></h3></a>" >>./"$htmlname"
      else echo " <a class=\"masterueber\" href=\"#route$refnumber\"><h3>Bus $busueber<i class=\"fa-h3 fa fa-chevron-down fa-1x\"></i></h3></a>" >>./"$htmlname"
@@ -232,13 +258,13 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     echo " <div id=\"route$refnumber\" class=\"masterroute\">" >>./"$htmlname"
 
-     # Wenn Network-Tag Flixbus/Swebus gefunden wird, wird der Hintergrund von p hell (2/3)
+     # Wenn nicht zum Verbund dazugehöriges Verkehrsunternehmen gefunden wird, wird der Hintergrund von p hell (2/3)
      if [ "$no_ts_tag" -gt "0" ]; then
       echo "  <p class=\"pfeillinks bgueberhell\"><i class=\"fa-p fa fa-chevron-left fa-1x\"></i></p>" >>./"$htmlname"
      else echo "  <p class=\"pfeillinks\"><i class=\"fa-p fa fa-chevron-left fa-1x\"></i></p>" >>./"$htmlname"
      fi
 
-     # Wenn Network-Tag Flixbus/Swebus gefunden wird, wird der Hintergrund von div.mastertabhg hell (3/3)
+     # Wenn nicht zum Verbund dazugehöriges Verkehrsunternehmen gefunden wird, wird der Hintergrund von div.mastertabhg hell (3/3)
      if [ "$no_ts_tag" -gt "0" ]; then
       echo " <div class=\"mastertabhg bgueberhell\">" >>./"$htmlname"
      else echo " <div class=\"mastertabhg\">" >>./"$htmlname"
@@ -280,7 +306,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
    echo "   <td>"$relnumber"</td>" >>./"$htmlname"
    echo "  </tr>" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
-   echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in TS-Bus-Relation)</span>:</th>" >>./"$htmlname"
+   echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in Relation ${ptareabusrelid})</span>:</th>" >>./"$htmlname"
    if [ "$(grep 'id='\'''"$relnumber"''\''' ./osmdata/route_busrelation.osm | wc -l)" -gt "0" ]; then
     echo "   <td class=\"withcolour\">$(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/')</td>" >>./"$htmlname"
    else echo "   <td>$(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/')</td>" >>./"$htmlname"
@@ -292,7 +318,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
    echo "  </tr>" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
    echo "   <th>URL:</th>" >>./"$htmlname"
-   echo "   <td><a href=\"https://www.openstreetmap.org/relation/"$relnumber"\">https://www.openstreetmap.org/relation/"$relnumber"</a></td>" >>./"$htmlname"
+   echo "   <td><a href=\"https://www.openstreetmap.org/relation/${relnumber}\">https://www.openstreetmap.org/relation/"$relnumber"</a></td>" >>./"$htmlname"
    echo "  </tr>" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
    echo "   <th>colour:</th>" >>./"$htmlname"
@@ -300,62 +326,30 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     if [ -z "$routecolour" ]; then
      echo "   <td> - </td>" >>./"$htmlname"
     else 
-      if [ $(echo "$networkrow" | egrep -i 'v='\''.*\<Takst Sjælland\>|\<Movia\>.*'\''' | wc -l) -gt "0" ]; then
-
-        # Prüft die richtige Routenfarbe zu der entsprechenden Buskategorie (A-/E-/S-/R-/C-/N- und normale Busse).
-        lastrefsign="$(echo "$refnumber" | sed 's/.*\(.$\)/\1/')"
-        if [[ "$lastrefsign" == [Aa] && "$routecolour" == [Rr][Ee][Dd] || "$routecolour" == "#"[Ff][Ff]"0000" ]]; then
-         echo "   <td class=\"withcolour\"> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [Aa] && ! "$routecolour" == [Rr][Ee][Dd] || "$routecolour" == "#"[Ff][Ff]"0000" ]]; then
-         echo "   <td>Colour-value is $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span>. But the most used value for A-buses is \"red\" or \"#ff0000\".</td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [Ee] && "$routecolour" == [Ff][Oo][Rr][Ee][Ss][Tt][Gg][Rr][Ee][Ee][Nn] || "$routecolour" == "#228"[Bb]"22" ]]; then
-         echo "   <td class=\"withcolour\"> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [Ee] && ! "$routecolour" == [Ff][Oo][Rr][Ee][Ss][Tt][Gg][Rr][Ee][Ee][Nn] || "$routecolour" == "#228"[Bb]"22" ]]; then
-         echo "   <td>Colour-value is $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span>. But the most used value for E-buses is \"forestgreen\" or \"#228b22\".</td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [SsRr] && "$routecolour" == [Cc][Oo][Rr][Nn][Ff][Ll][Oo][Ww][Ee][Rr][Bb][Ll][Uu][Ee] || "$routecolour" == "#6495"[Ee][Dd]"" ]]; then
-         echo "   <td class=\"withcolour\"> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [SsRr] && ! "$routecolour" == [Cc][Oo][Rr][Nn][Ff][Ll][Oo][Ww][Ee][Rr][Bb][Ll][Uu][Ee] || "$routecolour" == "#6495"[Ee][Dd]"" ]]; then
-         echo "   <td>Colour-value is $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span>. But the most used value for S-buses and R-buses is \"cornflowerblue\" or \"#6495ed\".</td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [Cc] && "$routecolour" == [Ll][Ii][Gg][Hh][Tt][Ss][Ee][Aa][Gg][Rr][Ee][Ee][Nn] || "$routecolour" == "#20"[Bb]"2"[Aa][Aa]"" ]]; then
-         echo "   <td class=\"withcolour\"> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [Cc] && ! "$routecolour" == [Ll][Ii][Gg][Hh][Tt][Ss][Ee][Aa][Gg][Rr][Ee][Ee][Nn] || "$routecolour" == "#20"[Bb]"2"[Aa][Aa]"" ]]; then
-         echo "   <td>Colour-value is $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span>. But the most used value for C-buses is \"lightseagreen\" or \"#20b2aa\".</td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [Nn] && "$routecolour" == [Gg][Rr][Aa][Yy] || "$routecolour" == "#808080" ]]; then
-         echo "   <td class=\"withcolour\"> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [Nn] && ! "$routecolour" == [Gg][Rr][Aa][Yy] || "$routecolour" == "#808080" ]]; then
-         echo "   <td>Colour-value is $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span>. But the most used value for N-buses is \"gray\" or \"#808080\".</td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [0-9] && "$routecolour" == [Gg][Oo][Ll][Dd] || "$routecolour" == "#"[Ff][Ff][Dd]"700" ]]; then
-         echo "   <td class=\"withcolour\"> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
-        elif [[ "$lastrefsign" == [0-9] && ! "$routecolour" == [Gg][Oo][Ll][Dd] || "$routecolour" == "#"[Ff][Ff][Dd]"700" ]]; then
-         echo "   <td>Colour-value is $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span>. But the most used value for normal buses (gold-buses. In Danish: Gule busser.) is \"gold\" or \"#ffd700\".</td>" >>./"$htmlname"
-        else echo "   <td> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
-        fi
-
-      else echo "   <td> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
-      fi
+     routecolorcheck
     fi
 
    echo "  </tr>" >>./"$htmlname"
    echo " </table>" >>./"$htmlname"
 
-   # Ist das inhaltlich richtig?
-   if [ $(echo "$networkrow" | grep 'v='\''.*Flixbus.*'\''' | wc -l) -gt "0" ]; then
+   # Hinweis auf Route, die nicht dem Verkehrsverbund angehört.
+   if [ "$no_ts_tag" == "1" ]; then
     echo "  <h4>&nbsp;Comment:</h4>" >>./"$htmlname"
     echo " <table class=\"second\">" >>./"$htmlname"
     echo "  <tr>" >>./"$htmlname"
-    echo "   <th style=\"font-weight: normal;\">Flixbus</th>" >>./"$htmlname"
-    echo "   <td>Flixbus is not part of Takst Sjælland.</td>" >>./"$htmlname"
+    echo "   <th style=\"font-weight: normal;\">${extagency}</th>" >>./"$htmlname"
+    echo "   <td>${extagency} is not part of ${ptarealong}.</td>" >>./"$htmlname"
     echo "  </tr>" >>./"$htmlname"
     echo " </table>" >>./"$htmlname"
     echo " </div>" >>./"$htmlname"
-
-   # Ist das inhaltlich richtig?
-   elif [ $(echo "$networkrow" | grep 'v='\''.*Swebus.*'\''' | wc -l) -gt "0" ]; then
+    
+   # Hinweis auf Route, die nicht dem Verkehrsverbund angehört.
+   elif [ "$no_ts_tag" -gt "1" ]; then
     echo "  <h4>&nbsp;Comment:</h4>" >>./"$htmlname"
     echo " <table class=\"second\">" >>./"$htmlname"
     echo "  <tr>" >>./"$htmlname"
-    echo "   <th style=\"font-weight: normal;\">Swebus</th>" >>./"$htmlname"
-    echo "   <td>Swebus is not part of Takst Sjælland.</td>" >>./"$htmlname"
+    echo "   <th style=\"font-weight: normal;\">Various</th>" >>./"$htmlname"
+    echo "   <td>This route is not part of ${ptarealong}.</td>" >>./"$htmlname"
     echo "  </tr>" >>./"$htmlname"
     echo " </table>" >>./"$htmlname"
     echo " </div>" >>./"$htmlname"
@@ -370,7 +364,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo "  <tr>" >>./"$htmlname"
     echo "   <th style=\"font-weight: normal;\">Generally:</th>" >>./"$htmlname"
 
-    if [ $(echo "$networkrow" | grep 'v='\''.*\<Takst Sjælland\>.*'\''' | wc -l) -gt "0" ]; then
+    if [ $(echo "$networkrow" | grep -i 'v='\''.*\<'"$ptarealong"'\>.*'\''' | wc -l) -gt "0" ]; then
      echo "   <td class=\"small withcolour\">Network: $(echo "$networkrow" | sed 's/.*v='\''\(.*\)'\''.*/\1/')</td>" >>./"$htmlname"
     elif [ $(echo "$networkrow" | grep 'tag k='\''network'\'' v='\''.*'\''' | wc -l) -gt "0" ]; then
      echo "   <td>Network: $(echo "$networkrow" | sed 's/.*v='\''\(.*\)'\''.*/\1/')</td>" >>./"$htmlname"
@@ -498,7 +492,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
       else
       
        echo "   <td>No GTFS</td>" >>./"$htmlname"
-       echo "Route ${refnumber} (RelationID: ${relnumber}) noch nicht in .cfg-Datei aufgenommen."
+       echo "Route ${refnumber} (RelationID: ${relnumber}) noch nicht (vollständig) in .cfg-Datei aufgenommen oder aktualisiert."
        
       fi
      
@@ -550,7 +544,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo "  <table class=\"stop_plat\">" >>"$htmlname2"
     echo "  <tr>" >>"$htmlname2"
     echo "   <th> </th>" >>"$htmlname2"
-    echo "   <td class=\"small grey\">StopID / Member in any stop_area (green: integrated in TS-Stoppested-Relation):</td>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">StopID / Member in any stop_area (green: integrated in ${ptareastopreldesc}):</td>" >>"$htmlname2"
     echo "   <td class=\"small grey\">Name stop_position (if available):</td>" >>"$htmlname2"
     echo "   <td class=\"small grey\">OSM-Element:</td>" >>"$htmlname2"
     echo "   <td class=\"grey\">Tag/Role-Check:</td>" >>"$htmlname2"
@@ -687,7 +681,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo "  <table class=\"stop_plat\">" >>"$htmlname2"
     echo "  <tr>" >>"$htmlname2"
     echo "   <th> </th>" >>"$htmlname2"
-    echo "   <td class=\"small grey\">PlatformID / Member in any stop_area (green: integrated in TS-Stoppested-Relation):</td>" >>"$htmlname2"
+    echo "   <td class=\"small grey\">PlatformID / Member in any stop_area (green: integrated in ${ptareastopreldesc}):</td>" >>"$htmlname2"
     echo "   <td class=\"small grey\">Name platform (if available):</td>" >>"$htmlname2"
     echo "   <td class=\"small grey\">OSM-Element:</td>" >>"$htmlname2"
     echo "   <td class=\"grey\">Tag/Role-Check:</td>" >>"$htmlname2"
@@ -945,12 +939,11 @@ htmlfuss() {
 echo "</main>"
 echo " <footer>"
 echo "  <p>Hinweise:</p>"
-echo "  <p>Abkürzung TS: Takst Sjælland</p>"
 echo "  <p>Abkürzung PTv: Public Transport Version</p>"
 echo "  <p>Stops: Only PTv2-stops (node; public_transport=stop_position).</p>"
 echo "  <p>Platforms: Only PTv2-platforms (node, way, relation; public_transport=platform).</p>"
 echo "  <p>¹) Anzahl der tatsächlichen Haltestellen einer Route. Ergebnis wird nicht aus der Analyse der OSM-Daten gewonnen. Datum ist Zeitpunkt der Datenerfassung.</p>"
-echo "  <p>Fernbus-Routen sind nicht Teil des Takst Sjælland und sind nicht vollständig in der Analyse erfasst.</p>"
+echo "  <p>Fernbus-Routen sind nicht Teil von ${ptarealong} und sind nicht vollständig in der Analyse erfasst.</p>"
 echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und ist nur als Ergänzung zu anderen Analysetools zu sehen, wie zum Beispiel den <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSM-Inspector</a>.</p>"
 echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
 echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
