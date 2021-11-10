@@ -44,7 +44,7 @@ Folgende config-Dateien gibt es:
 
 * invalidroutes.cfg - Diese Datei ist vorgesehen für ungültige und veraltete Routen eines Verkehrsgebietes.
 
-* ptarea.cfg - Wichtige config-Datei für start.sh mit zahlreichen Variablen für Geokoordinaten eines Verkehrsgebietes, den Downloadprozess der OSM-Daten, sowie für die weiteren Arbeitsschritte.
+* ptarea.cfg - Wichtige config-Datei mit zahlreichen Variablen für Geokoordinaten eines Verkehrsgebietes, den Downloadprozess der OSM-Daten, sowie für die weiteren Arbeitsschritte.
 
 * tt_period.cfg - Daten zur aktuellen Fahrplanperiode sowie weiterer Quellcode.
 
