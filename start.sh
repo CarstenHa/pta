@@ -97,6 +97,7 @@ done
 
 # config-Dateien in Arbeitsordner kopieren
 if [ ! -e ./config/ptarea.cfg -o "$changeptarea" == "yes" ]; then
+ [ ! -e ./config/ptarea.cfg ] && echo "Keine ptarea.cfg gefunden. Kein Gebiet für weitere Bearbeitung ausgewählt."
  [ ! "$changeptarea" == "yes" ] && read -p "Bitte Gebiet angeben: " areaarg
  ptareacfgfile="$(egrep -H '^ptareashort=["'\'']*'"$areaarg"'["'\'']*$' ./config/ptarea*/ptarea.cfg | cut -f1 -d:)"
  if [ "$(echo "$ptareacfgfile" | sed '/^$/d' | wc -l)" == 1 ]; then
