@@ -326,7 +326,56 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     if [ -z "$routecolour" ]; then
      echo "   <td> - </td>" >>./"$htmlname"
     else 
-     routecolorcheck
+
+     if [ $(echo "$networkrow" | egrep -i 'v='\''.*\<'"$ckeyword1"'\>|\<'"$ckeyword2"'\>.*'\''' | wc -l) -gt "0" ]; then
+
+       if [ "$defrefpos" == "left" ]; then
+        defrefsign="$(echo "$refnumber" | sed 's/\(^.\).*$/\1/')"
+       elif [ "$defrefpos" == "right" ]; then
+        defrefsign="$(echo "$refnumber" | sed 's/.*\(.$\)/\1/')"
+       fi
+
+       poscolorcheck=0
+       semicolorcheck=0
+       for colorline in "${rcolor[@]}"; do
+
+         colorref="$(echo "$colorline" | cut -f1 -d:)"
+         colorname="$(echo "$colorline" | cut -f2 -d:)"
+         colorhex="$(echo "$colorline" | cut -f3 -d:)"
+
+         # Strings werden für Überprüfungen optimiert (alle Großbuchstaben in Kleinbuchstaben umgewandelt).
+         # Das stellt sicher, das z.B auch rEd in red umgewandelt wird.
+         defrefsignopt="${defrefsign,,}"
+         routecolouropt="${routecolour,,}"
+         colorrefopt="${colorref,,}"
+         colorname="${colorname,,}"
+         colorhex="${colorhex,,}"
+
+         if [ "$defrefsignopt" == "$colorrefopt" ] && ([ "$routecolouropt" == "$colorname" ] || [ "$routecolouropt" == "$colorhex" ]); then
+          let poscolorcheck++
+          routecolouroptend="$routecolouropt"
+         elif [ "$defrefsignopt" == "$colorrefopt" ] && ([ "$routecolouropt" != "$colorname" ] || [ "$routecolouropt" != "$colorhex" ]); then
+          let semicolorcheck++
+          routecolouroptend="$routecolouropt"
+          colorrefend="$colorref"
+          colornameend="$colorname"
+          colorhexend="$colorhex"
+         fi
+
+       done
+
+       if [ "$poscolorcheck" == 1 ]; then
+        echo "   <td class=\"withcolour\"> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolouroptend;\">&nbsp;</span></td>" >>./"$htmlname"
+       elif [ "$semicolorcheck" == 1 ]; then
+        echo "   <td>Colour-value is $routecolour<span class=\"routecolour\" style=\"background-color: $routecolouroptend;\">&nbsp;</span>. But the most used value for ${colorrefend}-buses is \"${colornameend}\" or \"${colorhexend}\".</td>" >>./"$htmlname"
+       else
+        echo "   <td> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
+       fi
+
+     else
+      echo "   <td> $routecolour<span class=\"routecolour\" style=\"background-color: $routecolour;\">&nbsp;</span></td>" >>./"$htmlname"
+     fi
+
     fi
 
    echo "  </tr>" >>./"$htmlname"
