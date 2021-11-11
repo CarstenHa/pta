@@ -105,7 +105,7 @@ if [ ! -e ./config/ptarea.cfg -o "$changeptarea" == "yes" ]; then
   rm -vf ./config/*.cfg
   ptareadir="$(dirname "$ptareacfgfile")"
   echo "Kopieren der neuen config-Dateien:"
-  cp -vf "${ptareadir}"/*.cfg ./config/
+  cp -vf --preserve=timestamps "${ptareadir}"/*.cfg ./config/
  else
   echo "Kein passendes Verkehrsgebiet gefunden. Mögliche Bezeichnungen sind:"
   sed -n 's/^ptareashort=["'\'']*\([[:alnum:]]*\)["'\'']*$/\1/p' ./config/ptarea*/ptarea.cfg
@@ -115,8 +115,21 @@ fi
 
 source ./config/ptarea.cfg
 
+currentptareapath="$(grep -i '^ptarealong=["'\'']*'"$ptarealong"'["'\'']*' ./config/*/ptarea.cfg | cut -f1 -d:)"
+currentptareadir="$(dirname "$currentptareapath")"
+
+echo "Überprüfung der config-Dateien ..."
+diff <(cat ./config/*.cfg) <(cat "${currentptareadir}"/*.cfg)
+
+if [ ! "$?" == 0 ]; then
+ echo "Unterschiedliche Versionen von cfg-Dateien gefunden. Dateien werden neu in den Arbeitsordner kopiert."
+ cp -vf --preserve=timestamps "${currentptareadir}"/*.cfg ./config/
+else
+ echo "Alle Dateien sind aktuell."
+fi
+
 if [ "$showtparea" == "yes" ]; then
- echo "Aktuelles Verkehrsgebiet: ${ptarealong}"
+ echo "Aktuelles Verkehrsgebiet: ${ptarealong} aus Verzeichnis ${currentptareadir}"
  exit
 fi
 

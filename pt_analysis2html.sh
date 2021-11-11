@@ -23,26 +23,44 @@ if [ "$whichprocess" != "all" ]; then
  echo "Routen werden mit relmemberlist.sh in ein besser auswertbares Format umgeschrieben ..."
  ./relmemberlist.sh -d ./osmdata/route_bus.osm >./relmem_bus_takst.lst
  echo "Bearbeitung mit relmemberlist.sh beendet."
-fi
 
-# config-Dateien in Arbeitsordner kopieren
-if [ ! -e ./config/ptarea.cfg ]; then
- read -p "Bitte Gebiet angeben: " areaarg
- ptareacfgfile="$(egrep -H '^ptareashort=["'\'']*'"$areaarg"'["'\'']*$' ./config/ptarea*/ptarea.cfg | cut -f1 -d:)"
- if [ "$(echo "$ptareacfgfile" | sed '/^$/d' | wc -l)" == 1 ]; then
-  echo -e "Verarbeitung wird vorbereitet.\nLöschen der alten config-Dateien:"
-  rm -vf ./config/*.cfg
-  ptareadir="$(dirname "$ptareacfgfile")"
-  echo "Kopieren der neuen config-Dateien:"
-  cp -vf "${ptareadir}"/*.cfg ./config/
- else
-  echo "Kein passendes Verkehrsgebiet gefunden. Mögliche Bezeichnungen sind:"
-  sed -n 's/^ptareashort=["'\'']*\([[:alnum:]]*\)["'\'']*$/\1/p' ./config/ptarea*/ptarea.cfg
-  exit 1
+ # config-Dateien in Arbeitsordner kopieren
+ if [ ! -e ./config/ptarea.cfg ]; then
+  read -p "Bitte Gebiet angeben: " areaarg
+  ptareacfgfile="$(egrep -H '^ptareashort=["'\'']*'"$areaarg"'["'\'']*$' ./config/ptarea*/ptarea.cfg | cut -f1 -d:)"
+  if [ "$(echo "$ptareacfgfile" | sed '/^$/d' | wc -l)" == 1 ]; then
+   echo -e "Verarbeitung wird vorbereitet.\nLöschen der alten config-Dateien:"
+   rm -vf ./config/*.cfg
+   ptareadir="$(dirname "$ptareacfgfile")"
+   echo "Kopieren der neuen config-Dateien:"
+   cp -vf --preserve=timestamps "${ptareadir}"/*.cfg ./config/
+  else
+   echo "Kein passendes Verkehrsgebiet gefunden. Mögliche Bezeichnungen sind:"
+   sed -n 's/^ptareashort=["'\'']*\([[:alnum:]]*\)["'\'']*$/\1/p' ./config/ptarea*/ptarea.cfg
+   exit 1
+  fi
  fi
+
 fi
 
 source ./config/ptarea.cfg
+
+if [ "$whichprocess" != "all" ]; then
+
+ currentptareapath="$(grep -i '^ptarealong=["'\'']*'"$ptarealong"'["'\'']*' ./config/*/ptarea.cfg | cut -f1 -d:)"
+ currentptareadir="$(dirname "$currentptareapath")"
+
+ echo "Überprüfung der config-Dateien ..."
+ diff <(cat ./config/*.cfg) <(cat "${currentptareadir}"/*.cfg)
+
+ if [ ! "$?" == 0 ]; then
+  echo "Unterschiedliche Versionen von cfg-Dateien gefunden. Dateien werden neu in den Arbeitsordner kopiert."
+  cp -vf --preserve=timestamps "${currentptareadir}"/*.cfg ./config/
+ else
+  echo "Alle Dateien sind aktuell."
+ fi
+
+fi
 
 # Code zum Definieren des Fahrplanzeitraums wird eingebunden.
 source ./config/tt_period.cfg
