@@ -10,6 +10,8 @@
 # type:relation and type=route and (route=bus or route=ferry or route=light_rail or route=train or route=tram or route=subway)
 # Takst Sjælland Koordinaten: 12.3925778,55.6047299,12.7383038,55.7518496
 
+ptdatumjetzt=`date +%Y%m%d_%H%M`
+
 if [ -z "$1" ]; then
  echo "Es muss dem Skript ein Argument übergeben werden. Bitte neu starten. Skript wird abgebrochen." && exit 2
 fi
@@ -55,7 +57,13 @@ if [ "$whichprocess" != "all" ]; then
 
  if [ ! "$?" == 0 ]; then
   echo "Unterschiedliche Versionen von cfg-Dateien gefunden. Dateien werden neu in den Arbeitsordner kopiert."
+  echo "Alte config-Dateien werden gesichert ..."
+  zip ./backup/${ptdatumjetzt}_configfiles.zip ./config/*.cfg
+  echo "Alte config-Dateien werden gelöscht ..."
+  rm -vf ./config/*.cfg
+  echo "Neue config-Dateien werden in Arbeitsordner kopiert ..."
   cp -vf --preserve=timestamps "${currentptareadir}"/*.cfg ./config/
+  echo "Fertig."
  else
   echo "Alle Dateien sind aktuell."
  fi
@@ -66,7 +74,6 @@ fi
 source ./config/tt_period.cfg
 
 # Belegung der Variablen
-ptdatumjetzt=`date +%Y%m%d_%H%M`
 backupordner="./backup"
 htmlname="htmlfiles/osmroutes.html"
 invroutescfg="config/invalidroutes.cfg"

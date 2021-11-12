@@ -41,7 +41,7 @@ do
           areaarg="$OPTARG"
        ;;
        # Löscht alle Dateien im Backup-Ordner, die älter als * Tage sind.
-       d) find "$backupordner"/ -maxdepth 1 -type f \( -name "*.osm" -or -name "*.html" -or -name "*.lst" -or -name "*.log" \) -mtime +"$OPTARG" -execdir rm -f {} \;
+       d) find "$backupordner"/ -maxdepth 1 -type f \( -name "*.osm" -or -name "*.html" -or -name "*.lst" -or -name "*.log" -or -name "*.zip" \) -mtime +"$OPTARG" -execdir rm -f {} \;
           exit
        ;;
        h) echo ""
@@ -123,7 +123,13 @@ diff <(cat ./config/*.cfg) <(cat "${currentptareadir}"/*.cfg)
 
 if [ ! "$?" == 0 ]; then
  echo "Unterschiedliche Versionen von cfg-Dateien gefunden. Dateien werden neu in den Arbeitsordner kopiert."
+ echo "Alte config-Dateien werden gesichert ..."
+ zip ./backup/${startdatum}_configfiles.zip ./config/*.cfg
+ echo "Alte config-Dateien werden gelöscht ..."
+ rm -vf ./config/*.cfg
+ echo "Neue config-Dateien werden in Arbeitsordner kopiert ..."
  cp -vf --preserve=timestamps "${currentptareadir}"/*.cfg ./config/
+ echo "Fertig."
 else
  echo "Alle Dateien sind aktuell."
 fi
