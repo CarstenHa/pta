@@ -6,6 +6,52 @@
 # Please feel free to contact me coding@langstreckentouren.de
 # https://github.com/CarstenHa
 
+if [ "$whichprocess" != "all" ]; then
+
+ # config-Dateien in Arbeitsordner kopieren
+ if [ ! -e ./config/ptarea.cfg ]; then
+  read -p "Bitte Gebiet angeben: " areaarg
+  ptareacfgfile="$(egrep -H '^ptareashort=["'\'']*'"$areaarg"'["'\'']*$' ./config/ptarea*/ptarea.cfg | cut -f1 -d:)"
+  if [ "$(echo "$ptareacfgfile" | sed '/^$/d' | wc -l)" == 1 ]; then
+   echo -e "Verarbeitung wird vorbereitet.\nLöschen der alten config-Dateien:"
+   rm -vf ./config/*.cfg
+   ptareadir="$(dirname "$ptareacfgfile")"
+   echo "Kopieren der neuen config-Dateien:"
+   cp -vf --preserve=timestamps "${ptareadir}"/*.cfg ./config/
+  else
+   echo "Kein passendes Verkehrsgebiet gefunden. Mögliche Bezeichnungen sind:"
+   sed -n 's/^ptareashort=["'\'']*\([[:alnum:]]*\)["'\'']*$/\1/p' ./config/ptarea*/ptarea.cfg
+   exit 1
+  fi
+ fi
+
+fi
+
+source ./config/ptarea.cfg
+
+if [ "$whichprocess" != "all" ]; then
+
+ currentptareapath="$(grep -i '^ptarealong=["'\'']*'"$ptarealong"'["'\'']*' ./config/*/ptarea.cfg | cut -f1 -d:)"
+ currentptareadir="$(dirname "$currentptareapath")"
+
+ echo "Überprüfung der config-Dateien ..."
+ diff <(cat ./config/*.cfg) <(cat "${currentptareadir}"/*.cfg)
+
+ if [ ! "$?" == 0 ]; then
+  echo "Unterschiedliche Versionen von cfg-Dateien gefunden. Dateien werden neu in den Arbeitsordner kopiert."
+  echo "Alte config-Dateien werden gesichert ..."
+  zip ./backup/${ptdatumjetzt}_configfiles.zip ./config/*.cfg
+  echo "Alte config-Dateien werden gelöscht ..."
+  rm -vf ./config/*.cfg
+  echo "Neue config-Dateien werden in Arbeitsordner kopiert ..."
+  cp -vf --preserve=timestamps "${currentptareadir}"/*.cfg ./config/
+  echo "Fertig."
+ else
+  echo "Alle Dateien sind aktuell."
+ fi
+
+fi
+
 # Hier werden die Routen in ein besser auswertbares Format geschrieben.
 # Die Datei relmem_bus_takst.lst wird später bei der Auswertung der stop_areas benötigt. Dort werden die Routen ermittelt.
 echo "Routen werden mit relmemberlist.sh in ein besser auswertbares Format umgeschrieben ..."
@@ -69,7 +115,7 @@ done
 
 # Weitere Variablen definieren.
 # Liste wird nach Namen alphabetisch nach dänischem Alphabet sortiert. (Variable und Datei)
-sortierteliste="$(cat ./stop_area_analysis.lst | LANG=da_DK.UTF-8 sort)"
+sortierteliste="$(cat ./stop_area_analysis.lst | LANG=${sortbylang}.UTF-8 sort)"
 echo "$sortierteliste" >./stop_area_analysis_sort.lst
 # Reine RelationsID-Liste nach Sortierung.
 stopareaidlistsort="$(sed 's/.* \([[:digit:]]*$\)/\1/' ./stop_area_analysis_sort.lst)"
@@ -105,7 +151,7 @@ echo "</head>"
 echo "<body>"
 echo " <div class=\"stopareas\"></div>"
 echo "<header>"
-echo "<h1>Stop_areas - Sjælland, Lolland, Falster und Møn</h1>"
+echo "<h1>${firstheadline}</h1>"
 echo " <h2 style=\"text-align: center;\">(in alphabetical order)</h2>"
 echo "  <div class=\"headerallg\">"
 echo "   <p>"
@@ -157,7 +203,7 @@ for ((b=1 ; b<=(("$anzsortrel")) ; b++)); do
    echo "   <td>$relsortnumber</td>" >>./"$htmlname"
    echo "  </tr>" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
-   echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in TS-Stoppested-Relation)</span>:</th>" >>./"$htmlname"
+   echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in ${ptareastopreldesc})</span>:</th>" >>./"$htmlname"
    if [ -z "$relsortname" ]; then
     echo "   <td class=\"yellow\">(Name is missing.)</td>" >>./"$htmlname"
    elif [ "$(grep '<relation.*id='\'''"$relsortnumber"''\''' ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
@@ -327,8 +373,8 @@ for ((b=1 ; b<=(("$anzsortrel")) ; b++)); do
    fi
 
    if [ "$(grep '<relation.*id='\'''"$relsortnumber"''\''' ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
-    echo "    <td class=\"withcolour\">TS integrated: <span style=\"font-weight: bold;\">Yes</span></td>" >>./"$htmlname"
-   else echo "    <td class=\"yellow\">TS integrated: No</td>" >>./"$htmlname"
+    echo "    <td class=\"withcolour\">${ptareaabbr} integrated: <span style=\"font-weight: bold;\">Yes</span></td>" >>./"$htmlname"
+   else echo "    <td class=\"yellow\">${ptareaabbr} integrated: No</td>" >>./"$htmlname"
    fi
 
    echo "  </tr>" >>./"$htmlname"
@@ -344,13 +390,12 @@ htmlfuss() {
 echo "</main>"
 echo "<footer>"
 echo "  <p>Hinweise:</p>"
-echo "  <p>Abkürzung TS: Takst Sjælland</p>"
+echo "  <p>Abkürzung ${ptareaabbr}: ${ptarealong}</p>"
 echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
 echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
 echo "  <p>&nbsp;</p>"
-echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
-echo "  <p>&nbsp;</p>"
 echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
+echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
 echo "</footer>"
 echo "</body>"
 echo "</html>"

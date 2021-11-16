@@ -649,7 +649,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
      # Außerdem wird dann weiter auf ein Vorkommen in stoprelation.osm geprüft! Wenn hier ein Fund entdeckt wird, wird die ganze Zeile grün hinterlegt.
      if [ $(grep "$osmstoprelid" ./osmdata/stop_areas.osm | wc -l) -gt "0" ]; then
 
-        # RelationsID und Vorkommen in TS-Stoppested wird ermittelt.
+        # RelationsID und Vorkommen in Stop_area parent relation wird ermittelt.
         if [ "$(grep "$osmstoprelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
         echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
        else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
@@ -787,7 +787,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
      if [ "$(grep "$osmplatformrelid" ./osmdata/stop_areas.osm | wc -l)" -gt "0" ]; then
 
-       # RelationsID und Vorkommen in TS-Stoppested wird ermittelt.
+       # RelationsID und Vorkommen in Stop_area parent relation wird ermittelt.
        if [ "$(grep "$osmplatformrelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
         echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
        else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
@@ -975,16 +975,15 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
    echo "</main>"
    echo " <footer>"
    echo "  <p>Hinweise:</p>"
-   echo "  <p>Abkürzung TS: Takst Sjælland</p>"
+   echo "  <p>Abkürzung ${ptareaabbr}: ${ptarealong}</p>"
    echo "  <p>Stops: Only PTv2-stops (node; public_transport=stop_position).</p>"
    echo "  <p>Platforms: Only PTv2-platforms (node, way, relation; public_transport=platform).</p>"
    echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und ist nur als Ergänzung zu anderen Analysetools zu sehen, wie zum Beispiel den <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSM-Inspector</a>.</p>"
    echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
    echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
    echo "  <p>&nbsp;</p>"
-   echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
-   echo "  <p>&nbsp;</p>"
    echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
+   echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
    echo " </footer>"
    echo "</body>"
    echo "</html>"
@@ -1023,9 +1022,8 @@ echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes g
 echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
 echo "  <p>GTFS is not part of Openstreetmap. For more Information, see <a href=\"https://carstenha.github.io/ptaweb.dk.east.bus/index.html\">https://carstenha.github.io/ptaweb.dk.east.bus/index.html</a></p>"
 echo "  <p>&nbsp;</p>"
-echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
-echo "  <p>&nbsp;</p>"
 echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
+echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
 echo " </footer>"
 echo "</body>"
 echo "</html>"
