@@ -651,8 +651,8 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
         # RelationsID und Vorkommen in Stop_area parent relation wird ermittelt.
         if [ "$(grep "$osmstoprelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
-        echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
-       else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
+        echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"../stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
+       else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmstopelement/${osmstoprelid}\">${osmstoprelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"../stop_areas.html#$osmstopelement$osmstoprelid\">Stop area</a></td>" >>"$htmlname2"
        fi
 
        # Name des stops wird ermittelt.
@@ -789,8 +789,8 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
        # RelationsID und Vorkommen in Stop_area parent relation wird ermittelt.
        if [ "$(grep "$osmplatformrelid" ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then
-        echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
-       else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
+        echo "   <td class=\"small withcolour\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"../stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
+       else echo "   <td class=\"small\"><a href=\"https://www.openstreetmap.org/$osmplatformelement/${osmplatformrelid}\">${osmplatformrelid}</a> / <span style=\"font-weight: bold\">Yes</span> See: <a href=\"../stop_areas.html#$osmplatformelement$osmplatformrelid\">Stop area</a></td>" >>"$htmlname2"
        fi
 
        # Name der platform wird ermittelt.
