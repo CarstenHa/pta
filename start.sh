@@ -19,6 +19,8 @@ if [ ! -e "./tools/osmconvert/osmconvert" ]; then
  exit 1
 fi
 
+rm -f ./osmdata/*.tmp
+
 # *** Variablen definieren ***
 
 backupordner="./backup"
@@ -204,15 +206,15 @@ osmdialog() {
 echo ""
 echo "Auswahl der .osm-Dateien:"
 echo ""
-echo "[1] - Download bus routes in ${ptarealong}-area (route_bus_raw.osm)"
-echo "[2] - Download train routes in ${ptarealong}-area (route_train_raw.osm)"
+echo "[1] - Download bus routes in ${ptarealong}-area (route_bus.osm)"
+echo "[2] - Download train routes in ${ptarealong}-area (route_train.osm)"
 echo "[3] - Download light-rail routes in ${ptarealong}-area (route_light_rail.osm)"
 echo "[4] - Download subway routes in ${ptarealong}-area (route_subway.osm)"
 echo "[5] - Download monorail routes in ${ptarealong}-area (route_monorail.osm)"
 echo "[6] - Download tram routes in ${ptarealong}-area (route_tram.osm)"
 echo "[7] - Download trolleybus routes in ${ptarealong}-area (route_trolleybus.osm)"
 echo "[8] - Download ferry routes in ${ptarealong}-area (route_ferry.osm)"
-echo "[9] - Download stop-areas in ${ptarealong}-area (stop_area_bbox.osm)"
+echo "[9] - Download stop-areas in ${ptarealong}-area (stop_areas.osm)"
 echo "[10] - Download stop-area-groups in ${ptarealong}-area (stop_area_groups.osm)"
 echo "[11] - Download stop-areas in ${ptarealong}-stoprelation (stoprelation.osm)"
 echo "[12] - Download bus routes in ${ptarealong}-bus-relation (route_busrelation.osm)"
@@ -223,105 +225,155 @@ echo "[q] - Quit"
 echo ""
 }
 
-# Hinweis: http: ... ;>;);out meta; Ein > und Multipolygone werden NICHT vollständig heruntergeladen.
+# Ausschneiden der .osm-Daten mit Polyfile durch osmconvert
+# Kann durch ptarea.cfg für die einzelnen Verkehrsmittel gesteuert werden.
+cuttingosmfile() {
+# Wichtig, das osmconvert VOR der Bearbeitung mit sed (s/"/'\''/g;s/\/>/ \/>/g) ausgeführt wird. Ansonsten wird die Syntax wieder in Gänsefüsschen umgeschrieben.
+tools/osmconvert/osmconvert -v "$osmname" --complex-ways --complete-ways -B="tools/poly/${areapolyfile}" -o="${osmname}.tmp"
+rm "${osmname}"
+mv "${osmname}.tmp" "$osmname"
+if [ "$(find "$osmname" -maxdepth 1 -size -${kindofsize} 2>/dev/null | wc -l)" -gt "0" -o ! -e "$osmname" ]; then
+ echo "Fehler nach Bearbeitung von ${osmname} mit osmconvert!"
+ rm -f "${osmname}" "${osmname}.tmp"
+fi
+#Fehlererkennung durch osmconvert
+if [ $(sed -e :a -e '$q;N;3,$D;ba;' "$osmname" | grep '<relation id' | wc -l) -gt "0" ]; then
+ echo "Fehler am Ende von ${osmname}."
+ sed -e :a -e '$q;N;3,$D;ba;' "$osmname"
+ rm -f "${osmname}" "${osmname}.tmp"
+fi
+}
 
+# Hinweis zur Overpass-Syntax (wget): http: ... ;>;);out meta; Ein > und Multipolygone werden NICHT vollständig heruntergeladen.
 areabus() {
-echo "*** Processing route_bus_raw.osm/route_bus.osm ***"
-
-wget -O ./osmdata/route_bus_raw.osm "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox}) [\"type\"=\"route\"][\"route\"=\"bus\"];>;);out meta;"
-# Wichtig, das osmconvert VOR der Bearbeitung mit sed ausgeführt wird. Ansonsten wird die Syntax wieder in Gänsefüsschen umgeschrieben.
-tools/osmconvert/osmconvert -v ./osmdata/route_bus_raw.osm --complex-ways --complete-ways -B="tools/poly/${areapolyfile}" -o=./osmdata/route_bus.osm
+echo "*** Processing route_bus.osm ***"
+osmname="./osmdata/route_bus.osm"
+kindofsize="$minsizebus"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox}) [\"type\"=\"route\"][\"route\"=\"bus\"];>;);out meta;"
+[ "$cutbus" == "yes" ] && cuttingosmfile
 # Für Skript pt_analysis2html muss Datei noch wie folgt bearbeitet werden (damit die Datei konform mit JOSM-Api-Abfrage-Datei ist):
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_bus.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 areatrain() {
-echo "*** Processing route_train_raw.osm/route_train.osm ***"
-wget -O ./osmdata/route_train_raw.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"train\"];>;);out meta;"
-# Wichtig, das osmconvert VOR der Bearbeitung mit sed ausgeführt wird. Ansonsten wird die Syntax wieder in Gänsefüsschen umgeschrieben.
-tools/osmconvert/osmconvert -v ./osmdata/route_train_raw.osm --complex-ways --complete-ways -B="tools/poly/${areapolyfile}" -o=./osmdata/route_train.osm
+echo "*** Processing route_train.osm ***"
+osmname="./osmdata/route_train.osm"
+kindofsize="minsizetrain"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"train\"];>;);out meta;"
+[ "$cuttrain" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_train.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 arealightrail() {
 echo "*** Processing route_light_rail.osm ***"
-wget -O ./osmdata/route_light_rail.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"light_rail\"];>;);out meta;"
+osmname="./osmdata/route_light_rail.osm"
+kindofsize="$minsizelightrail"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"light_rail\"];>;);out meta;"
+[ "$cutlightrail" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_light_rail.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 areasubway() {
 echo "*** Processing route_subway.osm ***"
-wget -O ./osmdata/route_subway.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"subway\"];>;);out meta;"
+osmname="./osmdata/route_subway.osm"
+kindofsize="$minsizesubway"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"subway\"];>;);out meta;"
+[ "$cutsubway" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_subway.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 areamonorail() {
 echo "*** Processing route_monorail.osm ***"
-wget -O ./osmdata/route_monorail.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"monorail\"];>;);out meta;"
+osmname="./osmdata/route_monorail.osm"
+kindofsize="$minsizemonorail"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"monorail\"];>;);out meta;"
+[ "$cutmonorail" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_monorail.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 areatram() {
 echo "*** Processing route_tram.osm ***"
-wget -O ./osmdata/route_tram.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"tram\"];>;);out meta;"
+osmname="./osmdata/route_tram.osm"
+kindofsize="$minsizetram"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"tram\"];>;);out meta;"
+[ "$cuttram" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_tram.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 areatrolleybus() {
 echo "*** Processing route_trolleybus.osm ***"
-wget -O ./osmdata/route_trolleybus.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"trolleybus\"];>;);out meta;"
+osmname="./osmdata/route_trolleybus.osm"
+kindofsize="$minsizetrolleybus"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"trolleybus\"];>;);out meta;"
+[ "$cuttrolleybus" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_trolleybus.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 areaferry() {
 echo "*** Processing route_ferry.osm ***"
-wget -O ./osmdata/route_ferry.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"ferry\"];>;);out meta;"
+osmname="./osmdata/route_ferry.osm"
+kindofsize="$minsizeferry"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"ferry\"];>;);out meta;"
+[ "$cutferry" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_ferry.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 stopareas() {
-echo "*** Processing stop_area_bbox/stop_areas.osm ***"
-wget -O ./osmdata/stop_area_bbox.osm "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox})[\"public_transport\"=\"stop_area\"];>>;);out meta;"
-# Wichtig, das osmconvert VOR der Bearbeitung mit sed ausgeführt wird. Ansonsten wird die Syntax wieder in Gänsefüsschen umgeschrieben.
-tools/osmconvert/osmconvert -v ./osmdata/stop_area_bbox.osm --complex-ways --complete-ways -B="tools/poly/${areapolyfile}" -o=./osmdata/stop_areas.osm
+echo "*** Processing stop_areas.osm ***"
+osmname="./osmdata/stop_areas.osm"
+kindofsize="$minsizestoparea"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox})[\"public_transport\"=\"stop_area\"];>>;);out meta;"
+[ "$cutstoparea" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/stop_areas.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 stopareagroups() {
 echo "*** Processing stop_area_groups.osm ***"
-wget -O ./osmdata/stop_area_groups.osm "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox})[\"public_transport\"=\"stop_area\"];<<;);out meta;"
+osmname="./osmdata/stop_area_groups.osm"
+kindofsize="$minsizestopareagroups"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox})[\"public_transport\"=\"stop_area\"];<<;);out meta;"
+[ "$cutstopareagroups" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/stop_area_groups.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 areastoprelation() {
 echo "*** Processing stoprelation.osm ***"
-wget -O ./osmdata/stoprelation.osm "http://overpass-api.de/api/interpreter?data=(relation(${ptareastoprelid});>>;);out meta;"
+osmname="./osmdata/stoprelation.osm"
+kindofsize="$minsizestoprelation"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareastoprelid});>>;);out meta;"
+[ "$cutstoprelation" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/stoprelation.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 areabusrelation() {
 echo "*** Processing route_busrelation.osm ***"
-wget -O ./osmdata/route_busrelation.osm "http://overpass-api.de/api/interpreter?data=(relation(${ptareabusrelid});>>;);out meta;"
+osmname="./osmdata/route_busrelation.osm"
+kindofsize="$minsizebusrelation"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareabusrelid});>>;);out meta;"
+[ "$cutbusrelation" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_busrelation.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 routemasterbus() {
 echo "*** Processing route_master_bus.osm ***"
-wget -O ./osmdata/route_master_bus.osm "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"bus\"];<<;);out meta;"
+osmname="./osmdata/route_master_bus.osm"
+kindofsize="$minsizeroutemasterbus"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\")[\"type\"=\"route\"][\"route\"=\"bus\"];<<;);out meta;"
+[ "$cutroutemasterbus" == "yes" ] && cuttingosmfile
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' ./osmdata/route_master_bus.osm
+sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
 }
 
 # Die einzelnen Downloads können in einer Schleife so lange heruntergeldaen werden, bis n gewählt wird. Der komplette Download hat ein break am Ende.
@@ -333,11 +385,11 @@ while true; do
    fi
 
     case "$selectosmdata" in
-      1) rm -f ./osmdata/route_bus_raw.osm
-         while [ "$(find ./osmdata/route_bus_raw.osm -maxdepth 1 -size -${minsizebusraw} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_bus_raw.osm ]; do areabus; done
+      1) rm -f ./osmdata/route_bus.osm
+         while [ "$(find ./osmdata/route_bus.osm -maxdepth 1 -size -${minsizebus} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_bus.osm ]; do areabus; done
           ;;
-      2) rm -f ./osmdata/route_train_raw.osm
-         while [ "$(find ./osmdata/route_train_raw.osm -maxdepth 1 -size -${minsizetrainraw} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_train_raw.osm ]; do areatrain; done
+      2) rm -f ./osmdata/route_train.osm
+         while [ "$(find ./osmdata/route_train.osm -maxdepth 1 -size -${minsizetrain} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_train.osm ]; do areatrain; done
           ;;
       3) rm -f ./osmdata/route_light_rail.osm
          while [ "$(find ./osmdata/route_light_rail.osm -maxdepth 1 -size -${minsizelightrail} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_light_rail.osm ]; do arealightrail; done
@@ -357,8 +409,8 @@ while true; do
       8) rm -f ./osmdata/route_ferry.osm
          while [ "$(find ./osmdata/route_ferry.osm -maxdepth 1 -size -${minsizeferry} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_ferry.osm ]; do areaferry; done
           ;;
-      9) rm -f ./osmdata/stop_area_bbox.osm
-         while [ "$(find ./osmdata/stop_area_bbox.osm -maxdepth 1 -size -${minsizestopareabbox} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_area_bbox.osm ]; do stopareas; done
+      9) rm -f ./osmdata/stop_areas.osm
+         while [ "$(find ./osmdata/stop_areas.osm -maxdepth 1 -size -${minsizestoparea} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_areas.osm ]; do stopareas; done
           ;;
       10) rm -f ./osmdata/stop_area_groups.osm
          while [ "$(find ./osmdata/stop_area_groups.osm -maxdepth 1 -size -${minsizestopareagroups} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_area_groups.osm ]; do stopareagroups; done
@@ -374,26 +426,26 @@ while true; do
       13) rm -f ./osmdata/route_master_bus.osm
          while [ "$(find ./osmdata/route_master_bus.osm -maxdepth 1 -size -${minsizeroutemasterbus} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_master_bus.osm ]; do routemasterbus; done
           ;;
-      a) rm -f ./osmdata/route_bus_raw.osm
-         rm -f ./osmdata/route_train_raw.osm
+      a) rm -f ./osmdata/route_bus.osm
+         rm -f ./osmdata/route_train.osm
          rm -f ./osmdata/route_light_rail.osm
          rm -f ./osmdata/route_subway.osm
          rm -f ./osmdata/route_monorail.osm
          rm -f ./osmdata/route_tram.osm
          rm -f ./osmdata/route_trolleybus.osm
          rm -f ./osmdata/route_ferry.osm
-         rm -f ./osmdata/stop_area_bbox.osm
+         rm -f ./osmdata/stop_areas.osm
          rm -f ./osmdata/stop_area_groups.osm
          rm -f ./osmdata/stoprelation.osm
          rm -f ./osmdata/route_busrelation.osm
          rm -f ./osmdata/route_master_bus.osm
 
          downloadcounter="0"
-         while [ "$(find ./osmdata/route_bus_raw.osm -maxdepth 1 -size -${minsizebusraw} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_bus_raw.osm ]; do
+         while [ "$(find ./osmdata/route_bus.osm -maxdepth 1 -size -${minsizebus} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_bus.osm ]; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
-           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (route_bus_raw.osm) überschritten."
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (route_bus.osm) überschritten."
            killthisscript="yes"
-           kindofosm="route_bus_raw.osm"
+           kindofosm="route_bus.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -402,11 +454,11 @@ while true; do
          done
 
          downloadcounter="0"
-         while [ "$(find ./osmdata/route_train_raw.osm -maxdepth 1 -size -${minsizetrainraw} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_train_raw.osm ]; do
+         while [ "$(find ./osmdata/route_train.osm -maxdepth 1 -size -${minsizetrain} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_train.osm ]; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
-           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (route_train_raw.osm) überschritten."
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (route_train.osm) überschritten."
            killthisscript="yes"
-           kindofosm="${kindofosm}, route_train_raw.osm"
+           kindofosm="${kindofosm}, route_train.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -493,11 +545,11 @@ while true; do
          done
 
          downloadcounter="0"
-         while [ "$(find ./osmdata/stop_area_bbox.osm -maxdepth 1 -size -${minsizestopareabbox} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_area_bbox.osm ]; do
+         while [ "$(find ./osmdata/stop_areas.osm -maxdepth 1 -size -${minsizestoparea} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_areas.osm ]; do
           if [ "$downloadcounter" -ge "$maxattempt" ]; then
-           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (stop_area_bbox.osm) überschritten."
+           echo "Anzahl von maximal ${maxattempt} Download-Versuchen (stop_areas.osm) überschritten."
            killthisscript="yes"
-           kindofosm="${kindofosm}, stop_area_bbox.osm"
+           kindofosm="${kindofosm}, stop_areas.osm"
            break
           fi
           echo -n "Downloadversuch $(($downloadcounter + 1)) "
@@ -574,7 +626,7 @@ while true; do
       n) break
           ;;
       q) # Programm wird ohne Erstellung von HTML-Seiten beendet.
-         echo "$(basename ${0}) wird ohne weitere Überprüfung der OSM-Daten beendet."
+         echo "$(basename ${0}) beendet."
          exit 0
           ;;
       *) echo "Fehlerhafte Eingabe!"
@@ -583,11 +635,6 @@ while true; do
 
 done
 
-# Mit osmconvert bearbeitete Dateien werden geprüft.
-while [ "$(find ./osmdata/route_bus.osm -maxdepth 1 -size -${minsizebus} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_bus.osm ]; do areabus; done
-while [ "$(find ./osmdata/stop_areas.osm -maxdepth 1 -size -${minsizestoparea} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/stop_areas.osm ]; do stopareas; done
-while [ "$(find ./osmdata/route_train.osm -maxdepth 1 -size -${minsizetrain} 2>/dev/null | wc -l)" -gt "0" -o ! -e ./osmdata/route_train.osm ]; do areatrain; done
-
 if [ "$stoppesteddownload" == "1" ]; then
  cp ./osmdata/stoprelation.osm "$backupordner"/`date +%Y%m%d_%H%M`_stoprelation.osm
 fi
@@ -595,11 +642,7 @@ if [ "$busrelationdownload" == "1" ]; then
  cp ./osmdata/route_busrelation.osm "$backupordner"/`date +%Y%m%d_%H%M`_route_busrelation.osm
 fi
 
-#Fehlererkennung durch osmconvert
-if [ $(sed -e :a -e '$q;N;3,$D;ba;' ./osmdata/route_bus.osm | grep '<relation id' | wc -l) -gt "0" ]; then
- echo "Fehler am Ende von route_bus.osm. Bitte manuell bereinigen und pt_analysis2html.sh ausführen."
- sed -e :a -e '$q;N;3,$D;ba;' ./osmdata/route_bus.osm && exit
-fi
+rm -f ./osmdata/*.tmp
 
 # *** HTML-Seitenerstellung ***
 ./"$stopareascript"
