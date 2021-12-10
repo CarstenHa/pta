@@ -111,6 +111,9 @@ if [ ! -e ./config/ptarea.cfg -o "$changeptarea" == "yes" ]; then
  else
   echo "Kein passendes Verkehrsgebiet gefunden. Mögliche Bezeichnungen sind:"
   sed -n 's/^ptareashort=["'\'']*\([[:alnum:]]*\)["'\'']*$/\1/p' ./config/ptarea*/ptarea.cfg
+  if [ -e "./tools/mail/sendamail" ]; then
+   ./tools/mail/sendamail -e
+  fi
   exit 1
  fi
 fi
