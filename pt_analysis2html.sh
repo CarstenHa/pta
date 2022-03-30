@@ -16,6 +16,114 @@ if [ -z "$1" ]; then
  echo "Es muss dem Skript ein Argument übergeben werden. Bitte neu starten. Skript wird abgebrochen." && exit 2
 fi
 
+usage() {
+cat <<EOU
+
+Programm zur Auswertung von OSM-Daten.
+
+Syntax: $0 [option] [param]
+        $0 pfad/zur/datei.osm
+
+Beschreibung der Optionen:
+
+   -h
+
+	ruft diese Hilfe auf.
+
+   -s [relationid]
+
+	Aktualisierung von Routendaten, die neu in eine real_bus_stops.cfg aufgenommen worden ist.
+	Routen in den OSM-Daten werden immer ausgewertet, auch wenn diese noch nicht in den diversen
+	.cfg-Dateien aufgenommen worden sind. Will man schnell eine neu eingetragene Route (real_bus_stops.cfg)
+	in der bestehenden osmroutes.html vollständig auswerten, ohne eine komplette Auswertung der gesamten
+	OSM-Rohdaten vornehmen zu müssen, ist diese Option der richtige Weg.
+	Es wird ein Argument in Form einer RelationID benötigt.
+
+EOU
+}
+
+while getopts hs: opt
+do
+  case $opt in
+   h) # Hilfe
+   usage
+   exit
+   ;;
+   s) # Anpassung für neue Route
+      read -p "Welches Depot soll bearbeitet werden? " depotnr
+      if [ ! -e "./config/ptarea${depotnr}/real_bus_stops.cfg" ]; then
+       [ ! -d "./config/ptarea${depotnr}" ] && echo "Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!" && exit 1
+       echo "real_bus_stops.cfg im Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!"
+       exit 1
+      fi
+      rbscfgfile="./config/ptarea${depotnr}/real_bus_stops.cfg"
+      relid="$(grep "^${OPTARG} " "$rbscfgfile" | cut -f1 -d" ")"
+      [ -z "$relid" ] && echo "RelationID existiert nicht in cfg-file. Skript wird abgebrochen!" && exit 1
+      echo "Route mit der RelationID ${relid} wird bearbeitet ..."
+      
+      # Variablen definieren
+      realbusstop="$(grep "^${relid} " "$rbscfgfile" | cut -d" " -f2)"
+      gtfsid="$(grep "^${relid} " "$rbscfgfile" | cut -f5 -d" ")"
+      [ -z "$gtfsid" ] && echo "GTFSID existiert nicht in cfg-file. Skript wird abgebrochen!" && exit 1
+      unspecstopline="$(grep -n "unspec${relid}stop" ./htmlfiles/osmroutes.html)"
+      unspecplatline="$(grep -n "unspec${relid}plat" ./htmlfiles/osmroutes.html)"
+      unspecrbsline="$(grep -n "unspec${relid}rbs" ./htmlfiles/osmroutes.html)"
+      unspecgtfsline="$(grep -n "unspec${relid}gtfs" ./htmlfiles/osmroutes.html)"
+      stoplinenr="$(echo "$unspecstopline" | grep -o '^[[:digit:]]*')"
+      platlinenr="$(echo "$unspecplatline" | grep -o '^[[:digit:]]*')"
+      rbslinenr="$(echo "$unspecrbsline" | grep -o '^[[:digit:]]*')"
+      gtfslinenr="$(echo "$unspecgtfsline" | grep -o '^[[:digit:]]*')"
+      
+      if [ -e "./htmlfiles/osm/${relid}.html" -a -e "./htmlfiles/osmroutes.html" ]; then
+
+       # Tabellenzelle mit OSM-Stops wird bearbeitet.
+       anzosmstop="$(grep 'Stop [[:digit:]]*:</th>' "./htmlfiles/osm/${relid}.html" | wc -l)"
+       [ -n "$unspecstopline" ] && echo "In Zeile ${stoplinenr} wird die Anzahl der OSM-stops (${anzosmstop}) angepasst ..."
+       if [ -n "$unspecstopline" -a "$anzosmstop" == "$realbusstop" ]; then
+        sed -i ''"$stoplinenr"'s/^.*$/   <td class="small withcolour">Stops in OSM-route: '"${anzosmstop}"' (100%)<\/td>/' ./htmlfiles/osmroutes.html
+       elif [ -n "$unspecstopline" -a ! "$anzosmstop" == "$realbusstop" ]; then
+        sed -i ''"$stoplinenr"'s/^.*$/   <td class="small yellow">Stops in OSM-route: '"${anzosmstop}"' ('"$((100*$anzosmstop/$realbusstop))"'%)<\/td>/' ./htmlfiles/osmroutes.html
+       fi
+       
+       # Tabellenzelle mit OSM-Platforms wird bearbeitet.
+       anzosmplat="$(grep 'Platform [[:digit:]]*:</th>' "./htmlfiles/osm/${relid}.html" | wc -l)"
+       [ -n "$unspecplatline" ] && echo "In Zeile ${platlinenr} wird die Anzahl der OSM-platforms (${anzosmplat}) angepasst ..."
+       if [ -n "$unspecplatline" -a "$anzosmplat" == "$realbusstop" ]; then
+        sed -i ''"$platlinenr"'s/^.*$/   <td class="small withcolour">Platforms in OSM-route: '"${anzosmplat}"' (100%)<\/td>/' ./htmlfiles/osmroutes.html
+       elif [ -n "$unspecplatline" -a ! "$anzosmplat" == "$realbusstop" ]; then
+        sed -i ''"$platlinenr"'s/^.*$/   <td class="small yellow">Platforms in OSM-route: '"${anzosmplat}"' ('"$((100*$anzosmplat/$realbusstop))"'%)<\/td>/' ./htmlfiles/osmroutes.html
+       fi
+       
+       # Tabellenzelle mit tatsächlichen Haltestellen wird bearbeitet.
+       if [ -n "$unspecrbsline" ]; then
+        echo "In Zeile ${rbslinenr} wird die tatsächliche Anzahl der Haltestellen (${realbusstop}) angepasst ..."
+        sed -i ''"$rbslinenr"'s/^.*$/    <td class="withcolour"><i class="fa-td fa fa-arrow-circle-o-left fa-1x"><\/i>Number of real bus stops¹ : '"$realbusstop"'<\/td>/' ./htmlfiles/osmroutes.html
+       fi
+       
+       # Tabellenzelle mit GTFS-Verlinkungen wird bearbeitet.
+       if [ -n "$unspecgtfsline" ]; then
+        echo "In Zeile ${gtfslinenr} werden Verlinkungen erstellt ..."
+        sed -i ''"$gtfslinenr"'s/^.*$/   <td class="osmtabgtfs"><a title="GTFS list" href="gtfs\/'"${gtfsid}"'.html#st_ar2"><i class="fa-td fa fa-list fa-1x"><\/i><\/a><a title="GTFS route (shape) on map" href="gtfs\/maps\/'"${gtfsid}"'.html"><i class="fa-td fa fa-map fa-1x"><\/i><\/a><\/td>/' ./htmlfiles/osmroutes.html
+       fi
+
+      else
+
+       [ ! -e "./htmlfiles/osm/${relid}.html" ] && echo "Datei ./htmlfiles/osm/${relid}.html existiert nicht."
+       [ ! -e "./htmlfiles/osmroutes.html" ] && echo "Datei ./htmlfiles/osmroutes.html existiert nicht."
+       echo "Skript wird abgebrochen!"
+       exit 1
+
+      fi
+      echo "Fertig."
+      
+      exit
+   ;;
+   *) usage
+      exit 1
+   ;;
+  esac
+done
+
 if [ ! -e ./relmemberlist.sh ]; then
  echo "Für die Erstellung ist das Skript ./relmemberlist.sh notwendig. Skript ist nicht im Verzeichnis $PWD vorhanden. Skript wird abgebrochen!" && exit 2
 fi
@@ -499,19 +607,19 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     if [ -z "$relmemberstops" ]; then
      echo "   <td class=\"small yellow\">Stops in OSM-route: 0</td>" >>./"$htmlname"
     elif [ "$(echo "$realbusstop" | sed 's/\(^.*\) .*/\1/')" == "$osmstop" ]; then
-     echo "   <td class=\"small withcolour\">Stops in OSM-route: "$osmstop" (100%)</td>" >>./"$htmlname"
+     echo "   <td class=\"small withcolour\">Stops in OSM-route: ${osmstop} (100%)</td>" >>./"$htmlname"
     elif [ -z "$realbusstop" ]; then
-     echo "   <td class=\"small\">Stops in OSM-route: "$osmstop"</td>" >>./"$htmlname"
-    else echo "   <td class=\"small yellow\">Stops in OSM-route: "$osmstop" ($((100*$osmstop/$realbusstopnumber))%)</td>" >>./"$htmlname"
+     echo "   <td class=\"small unspec${relnumber}stop\">Stops in OSM-route: ${osmstop}</td>" >>./"$htmlname"
+    else echo "   <td class=\"small yellow\">Stops in OSM-route: ${osmstop} ($((100*$osmstop/$realbusstopnumber))%)</td>" >>./"$htmlname"
     fi
 
     if [ -z "$relmemberplatforms" ]; then
      echo "   <td class=\"small yellow\">Platforms in OSM-route: 0</td>" >>./"$htmlname"
     elif [ "$(echo "$realbusstop" | sed 's/\(^.*\) .*/\1/')" == "$osmplatform" ]; then
-     echo "   <td class=\"small withcolour\">Platforms in OSM-route: "$osmplatform" (100%)</td>" >>./"$htmlname"
+     echo "   <td class=\"small withcolour\">Platforms in OSM-route: ${osmplatform} (100%)</td>" >>./"$htmlname"
     elif [ -z "$realbusstop" ]; then
-     echo "   <td class=\"small\">Platforms in OSM-route: "$osmplatform"</td>" >>./"$htmlname"
-    else echo "   <td class=\"small yellow\">Platforms in OSM-route: "$osmplatform" ($((100*$osmplatform/$realbusstopnumber))%)</td>" >>./"$htmlname"
+     echo "   <td class=\"small unspec${relnumber}plat\">Platforms in OSM-route: ${osmplatform}</td>" >>./"$htmlname"
+    else echo "   <td class=\"small yellow\">Platforms in OSM-route: ${osmplatform} ($((100*$osmplatform/$realbusstopnumber))%)</td>" >>./"$htmlname"
     fi
 
     if [ -n "$realbusstop" ]; then
@@ -526,7 +634,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
       else echo "   <td class=\"withcolour\"><i class=\"fa-td fa fa-arrow-circle-o-left fa-1x\"></i>Number of real bus stops¹ : "$realbusstop"</td>" >>./"$htmlname"
       fi
 
-    else echo "   <td class=\"yellow\">Number of real bus stops: Not specified</td>" >>./"$htmlname"
+    else echo "   <td class=\"yellow unspec${relnumber}rbs\">Number of real bus stops: Not specified</td>" >>./"$htmlname"
     fi
 
     echo "  </tr>" >>./"$htmlname"
@@ -565,7 +673,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
       
       else
       
-       echo "   <td>No GTFS</td>" >>./"$htmlname"
+       echo "   <td class=\"unspec${relnumber}gtfs\">No GTFS</td>" >>./"$htmlname"
        echo "Route ${refnumber} (RelationID: ${relnumber}) noch nicht (vollständig) in .cfg-Datei aufgenommen oder aktualisiert."
        
       fi

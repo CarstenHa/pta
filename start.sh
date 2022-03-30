@@ -31,7 +31,53 @@ zeitpunktbegin=`date +%s`
 # Bei seperater Ausführung von pt_analysis2html.sh muss die Datei relmem_bus_takst.lst erst noch erstellt erstellt werden.
 export whichprocess="all"
 
-while getopts ac:d:hlp: opt
+startusage() {
+cat <<EOU
+
+Synopsis:
+
+./start.sh [Option]
+
+Options:
+
+-a
+
+    Automatischer Prozess ohne weitere Abfragen. Ist identisch bei Auswahl [a],
+    wenn dieses Skript ohne weitere Optionen ausgeführt wird.
+
+-c [ptarea_shortname]
+
+    Wechselt das Verkehrsgebiet. Benötigt ein weiteres Argument für das Verkehrsgebiet.
+    Dieser kann mit der Option -L ermittelt werden (Short name).
+
+-d [NUM]
+
+    Löscht alle Dateien im Backup-Ordner, die älter als [NUM] Tage sind.
+
+-h
+
+    Zeigt Hilfe an.
+
+-l
+
+    listet das zur Zeit aktive Verkehrsgebiet auf.
+   
+-L
+
+    listet alle Verkehrsgebiete auf, die in den Depots eingebunden sind.
+    Das aktive Gebiet ist mit einem Sternchen * gekennzeichnet.
+
+-p [list|pull]
+
+    Download/Auflisten von optionalen Relationen.
+    Benötigt ein weiteres Argument:
+    Mit \"list\" werden die optionalen Relationen aufgelistet.
+    Mit \"pull\" werden die optionalen Relationen runtergeladen.
+
+EOU
+}
+
+while getopts ac:d:hlLp: opt
 do
    case $opt in
        a) # automatisierter Prozess ohne Abfragen.
@@ -46,41 +92,14 @@ do
        d) find "$backupordner"/ -maxdepth 1 -type f \( -name "*.osm" -or -name "*.html" -or -name "*.lst" -or -name "*.log" -or -name "*.zip" \) -mtime +"$OPTARG" -execdir rm -f {} \;
           exit
        ;;
-       h) echo ""
-          echo "Synopsis:"
-          echo ""
-          echo "./start.sh [Option]"
-          echo ""
-          echo "Options:"
-          echo ""
-          echo "-a"
-          echo ""
-          echo "    Automatischer Prozess ohne weitere Abfragen. Ist identisch bei Auswahl [a],"
-          echo "    wenn dieses Skript ohne weitere Optionen ausgeführt wird."
-          echo ""
-          echo "-d [NUM]"
-          echo ""
-          echo "    Löscht alle Dateien im Backup-Ordner, die älter als [NUM] Tage sind."
-          echo ""
-          echo "-h"
-          echo ""
-          echo "    Zeigt Hilfe an."
-          echo ""
-          echo "-l"
-          echo ""
-          echo "   listet das zur Zeit aktive Verkehrsgebiet auf."
-          echo ""
-          echo "-p [list|pull]"
-          echo ""
-          echo "    Download/Auflisten von optionalen Relationen."
-          echo "    Benötigt ein weiteres Argument:"
-          echo "    Mit \"list\" werden die optionalen Relationen aufgelistet."
-          echo "    Mit \"pull\" werden die optionalen Relationen runtergeladen."
-          echo ""
+       h) startusage
           exit
        ;;
        l) # Listet das aktuell aktive Verkehrsgebiet auf
           showtparea="yes"
+       ;;
+       L) # Listet das aktuell aktive Verkehrsgebiet auf
+          showtparealong="yes"
        ;;
        p) # Download/Anzeigen von optionalen Relationen
           if [ "$OPTARG" == "pull" ]; then
@@ -123,9 +142,14 @@ source ./config/ptarea.cfg
 currentptareapath="$(grep -i '^ptarealong=["'\'']*'"$ptarealong"'["'\'']*' ./config/*/ptarea.cfg | cut -f1 -d:)"
 currentptareadir="$(dirname "$currentptareapath")"
 
+if [ "$(echo "$currentptareadir" | wc -l)" -gt "1" ]; then
+ echo "Es gibt mehrere identische Verkehrsgebiete. Skript wird abgebrochen!"
+ echo "$currentptareapath"
+ exit 1
+fi
+
 echo "Überprüfung der config-Dateien ..."
 diff <(cat ./config/*.cfg) <(cat "${currentptareadir}"/*.cfg)
-
 if [ ! "$?" == 0 ]; then
  echo "Unterschiedliche Versionen von cfg-Dateien gefunden. Dateien werden neu in den Arbeitsordner kopiert."
  echo "Alte config-Dateien werden gesichert ..."
@@ -141,6 +165,25 @@ fi
 
 if [ "$showtparea" == "yes" ]; then
  echo "Aktuelles Verkehrsgebiet: ${ptarealong} aus Verzeichnis ${currentptareadir}"
+ exit
+fi
+
+if [ "$showtparealong" == "yes" ]; then
+  echo -e "\nAuflistung aller eingebundenen Verkehrsgebiete:"
+  echo "Directory                      Full name           Short name           Description"
+  echo "-----------------------------------------------------------------------------------------------------------------------------"
+ for cfgfile in ./config/ptarea*/ptarea.cfg; do
+  if [ "$currentptareapath" == "$cfgfile" ]; then
+   ptsign='*'
+  else 
+   ptsign=""
+  fi
+  cfgareashort="$(sed -n 's/^ptareashort=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
+  cfgarealong="$(sed -n 's/^ptarealong=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
+  cfgareadesc="$(sed -n 's/^ptareadescription=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
+  printf '%-30s %-20s \e[1;32m%-20s\e[0m %-50s\n' "$cfgfile" "$cfgarealong" "${cfgareashort} ${ptsign}" "$cfgareadesc"
+ done
+ echo ""
  exit
 fi
 
