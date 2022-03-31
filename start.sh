@@ -143,8 +143,8 @@ currentptareapath="$(grep -i '^ptarealong=["'\'']*'"$ptarealong"'["'\'']*' ./con
 currentptareadir="$(dirname "$currentptareapath")"
 
 if [ "$(echo "$currentptareadir" | wc -l)" -gt "1" ]; then
- echo "Es gibt mehrere identische Verkehrsgebiete. Skript wird abgebrochen!"
- echo "$currentptareapath"
+ echo "Es gibt mehrere identische Verkehrsgebiete des aktiven Verkehrsgebietes. Skript wird abgebrochen!"
+ echo "${currentptareapath}"
  exit 1
 fi
 
@@ -170,18 +170,19 @@ fi
 
 if [ "$showtparealong" == "yes" ]; then
   echo -e "\nAuflistung aller eingebundenen Verkehrsgebiete:"
-  echo "Directory                      Full name           Short name           Description"
-  echo "-----------------------------------------------------------------------------------------------------------------------------"
+  echo -e "\e[1;32mNr\e[0m Directory                     Full name           \e[1;32mShort name\e[0m        Description"
+  echo "----------------------------------------------------------------------------------------------------------------------------"
  for cfgfile in ./config/ptarea*/ptarea.cfg; do
   if [ "$currentptareapath" == "$cfgfile" ]; then
    ptsign='*'
   else 
    ptsign=""
   fi
+  ptareanr="$(echo "$cfgfile" | sed 's/.\/config\/ptarea\([0-9]*\)\/ptarea.cfg/\1/')"
   cfgareashort="$(sed -n 's/^ptareashort=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
   cfgarealong="$(sed -n 's/^ptarealong=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
   cfgareadesc="$(sed -n 's/^ptareadescription=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
-  printf '%-30s %-20s \e[1;32m%-20s\e[0m %-50s\n' "$cfgfile" "$cfgarealong" "${cfgareashort} ${ptsign}" "$cfgareadesc"
+  printf '\e[1;32m%2s\e[0m %-29s %-20s \e[1;32m%-17s\e[0m %-50s\n' "$ptareanr" "$cfgfile" "$cfgarealong" "${cfgareashort} ${ptsign}" "$cfgareadesc"
  done
  echo ""
  exit
