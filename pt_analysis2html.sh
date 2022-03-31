@@ -49,7 +49,7 @@ do
    usage
    exit
    ;;
-   s) # Anpassung für neue Route
+   s) # Anpassung für neu aufgenommene Route
       read -p "Welches Depot soll bearbeitet werden? " depotnr
       if [ ! -e "./config/ptarea${depotnr}/real_bus_stops.cfg" ]; then
        [ ! -d "./config/ptarea${depotnr}" ] && echo "Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!" && exit 1
@@ -59,7 +59,7 @@ do
       rbscfgfile="./config/ptarea${depotnr}/real_bus_stops.cfg"
       relid="$(grep "^${OPTARG} " "$rbscfgfile" | cut -f1 -d" ")"
       [ -z "$relid" ] && echo "RelationID existiert nicht in cfg-file. Skript wird abgebrochen!" && exit 1
-      echo "Route mit der RelationID ${relid} wird bearbeitet ..."
+      echo "./htmlfiles/osmroutes.html wird bearbeitet ..."
       
       # Variablen definieren
       realbusstop="$(grep "^${relid} " "$rbscfgfile" | cut -d" " -f2)"
@@ -76,35 +76,87 @@ do
       
       if [ -e "./htmlfiles/osm/${relid}.html" -a -e "./htmlfiles/osmroutes.html" ]; then
 
+       # Statistik wird angepasst (Anzahl der Busrouten).
+       oldagencyoutes="$(sed -n '/in OSM data:/s/.*in OSM data: \([[:digit:]]*\).*/\1/p' ./htmlfiles/osmroutes.html)"
+       newagencyroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
+       newanzmissingroutes="$(grep 'gtfsid[12]tab' ./htmlfiles/gtfsroutes.html | wc -l)"
+       if [ ! "$oldagencyoutes" == "$newagencyroutes" ]; then
+        mroutesline="$(grep -ni 'in OSM data:' ./htmlfiles/osmroutes.html | grep -o '^[[:digit:]]*')"
+        # Zusätzliche Überprüfung, falls mehrere identische Zeilen in osmroutes.html gefunden wurden.
+        if [ "$(echo "$mroutesline" | wc -l)" -gt "1" ]; then
+         echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$mroutesline")"
+        else
+         echo "Zeile ${mroutesline}: Statistik wird angepasst ..."
+         sed -i '/in OSM data:/s/\(in OSM data: \)[[:digit:]]*/\1'"$newagencyroutes"'/' ./htmlfiles/osmroutes.html
+         modified="yes"
+        fi
+       fi
+
+       # Statistik wird angepasst (Anzahl der Busrouten in Prozent).
+       oldmissroutesperc="$(sed -n '/are created in whole or in part/s/.* \([[:digit:]]*\)% .*/\1/p' ./htmlfiles/osmroutes.html)"
+       newmissroutesperc=$((100*${newagencyroutes}/${newanzmissingroutes}))
+       if [ ! "$oldmissroutesperc" == "$newmissroutesperc" ]; then
+        routespercline="$(grep -ni 'are created in whole or in part' ./htmlfiles/osmroutes.html | grep -o '^[[:digit:]]*')"
+        # Zusätzliche Überprüfung, falls mehrere identische Zeilen in osmroutes.html gefunden wurden.
+        if [ "$(echo "$routespercline" | wc -l)" -gt "1" ]; then
+         echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$routespercline")"
+        else
+         echo "Zeile ${routespercline}: Statistik wird angepasst ..."
+         sed -i '/are created in whole or in part/s/[[:digit:]]*%/'"$newmissroutesperc"'%/' ./htmlfiles/osmroutes.html
+         modified="yes"
+        fi
+       fi
+
+       echo "Route mit der RelationID ${relid} wird bearbeitet ..."
        # Tabellenzelle mit OSM-Stops wird bearbeitet.
        anzosmstop="$(grep 'Stop [[:digit:]]*:</th>' "./htmlfiles/osm/${relid}.html" | wc -l)"
-       [ -n "$unspecstopline" ] && echo "In Zeile ${stoplinenr} wird die Anzahl der OSM-stops (${anzosmstop}) angepasst ..."
+       [ -n "$unspecstopline" ] && echo "Zeile ${stoplinenr}: Die Anzahl der OSM-stops (${anzosmstop}) wird angepasst ..."
        if [ -n "$unspecstopline" -a "$anzosmstop" == "$realbusstop" ]; then
         sed -i ''"$stoplinenr"'s/^.*$/   <td class="small withcolour">Stops in OSM-route: '"${anzosmstop}"' (100%)<\/td>/' ./htmlfiles/osmroutes.html
+        modified="yes"
        elif [ -n "$unspecstopline" -a ! "$anzosmstop" == "$realbusstop" ]; then
         sed -i ''"$stoplinenr"'s/^.*$/   <td class="small yellow">Stops in OSM-route: '"${anzosmstop}"' ('"$((100*$anzosmstop/$realbusstop))"'%)<\/td>/' ./htmlfiles/osmroutes.html
+        modified="yes"
        fi
-       
+
        # Tabellenzelle mit OSM-Platforms wird bearbeitet.
        anzosmplat="$(grep 'Platform [[:digit:]]*:</th>' "./htmlfiles/osm/${relid}.html" | wc -l)"
-       [ -n "$unspecplatline" ] && echo "In Zeile ${platlinenr} wird die Anzahl der OSM-platforms (${anzosmplat}) angepasst ..."
+       [ -n "$unspecplatline" ] && echo "Zeile ${platlinenr}: Die Anzahl der OSM-platforms (${anzosmplat}) wird angepasst ..."
        if [ -n "$unspecplatline" -a "$anzosmplat" == "$realbusstop" ]; then
         sed -i ''"$platlinenr"'s/^.*$/   <td class="small withcolour">Platforms in OSM-route: '"${anzosmplat}"' (100%)<\/td>/' ./htmlfiles/osmroutes.html
+        modified="yes"
        elif [ -n "$unspecplatline" -a ! "$anzosmplat" == "$realbusstop" ]; then
         sed -i ''"$platlinenr"'s/^.*$/   <td class="small yellow">Platforms in OSM-route: '"${anzosmplat}"' ('"$((100*$anzosmplat/$realbusstop))"'%)<\/td>/' ./htmlfiles/osmroutes.html
+        modified="yes"
        fi
-       
+
        # Tabellenzelle mit tatsächlichen Haltestellen wird bearbeitet.
        if [ -n "$unspecrbsline" ]; then
-        echo "In Zeile ${rbslinenr} wird die tatsächliche Anzahl der Haltestellen (${realbusstop}) angepasst ..."
+        echo "Zeile ${rbslinenr}: Die tatsächliche Anzahl der Haltestellen (${realbusstop}) wird angepasst ..."
         sed -i ''"$rbslinenr"'s/^.*$/    <td class="withcolour"><i class="fa-td fa fa-arrow-circle-o-left fa-1x"><\/i>Number of real bus stops¹ : '"$realbusstop"'<\/td>/' ./htmlfiles/osmroutes.html
+        modified="yes"
        fi
        
        # Tabellenzelle mit GTFS-Verlinkungen wird bearbeitet.
        if [ -n "$unspecgtfsline" ]; then
-        echo "In Zeile ${gtfslinenr} werden Verlinkungen erstellt ..."
+        echo "Zeile ${gtfslinenr}: Verlinkungen werden erstellt ..."
         sed -i ''"$gtfslinenr"'s/^.*$/   <td class="osmtabgtfs"><a title="GTFS list" href="gtfs\/'"${gtfsid}"'.html#st_ar2"><i class="fa-td fa fa-list fa-1x"><\/i><\/a><a title="GTFS route (shape) on map" href="gtfs\/maps\/'"${gtfsid}"'.html"><i class="fa-td fa fa-map fa-1x"><\/i><\/a><\/td>/' ./htmlfiles/osmroutes.html
+        modified="yes"
        fi
+
+       # Änderungsdatum wird angepasst.
+       if [ "$modified" == "yes" ]; then
+        moddateline="$(grep -n 'id="createdate"' ./htmlfiles/osmroutes.html | grep -o '^[[:digit:]]*')"
+        echo "Zeile ${moddateline}: Datum der Änderung wird in HTML-Seitenfuss eingetragen ..."
+        # Evtl. alte Zeile mit Änderungsdatum wird aus HTML-Seite gelöscht.
+        sed -i '/id="moddate"/d' ./htmlfiles/osmroutes.html
+        # Neue Zeile mit letztem Änderungsdatum wird eingefügt.
+        sed -i '/id="createdate"/s/\(.*\)/\1\n  <p id="moddate">Letzte Änderung: '"$(date +%d.%m.%Y)"' um '"$(date +%H:%M)"' Uhr durch '"$(basename $0)"'<\/p>/' ./htmlfiles/osmroutes.html
+       fi
+
+       # Wenn das Depot eines aktiven Verkehrsgebietes geändert wurde, werden hier die Dateien aktualisiert.
+       echo "Depot (./config/ptarea${depotnr}/*.cfg) wird mit dem Arbeitsverzeichnis (./config/*.cfg) abgeglichen ..."
+       ./start.sh -l
 
       else
 
@@ -294,8 +346,10 @@ echo " <p>Name of the evaluated file: "$1"<br>" >>./"$htmlname"
 echo "    Evaluated bus routes: ${anzbusrel}</p>" >>./"$htmlname"
 if [ -e "./htmlfiles/gtfsroutes.html" ]; then
  agencyroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
+ # Folgende Zeile wird ggf. mit der Option -s geändert.
  echo " <p>Bus routes (${ptagencyname}) in OSM data: ${agencyroutes}<br>" >>./"$htmlname"
  anzmissingroutes="$(grep 'gtfsid[12]tab' ./htmlfiles/gtfsroutes.html | wc -l)"
+ # Folgende Zeile wird ggf. mit der Option -s geändert.
  echo "    Ca. $((100*${agencyroutes}/${anzmissingroutes}))% of bus routes (${ptagencyname}) are created in whole or in part.</p>" >>./"$htmlname"
  echo " <p>Which routes are missing, see:<br>" >>./"$htmlname"
  echo "    List of <a href=\"gtfsroutes.html\">GTFS routes</a> (shapes).</p>" >>./"$htmlname"
@@ -609,6 +663,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     elif [ "$(echo "$realbusstop" | sed 's/\(^.*\) .*/\1/')" == "$osmstop" ]; then
      echo "   <td class=\"small withcolour\">Stops in OSM-route: ${osmstop} (100%)</td>" >>./"$htmlname"
     elif [ -z "$realbusstop" ]; then
+     # Folgende Zeile wird ggf. später mit der Option -s geändert.
      echo "   <td class=\"small unspec${relnumber}stop\">Stops in OSM-route: ${osmstop}</td>" >>./"$htmlname"
     else echo "   <td class=\"small yellow\">Stops in OSM-route: ${osmstop} ($((100*$osmstop/$realbusstopnumber))%)</td>" >>./"$htmlname"
     fi
@@ -618,6 +673,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     elif [ "$(echo "$realbusstop" | sed 's/\(^.*\) .*/\1/')" == "$osmplatform" ]; then
      echo "   <td class=\"small withcolour\">Platforms in OSM-route: ${osmplatform} (100%)</td>" >>./"$htmlname"
     elif [ -z "$realbusstop" ]; then
+     # Folgende Zeile wird ggf. später mit der Option -s geändert.
      echo "   <td class=\"small unspec${relnumber}plat\">Platforms in OSM-route: ${osmplatform}</td>" >>./"$htmlname"
     else echo "   <td class=\"small yellow\">Platforms in OSM-route: ${osmplatform} ($((100*$osmplatform/$realbusstopnumber))%)</td>" >>./"$htmlname"
     fi
@@ -634,7 +690,9 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
       else echo "   <td class=\"withcolour\"><i class=\"fa-td fa fa-arrow-circle-o-left fa-1x\"></i>Number of real bus stops¹ : "$realbusstop"</td>" >>./"$htmlname"
       fi
 
-    else echo "   <td class=\"yellow unspec${relnumber}rbs\">Number of real bus stops: Not specified</td>" >>./"$htmlname"
+    else
+     # Folgende Zeile wird ggf. später mit der Option -s geändert.
+     echo "   <td class=\"yellow unspec${relnumber}rbs\">Number of real bus stops: Not specified</td>" >>./"$htmlname"
     fi
 
     echo "  </tr>" >>./"$htmlname"
@@ -673,6 +731,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
       
       else
       
+       # Folgende Zeile wird ggf. später mit der Option -s geändert.
        echo "   <td class=\"unspec${relnumber}gtfs\">No GTFS</td>" >>./"$htmlname"
        echo "Route ${refnumber} (RelationID: ${relnumber}) noch nicht (vollständig) in .cfg-Datei aufgenommen oder aktualisiert."
        
@@ -1090,7 +1149,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
    echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
    echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
    echo "  <p>&nbsp;</p>"
-   echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
+   echo "  <p id=\"createdate\">Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
    echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
    echo " </footer>"
    echo "</body>"
@@ -1130,7 +1189,7 @@ echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes g
 echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
 echo "  <p>GTFS is not part of Openstreetmap. For more Information, see <a href=\"https://carstenha.github.io/ptaweb.dk.east.bus/index.html\">https://carstenha.github.io/ptaweb.dk.east.bus/index.html</a></p>"
 echo "  <p>&nbsp;</p>"
-echo "  <p>Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
+echo "  <p id=\"createdate\">Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
 echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
 echo " </footer>"
 echo "</body>"
