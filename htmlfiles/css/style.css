@@ -706,6 +706,9 @@
     color: #222;
     text-align: center;
    }
+   footer p#moddate {
+    margin-top: -1em;
+   }
 @media only screen and (max-width: 620px) {
    header.index h1 {
     bottom: 75px;

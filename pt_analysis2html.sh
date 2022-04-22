@@ -30,79 +30,239 @@ Beschreibung der Optionen:
 
 	ruft diese Hilfe auf.
 
+   -d [relationid]
+
+	Löschen einer Route(nvariante). Falls keine Routenvariante mehr in einer entsprechenden Masterroute
+	vorhanden ist, kann auch diese optional gelöscht werden. Dann sollte man auch daran denken, diese
+	Route(n) ggf. aus den Rohdaten bei Openstreetmap.org zu löschen, wenn diese Routen real nicht mehr
+	existieren.
+	Benötigt ein Argument in Form einer gültigen Routen-RalationID (keine Masterrouten-RalationID).
+
    -s [relationid]
 
 	Aktualisierung von Routendaten, die neu in eine real_bus_stops.cfg aufgenommen worden ist.
 	Routen in den OSM-Daten werden immer ausgewertet, auch wenn diese noch nicht in den diversen
 	.cfg-Dateien aufgenommen worden sind. Will man schnell eine neu eingetragene Route (real_bus_stops.cfg)
 	in der bestehenden osmroutes.html vollständig auswerten, ohne eine komplette Auswertung der gesamten
-	OSM-Rohdaten vornehmen zu müssen, ist diese Option der richtige Weg.
+	OSM-Rohdaten vornehmen zu müssen, ist diese Option relevant.
+	Wichtig! Es werden keine komplett neuen Routen ausgewertet. Hierfür muss eine komplette Auswertung
+	durchgeführt werden.
 	Es wird ein Argument in Form einer RelationID benötigt.
 
 EOU
 }
+singlecheck() {
+ read -p "Welches Depot soll bearbeitet werden? " depotnr
+ if [ ! -e "./config/ptarea${depotnr}/real_bus_stops.cfg" ]; then
+  [ ! -d "./config/ptarea${depotnr}" ] && echo "Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!" && exit 1
+  echo "real_bus_stops.cfg im Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!"
+  exit 1
+ fi
+ rbscfgfile="./config/ptarea${depotnr}/real_bus_stops.cfg"
+ relid="$(grep "^${OPTARG} " "$rbscfgfile" | cut -f1 -d" ")"
+ [ -z "$relid" ] && echo "RelationID existiert nicht in cfg-file. Skript wird abgebrochen!" && exit 1
+ htmlname="./htmlfiles/osmroutes.html"
+ echo "Datei ${htmlname} wird gesichert ..."
+ cp ./"$htmlname" "$backupordner"/`date +%Y%m%d_%H%M`_"$(basename $htmlname)"
+ echo "${htmlname} wird bearbeitet ..."
+}
 
-while getopts hs: opt
+while getopts hd:s: opt
 do
   case $opt in
    h) # Hilfe
    usage
    exit
    ;;
-   s) # Anpassung für neu aufgenommene Route
-      read -p "Welches Depot soll bearbeitet werden? " depotnr
-      if [ ! -e "./config/ptarea${depotnr}/real_bus_stops.cfg" ]; then
-       [ ! -d "./config/ptarea${depotnr}" ] && echo "Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!" && exit 1
-       echo "real_bus_stops.cfg im Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!"
+   d) # Route löschen
+
+      singlecheck
+
+      if [ ! -e "${htmlname}" ]; then
+       echo "${htmlname} existiert nicht. Skript wird abgebrochen."
        exit 1
       fi
-      rbscfgfile="./config/ptarea${depotnr}/real_bus_stops.cfg"
-      relid="$(grep "^${OPTARG} " "$rbscfgfile" | cut -f1 -d" ")"
-      [ -z "$relid" ] && echo "RelationID existiert nicht in cfg-file. Skript wird abgebrochen!" && exit 1
-      echo "./htmlfiles/osmroutes.html wird bearbeitet ..."
+      if [ -z "$(grep -o '<table id="'"$relid"'' "${htmlname}")" ]; then
+       echo "RelationID ${relid} existiert nicht in ${htmlname}. Skript wird abgebrochen."
+       exit 1
+      fi
+
+      # Variablen definieren
+      refnumber="$(grep "^${relid} " "$rbscfgfile" | cut -d" " -f4)"
+      oldagencyroutes="$(sed -n '/in OSM data:/s/.*in OSM data: \([[:digit:]]*\).*/\1/p' "${htmlname}")"
+      newagencyroutes=$(("$oldagencyroutes" - 1))
+      newanzmissingroutes="$(grep 'gtfsid[12]tab' ./htmlfiles/gtfsroutes.html | wc -l)"
+
+      # Erster Teil der Tabelle löschen
+      echo "Routenvariante (RelationID: ${relid}) wird gelöscht ..."
+      sed -i '/<table id="'"$relid"'/,/<\/table>/d' "${htmlname}"
+      # Zweiter Teil der Tabelle löschen
+      sed -i '/<table id="sec'"$relid"'/,/<\/table>/d' "${htmlname}"
+      rtbereich="$(sed -n '/<div id="rt'"$relid"'" class="routetab">/,/<\/div>/p' "${htmlname}")"
+      # routetab-Element wird gelöscht
+      sed -i '/<div id="rt'"$relid"'" class="routetab">/,/<\/div>/d' "${htmlname}"
+
+      # Masterroute wird angepasst
+      # Das <h3>-Element ist wichtig, damit nicht die entsprechende Route mit einer Route, die
+      # nicht zum Verkehrsgebiet gehört, verwechselt werden kann.
+      anzmroutes="$(grep -c '<a class="masterueber" href="#route'"$refnumber"'"><h3>' "${htmlname}")"
+      if [ "$anzmroutes" == 1 ]; then
+       masterrelbereich="$(sed -n '/<a class="masterueber" href="#route'"$refnumber"'"><h3>/,/^ <\/div>/p' "${htmlname}")"
+       masterrelnumber="$(echo "$masterrelbereich" | sed -n 's/^.*<td class="small">RelationID: \([[:digit:]]*\)<\/td>.*$/\1/p')"
+       # Wichtige Verzweigung (beachte das eingerückte <div>-Element!)
+       # Der erste Bereich ist für Routen mit einer festen Masterroute als Eltern-Relation.
+       # Der zweite Bereich ist für Routen, die keine Masterroute als Eltern-Relation haben (z.b. wenn es nur eine Routenvariante gibt).
+       if [ -n "$masterrelnumber" ]; then
+        anzroutesinmaster="$(sed -n 's/^.*<td id="anzmr'"$masterrelnumber"'">\([[:digit:]]*\) routes in master route.<\/td>.*$/\1/p' "${htmlname}")"
+        newanzroutesinmaster=$(("$anzroutesinmaster" - 1))
+       else
+        sed -i '/<a class="masterueber" href="#route'"$refnumber"'"><h3>/,/^ <\/div>/d' "${htmlname}"
+        anzmroutes=0
+        newanzroutesinmaster="keine"
+       fi
+      fi
+
+      if [ "$newanzroutesinmaster" == 0 ]; then
+
+       masterchild="no"
+       echo "Keine Routenvariante mehr in Masterroute (RelationID: ${masterrelnumber})."
+
+       if [ "$anzmroutes" == 1 ]; then
+
+        while true; do
+         read -p "Soll ${anzmroutes} Masterroute aus osmroutes.html gelöscht werden? " delmaster
+         case "$delmaster" in
+          j|J) anzmroutes=0
+               sed -i '/<a class="masterueber" href="#route'"$refnumber"'"><h3>/,/^<\/div>/d' "${htmlname}"
+               echo "HINWEIS: Nicht vergessen die Masterroute ${masterrelnumber} aus den OSM-Rohdaten zu löschen!"
+               break
+          ;;
+          n|N) echo "Masterroute bleibt in osmroutes.html-Seite erhalten."
+               break
+          ;;
+            *) echo "Fehlerhafte Eingabe."
+          ;;
+         esac
+        done
+
+       fi
+
+      else
+
+       echo "${newanzroutesinmaster} weitere Routenvariante(n) in Route ${refnumber}."
+
+      fi
+
+      if [ "$anzmroutes" == 1 ]; then
+       # Anzahl der Masterrouten wird in osmroutes.html angepasst
+       echo "Masterroute ${masterrelnumber} wird angepasst ..."
+       echo "Anzahl der Masterrouten wird in osmroutes.html von ${anzroutesinmaster} auf ${newanzroutesinmaster} geändert."
+       if [ "$masterchild" == "no" ]; then
+        sed -i 's/\(^.*<td \)\(id="anzmr'"$masterrelnumber"'">\)[[:digit:]]*\( routes in master route.<\/td>.*$\)/\1class="red" \2'"$newanzroutesinmaster"'\3/' "${htmlname}"
+       else
+        sed -i 's/\(^.*<td id="anzmr'"$masterrelnumber"'">\)[[:digit:]]*\( routes in master route.<\/td>.*$\)/\1'"$newanzroutesinmaster"'\2/' "${htmlname}"
+       fi
+      else
+       echo "${anzmroutes} Masterrouten der Linie ${refnumber} in osmroutes.html."
+      fi
+
+      # Löschen der OSM-Haltestellendatei (.html)
+      echo "./htmlfiles/osm/${relid}.html wird gelöscht ..."
+      rm -f "./htmlfiles/osm/${relid}.html"
+
+      # Statistik wird angepasst (Anzahl der Busrouten).
+      mroutesline="$(grep -ni 'in OSM data:' "${htmlname}" | grep -o '^[[:digit:]]*')"
+      # Zusätzliche Überprüfung, falls mehrere identische Zeilen in osmroutes.html gefunden wurden.
+      if [ "$(echo "$mroutesline" | wc -l)" -gt "1" ]; then
+       echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$mroutesline")"
+      else
+       echo "Zeile ${mroutesline}: Statistik wird angepasst ..."
+       sed -i '/in OSM data:/s/\(in OSM data: \)[[:digit:]]*/\1'"$newagencyroutes"'/' "${htmlname}"
+      fi
+
+      # Statistik wird angepasst (Anzahl der Busrouten in Prozent).
+      oldmissroutesperc="$(sed -n '/are created in whole or in part/s/.* \([[:digit:]]*\)% .*/\1/p' "${htmlname}")"
+      newmissroutesperc=$((100*${newagencyroutes}/${newanzmissingroutes}))
+      routespercline="$(grep -ni 'are created in whole or in part' "${htmlname}" | grep -o '^[[:digit:]]*')"
+      # Zusätzliche Überprüfung, falls mehrere identische Zeilen in osmroutes.html gefunden wurden.
+      if [ "$(echo "$routespercline" | wc -l)" -gt "1" ]; then
+       echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$routespercline")"
+      else
+       echo "Zeile ${routespercline}: Statistik wird angepasst ..."
+       sed -i '/are created in whole or in part/s/[[:digit:]]*%/'"$newmissroutesperc"'%/' "${htmlname}"
+      fi
+
+      # Hier werden die einzelnen Tabellen neu durchnummeriert. Der Platzhalter wird durch die neue Zeichenkette ersetzt.
+      # Busrelationen
+      echo "Busrouten werden neu durchnummeriert ..."
+      sed -i 's/\(<h4 id=\"h4[[:digit:]]*\">\)Bus route [0-9]*\.[0-9]*\(.*<\/h4>\)/\1placeholder_pta_bus\2/' "${htmlname}"
+      for ((u=1 ; u<=(("$newagencyroutes")) ; u++)); do
+       zeilennummer="$(grep -n '<h4.*>placeholder_pta_bus.*</h4>' "${htmlname}" | sed -n '1p' | grep -o '^[[:digit:]]*')"
+       sed -i "${zeilennummer}s/placeholder_pta_bus/Bus route 1.${u}\&nbsp\;\&nbsp\;\&nbsp\;/" "${htmlname}"
+      done
+
+      # Änderungsdatum wird eingetragen/aktualisiert.
+      moddateline="$(grep -n 'id="createdate"' "${htmlname}" | grep -o '^[[:digit:]]*')"
+      echo "Zeile ${moddateline}: Datum der Änderung wird in HTML-Seitenfuss eingetragen ..."
+      # Evtl. alte Zeile mit Änderungsdatum wird aus HTML-Seite gelöscht.
+      sed -i '/id="moddate"/d' "${htmlname}"
+      # Neue Zeile mit letztem Änderungsdatum wird eingefügt.
+      sed -i '/id="createdate"/s/\(.*\)/\1\n  <p id="moddate">Letzte Änderung: '"$(date +%d.%m.%Y)"' um '"$(date +%H:%M)"' Uhr durch '"$(basename $0)"'<\/p>/' "${htmlname}"
+
+      # Wenn das Depot eines aktiven Verkehrsgebietes geändert wurde, werden hier die Dateien aktualisiert.
+      echo "Depot (./config/ptarea${depotnr}/*.cfg) wird mit dem Arbeitsverzeichnis (./config/*.cfg) abgeglichen ..."
+      ./start.sh -l
+      echo "Löschung der RelationID ${relid} beendet."
+
+      exit
+
+   ;;
+   s) # Anpassung für neu aufgenommene Route
+
+      singlecheck
       
       # Variablen definieren
       realbusstop="$(grep "^${relid} " "$rbscfgfile" | cut -d" " -f2)"
       gtfsid="$(grep "^${relid} " "$rbscfgfile" | cut -f5 -d" ")"
       [ -z "$gtfsid" ] && echo "GTFSID existiert nicht in cfg-file. Skript wird abgebrochen!" && exit 1
-      unspecstopline="$(grep -n "unspec${relid}stop" ./htmlfiles/osmroutes.html)"
-      unspecplatline="$(grep -n "unspec${relid}plat" ./htmlfiles/osmroutes.html)"
-      unspecrbsline="$(grep -n "unspec${relid}rbs" ./htmlfiles/osmroutes.html)"
-      unspecgtfsline="$(grep -n "unspec${relid}gtfs" ./htmlfiles/osmroutes.html)"
+      unspecstopline="$(grep -n "unspec${relid}stop" "${htmlname}")"
+      unspecplatline="$(grep -n "unspec${relid}plat" "${htmlname}")"
+      unspecrbsline="$(grep -n "unspec${relid}rbs" "${htmlname}")"
+      unspecgtfsline="$(grep -n "unspec${relid}gtfs" "${htmlname}")"
       stoplinenr="$(echo "$unspecstopline" | grep -o '^[[:digit:]]*')"
       platlinenr="$(echo "$unspecplatline" | grep -o '^[[:digit:]]*')"
       rbslinenr="$(echo "$unspecrbsline" | grep -o '^[[:digit:]]*')"
       gtfslinenr="$(echo "$unspecgtfsline" | grep -o '^[[:digit:]]*')"
       
-      if [ -e "./htmlfiles/osm/${relid}.html" -a -e "./htmlfiles/osmroutes.html" ]; then
+      if [ -e "./htmlfiles/osm/${relid}.html" -a -e "${htmlname}" ]; then
 
        # Statistik wird angepasst (Anzahl der Busrouten).
-       oldagencyoutes="$(sed -n '/in OSM data:/s/.*in OSM data: \([[:digit:]]*\).*/\1/p' ./htmlfiles/osmroutes.html)"
+       oldagencyroutes="$(sed -n '/in OSM data:/s/.*in OSM data: \([[:digit:]]*\).*/\1/p' "${htmlname}")"
        newagencyroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
        newanzmissingroutes="$(grep 'gtfsid[12]tab' ./htmlfiles/gtfsroutes.html | wc -l)"
-       if [ ! "$oldagencyoutes" == "$newagencyroutes" ]; then
-        mroutesline="$(grep -ni 'in OSM data:' ./htmlfiles/osmroutes.html | grep -o '^[[:digit:]]*')"
+       if [ ! "$oldagencyroutes" == "$newagencyroutes" ]; then
+        mroutesline="$(grep -ni 'in OSM data:' "${htmlname}" | grep -o '^[[:digit:]]*')"
         # Zusätzliche Überprüfung, falls mehrere identische Zeilen in osmroutes.html gefunden wurden.
         if [ "$(echo "$mroutesline" | wc -l)" -gt "1" ]; then
          echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$mroutesline")"
         else
          echo "Zeile ${mroutesline}: Statistik wird angepasst ..."
-         sed -i '/in OSM data:/s/\(in OSM data: \)[[:digit:]]*/\1'"$newagencyroutes"'/' ./htmlfiles/osmroutes.html
+         sed -i '/in OSM data:/s/\(in OSM data: \)[[:digit:]]*/\1'"$newagencyroutes"'/' "${htmlname}"
          modified="yes"
         fi
        fi
 
        # Statistik wird angepasst (Anzahl der Busrouten in Prozent).
-       oldmissroutesperc="$(sed -n '/are created in whole or in part/s/.* \([[:digit:]]*\)% .*/\1/p' ./htmlfiles/osmroutes.html)"
+       oldmissroutesperc="$(sed -n '/are created in whole or in part/s/.* \([[:digit:]]*\)% .*/\1/p' "${htmlname}")"
        newmissroutesperc=$((100*${newagencyroutes}/${newanzmissingroutes}))
        if [ ! "$oldmissroutesperc" == "$newmissroutesperc" ]; then
-        routespercline="$(grep -ni 'are created in whole or in part' ./htmlfiles/osmroutes.html | grep -o '^[[:digit:]]*')"
+        routespercline="$(grep -ni 'are created in whole or in part' "${htmlname}" | grep -o '^[[:digit:]]*')"
         # Zusätzliche Überprüfung, falls mehrere identische Zeilen in osmroutes.html gefunden wurden.
         if [ "$(echo "$routespercline" | wc -l)" -gt "1" ]; then
          echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$routespercline")"
         else
          echo "Zeile ${routespercline}: Statistik wird angepasst ..."
-         sed -i '/are created in whole or in part/s/[[:digit:]]*%/'"$newmissroutesperc"'%/' ./htmlfiles/osmroutes.html
+         sed -i '/are created in whole or in part/s/[[:digit:]]*%/'"$newmissroutesperc"'%/' "${htmlname}"
          modified="yes"
         fi
        fi
@@ -112,10 +272,10 @@ do
        anzosmstop="$(grep 'Stop [[:digit:]]*:</th>' "./htmlfiles/osm/${relid}.html" | wc -l)"
        [ -n "$unspecstopline" ] && echo "Zeile ${stoplinenr}: Die Anzahl der OSM-stops (${anzosmstop}) wird angepasst ..."
        if [ -n "$unspecstopline" -a "$anzosmstop" == "$realbusstop" ]; then
-        sed -i ''"$stoplinenr"'s/^.*$/   <td class="small withcolour">Stops in OSM-route: '"${anzosmstop}"' (100%)<\/td>/' ./htmlfiles/osmroutes.html
+        sed -i ''"$stoplinenr"'s/^.*$/   <td class="small withcolour">Stops in OSM-route: '"${anzosmstop}"' (100%)<\/td>/' "${htmlname}"
         modified="yes"
        elif [ -n "$unspecstopline" -a ! "$anzosmstop" == "$realbusstop" ]; then
-        sed -i ''"$stoplinenr"'s/^.*$/   <td class="small yellow">Stops in OSM-route: '"${anzosmstop}"' ('"$((100*$anzosmstop/$realbusstop))"'%)<\/td>/' ./htmlfiles/osmroutes.html
+        sed -i ''"$stoplinenr"'s/^.*$/   <td class="small yellow">Stops in OSM-route: '"${anzosmstop}"' ('"$((100*$anzosmstop/$realbusstop))"'%)<\/td>/' "${htmlname}"
         modified="yes"
        fi
 
@@ -123,35 +283,35 @@ do
        anzosmplat="$(grep 'Platform [[:digit:]]*:</th>' "./htmlfiles/osm/${relid}.html" | wc -l)"
        [ -n "$unspecplatline" ] && echo "Zeile ${platlinenr}: Die Anzahl der OSM-platforms (${anzosmplat}) wird angepasst ..."
        if [ -n "$unspecplatline" -a "$anzosmplat" == "$realbusstop" ]; then
-        sed -i ''"$platlinenr"'s/^.*$/   <td class="small withcolour">Platforms in OSM-route: '"${anzosmplat}"' (100%)<\/td>/' ./htmlfiles/osmroutes.html
+        sed -i ''"$platlinenr"'s/^.*$/   <td class="small withcolour">Platforms in OSM-route: '"${anzosmplat}"' (100%)<\/td>/' "${htmlname}"
         modified="yes"
        elif [ -n "$unspecplatline" -a ! "$anzosmplat" == "$realbusstop" ]; then
-        sed -i ''"$platlinenr"'s/^.*$/   <td class="small yellow">Platforms in OSM-route: '"${anzosmplat}"' ('"$((100*$anzosmplat/$realbusstop))"'%)<\/td>/' ./htmlfiles/osmroutes.html
+        sed -i ''"$platlinenr"'s/^.*$/   <td class="small yellow">Platforms in OSM-route: '"${anzosmplat}"' ('"$((100*$anzosmplat/$realbusstop))"'%)<\/td>/' "${htmlname}"
         modified="yes"
        fi
 
        # Tabellenzelle mit tatsächlichen Haltestellen wird bearbeitet.
        if [ -n "$unspecrbsline" ]; then
         echo "Zeile ${rbslinenr}: Die tatsächliche Anzahl der Haltestellen (${realbusstop}) wird angepasst ..."
-        sed -i ''"$rbslinenr"'s/^.*$/    <td class="withcolour"><i class="fa-td fa fa-arrow-circle-o-left fa-1x"><\/i>Number of real bus stops¹ : '"$realbusstop"'<\/td>/' ./htmlfiles/osmroutes.html
+        sed -i ''"$rbslinenr"'s/^.*$/    <td class="withcolour"><i class="fa-td fa fa-arrow-circle-o-left fa-1x"><\/i>Number of real bus stops¹ : '"$realbusstop"'<\/td>/' "${htmlname}"
         modified="yes"
        fi
        
        # Tabellenzelle mit GTFS-Verlinkungen wird bearbeitet.
        if [ -n "$unspecgtfsline" ]; then
         echo "Zeile ${gtfslinenr}: Verlinkungen werden erstellt ..."
-        sed -i ''"$gtfslinenr"'s/^.*$/   <td class="osmtabgtfs"><a title="GTFS list" href="gtfs\/'"${gtfsid}"'.html#st_ar2"><i class="fa-td fa fa-list fa-1x"><\/i><\/a><a title="GTFS route (shape) on map" href="gtfs\/maps\/'"${gtfsid}"'.html"><i class="fa-td fa fa-map fa-1x"><\/i><\/a><\/td>/' ./htmlfiles/osmroutes.html
+        sed -i ''"$gtfslinenr"'s/^.*$/   <td class="osmtabgtfs"><a title="GTFS list" href="gtfs\/'"${gtfsid}"'.html#st_ar2"><i class="fa-td fa fa-list fa-1x"><\/i><\/a><a title="GTFS route (shape) on map" href="gtfs\/maps\/'"${gtfsid}"'.html"><i class="fa-td fa fa-map fa-1x"><\/i><\/a><\/td>/' "${htmlname}"
         modified="yes"
        fi
 
        # Änderungsdatum wird angepasst.
        if [ "$modified" == "yes" ]; then
-        moddateline="$(grep -n 'id="createdate"' ./htmlfiles/osmroutes.html | grep -o '^[[:digit:]]*')"
+        moddateline="$(grep -n 'id="createdate"' "${htmlname}" | grep -o '^[[:digit:]]*')"
         echo "Zeile ${moddateline}: Datum der Änderung wird in HTML-Seitenfuss eingetragen ..."
         # Evtl. alte Zeile mit Änderungsdatum wird aus HTML-Seite gelöscht.
-        sed -i '/id="moddate"/d' ./htmlfiles/osmroutes.html
+        sed -i '/id="moddate"/d' "${htmlname}"
         # Neue Zeile mit letztem Änderungsdatum wird eingefügt.
-        sed -i '/id="createdate"/s/\(.*\)/\1\n  <p id="moddate">Letzte Änderung: '"$(date +%d.%m.%Y)"' um '"$(date +%H:%M)"' Uhr durch '"$(basename $0)"'<\/p>/' ./htmlfiles/osmroutes.html
+        sed -i '/id="createdate"/s/\(.*\)/\1\n  <p id="moddate">Letzte Änderung: '"$(date +%d.%m.%Y)"' um '"$(date +%H:%M)"' Uhr durch '"$(basename $0)"'<\/p>/' "${htmlname}"
        fi
 
        # Wenn das Depot eines aktiven Verkehrsgebietes geändert wurde, werden hier die Dateien aktualisiert.
@@ -161,7 +321,7 @@ do
       else
 
        [ ! -e "./htmlfiles/osm/${relid}.html" ] && echo "Datei ./htmlfiles/osm/${relid}.html existiert nicht."
-       [ ! -e "./htmlfiles/osmroutes.html" ] && echo "Datei ./htmlfiles/osmroutes.html existiert nicht."
+       [ ! -e "${htmlname}" ] && echo "Datei ${htmlname} existiert nicht."
        echo "Skript wird abgebrochen!"
        exit 1
 
@@ -474,7 +634,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
        echo "   <th>Master route (Bus $busueber):</th>" >>./"$htmlname"
        echo "   <td class=\"small\">RelationID: $masterrelnumber</td>" >>./"$htmlname"
        echo "   <td class=\"small\">Show on OSM: <a class=\"onlyprint\" href=\"https://www.openstreetmap.org/relation/$masterrelnumber\">https://www.openstreetmap.org/relation/$masterrelnumber</a><a href=\"https://www.openstreetmap.org/relation/$masterrelnumber\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td>" >>./"$htmlname"
-       echo "   <td>$(echo "$masterrelbereich" | grep -o '<member type='\''relation'\''' | wc -l) routes in master route.</td>" >>./"$htmlname"
+       echo "   <td id=\"anzmr${masterrelnumber}\">$(echo "$masterrelbereich" | grep -o '<member type='\''relation'\''' | wc -l) routes in master route.</td>" >>./"$htmlname"
        echo "  </tr>" >>./"$htmlname"
        echo " </table>" >>./"$htmlname"
        masterbearbeitet="1"
@@ -482,11 +642,12 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     done
 
     echo " </div>" >>./"$htmlname"
+
    fi
    # Toggle Ende
 
-   echo " <div class=\"routetab\">" >>./"$htmlname"
-   echo "  <h4 id=\"$relnumber\">placeholder_pta_bus<a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSMI</a>&nbsp;&nbsp;&nbsp;<a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname"
+   echo " <div id=\"rt${relnumber}\" class=\"routetab\">" >>./"$htmlname"
+   echo "  <h4 id=\"h4${relnumber}\">placeholder_pta_bus<a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSMI</a>&nbsp;&nbsp;&nbsp;<a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname"
    echo " <table id=\"$relnumber\" class=\"first\">" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
    echo "   <th>RelationID:</th>" >>./"$htmlname"
@@ -594,7 +755,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     # Hier wird der zweite Teil der Tabelle (Summary) generiert.
     echo "  <h4>&nbsp;Summary:</h4>" >>./"$htmlname"
-    echo " <table class=\"second\">" >>./"$htmlname"
+    echo " <table id=\"sec${relnumber}\" class=\"second\">" >>./"$htmlname"
 
     # Zeile 1 der zweiten Tabelle:
     echo "  <tr>" >>./"$htmlname"
@@ -1125,10 +1286,10 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
     fi
 
-  # Schließt div <class="stopplat"> in $htmlname2
-  echo " </div>" >>"$htmlname2"
+    # Schließt div <class="stopplat"> in $htmlname2
+    echo " </div>" >>"$htmlname2"
 
-  # ***** Ende der Auswertungen für die Seite $htmlname2 *****
+    # ***** Ende der Auswertungen für die Seite $htmlname2 *****
 
     # Schließt <table class="second"> in $htmlname
     echo " </table>" >>./"$htmlname"
@@ -1203,7 +1364,7 @@ htmlfuss >>./"$htmlname"
 for ((u=1 ; u<=(("$anzbusrel")) ; u++)); do
  unset zeilennummer
  zeilennummer="$(grep -n '<h4.*>placeholder_pta_bus.*</h4>' "$htmlname" | sed -n '1p' | grep -o '^[[:digit:]]*')"
- sed -i ""$zeilennummer"s/placeholder_pta_bus/Bus route 1."$u"\&nbsp\;\&nbsp\;\&nbsp\;/" "$htmlname"
+ sed -i "${zeilennummer}s/placeholder_pta_bus/Bus route 1.${u}\&nbsp\;\&nbsp\;\&nbsp\;/" "$htmlname"
 done
 
 # Hier wird das erste div-Element rausgenommen und das letzte hinzugefügt, welche ansonsten für das toggeln der Tabellen benötigt werden.
