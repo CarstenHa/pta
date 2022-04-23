@@ -12,7 +12,11 @@ htmlfiles/gtfs/maps/LICENSE.md
 infos/
 README
 ablage/
-rcompare/
+rcompare/backup/*
+!rcompare/backup/zipfiles
+rcompare/bin/lizenzhinweise
+rcompare/dummy/backup
+rcompare/rchecker.sh
 alternativedownload.sh
 exclude.lst
 zipall.sh

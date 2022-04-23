@@ -1,0 +1,41 @@
+#!/usr/bin/perl 
+
+# Quellen: https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Perl
+#          https://askubuntu.com/questions/753608/is-there-any-program-for-fuzzy-string-matching-which-provides-a-match-score/
+# Licensed under CC BY-SA (https://creativecommons.org/licenses/by-sa/3.0/)
+# Script is modified
+
+use List::Util qw(min);
+
+sub levenshtein
+{
+    my ($str1, $str2) = @_;
+    my @ar1 = split //, $str1;
+    my @ar2 = split //, $str2;
+
+    my @dist;
+    $dist[$_][0] = $_ foreach (0 .. @ar1);
+    $dist[0][$_] = $_ foreach (0 .. @ar2);
+
+    foreach my $i (1 .. @ar1) {
+        foreach my $j (1 .. @ar2) {
+            my $cost = $ar1[$i - 1] eq $ar2[$j - 1] ? 0 : 1;
+            $dist[$i][$j] = min(
+                            $dist[$i - 1][$j] + 1, 
+                            $dist[$i][$j - 1] + 1, 
+                            $dist[$i - 1][$j - 1] + $cost
+                             );
+        }
+    }
+
+    return $dist[@ar1][@ar2];
+}
+chomp(my @strings1=<"$ARGV[0]">);
+chomp(my @strings2=<"$ARGV[1]">);
+
+foreach my $str1 (@strings1) {
+    foreach my $str2 (@strings2) {
+        my $lev=levenshtein($str1, $str2);
+        print "$lev\n";
+    }
+}

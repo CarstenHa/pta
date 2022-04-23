@@ -1,0 +1,206 @@
+#!/bin/bash
+
+# Syntax $0 [RelationID] [path/to/file.osm]
+
+usage() {
+cat <<EOU
+
+Syntax $0 [RelationID] [path/to/file.osm]
+
+EOU
+}
+
+if [ -z "$1" -o -z "$2" ]; then
+ echo "Falsche Syntax."
+ usage
+ exit 1
+fi
+if [ ! -e "$2" ]; then
+ echo "Datei ${2} existiert nicht. Skript wird abgebrochen."
+ exit 1
+fi
+
+relbereich="$(sed -n '/<relation id=['\''\"]'"$1"'['\''\"]/,/<\/relation>/p' "$2")"
+
+if [ -z "$relbereich" ]; then
+ echo "Es wurde keine Relation mit ID ${1} gefunden."
+ exit
+fi
+
+linienbez="$(echo "$relbereich" | grep 'k=['\''\"]ref['\''\"]' | sed 's/.*v=['\''\"]\([^'\''\"]*\)['\''\"].*/\1/')"
+
+echo "********************** ptroute2gpx *********************"
+echo "RelationID: ${1}"
+if [ -n "$linienbez" ]; then
+ echo "Route: ${linienbez}"
+fi
+
+relmember="$(echo "$relbereich" | grep '<member')"
+anzrelmember="$(echo "$relmember" | wc -l)"
+
+echo "Es wurden ${anzrelmember} Relations-Mitglieder gefunden."
+
+node_stop_position_counter="0"
+platform_counter="0"
+member_counter="0"
+
+# ***** Die einzelnen Mitglieder einer Relation werden verarbeitet *****
+for memberline in $(seq 1 "$anzrelmember"); do
+
+ let member_counter++
+
+ # \r (Zeilenrücklauf) ermöglicht die Ausgabe in einer Zeile.
+ printf "Relations-Mitglied %d/%d wird verarbeitet ...\r" "$member_counter" "$anzrelmember"
+
+ singleline="$(echo "$relmember" | sed -n ''$memberline'p')"
+ osmelement="$(echo "$singleline" | sed 's/.*type=['\''\"]\(node\|way\|relation\)['\''\"].*/\1/')"
+ memberid="$(echo "$singleline" | sed 's/.*ref=['\''\"]\([[:digit:]]*\)['\''\"].*/\1/')"
+
+ # *** Punkt (node) ***
+ if [ "$osmelement" == "node" ]; then
+
+  nodebereich="$(sed -n '/<node id=['\''\"]'"$memberid"'['\''\"]/,/<\/node>/p' "$2")"
+  nodelat="$(echo "$nodebereich" | sed -n '1p' | sed 's/.*lat=['\''\"]\(-*[[:digit:]]*\.[[:digit:]]*\)['\''\"].*/\1/')"
+  nodelon="$(echo "$nodebereich" | sed -n '1p' | sed 's/.*lon=['\''\"]\(-*[[:digit:]]*\.[[:digit:]]*\)['\''\"].*/\1/')"
+
+  # ** Public-Transport-Schema wird ausgewertet **
+  if [ -n "$(echo "$nodebereich" | grep 'v=.stop_position')" ]; then
+
+   let node_stop_position_counter++
+   nodestopname="$(echo "$nodebereich" | grep 'k=['\''\"]name['\''\"]' | sed 's/.*v=['\''\"]\([^'\''\"]*\)['\''\"].*/\1/')"
+   osmnodelist=$(echo "$osmnodelist"; echo -e "  <wpt lat=\"${nodelat}\" lon=\"${nodelon}\">\n   <name>stop_position ${node_stop_position_counter}: ${nodestopname} (${memberid})</name>\n   <desc>stop_position ${node_stop_position_counter}: ${nodestopname} (${memberid})</desc>\n  </wpt>")
+
+  elif [ -n "$(echo "$nodebereich" | grep 'v=.platform')" ]; then
+
+   let platform_counter++
+   nodeplatformname="$(echo "$nodebereich" | grep 'k=['\''\"]name['\''\"]' | sed 's/.*v=['\''\"]\([^'\''\"]*\)['\''\"].*/\1/')"
+   osmnodelist=$(echo "$osmnodelist"; echo -e "  <wpt lat=\"${nodelat}\" lon=\"${nodelon}\">\n   <name>platform ${platform_counter}: ${nodeplatformname} (${memberid})</name>\n   <desc>platform ${platform_counter}: ${nodeplatformname} (${memberid})</desc>\n  </wpt>")
+
+  else
+
+   osmnodelist=$(echo "$osmnodelist"; echo -e "  <wpt lat=\"${nodelat}\" lon=\"${nodelon}\">\n   <name>${memberid}</name>\n   <desc>${memberid}</desc>\n  </wpt>")
+
+  fi
+
+ # *** Weg (way) ***
+ elif [ "$osmelement" == "way" ]; then
+
+  waybereich="$(sed -n '/<way id=['\''\"]'"$memberid"'['\''\"]/,/<\/way>/p' "$2")"
+  waymember="$(echo "$waybereich" | grep '<nd ')"
+  anzwaymember="$(echo "$waymember" | wc -l)"
+
+  # ** Public-Transport-Schema wird ausgewertet **
+  if [ -n "$(echo "$waybereich" | grep 'v=.platform')" ]; then
+
+   let platform_counter++
+   wayplatformname="$(echo "$waybereich" | grep 'k=['\''\"]name['\''\"]' | sed 's/.*v=['\''\"]\([^'\''\"]*\)['\''\"].*/\1/')"
+   osmwaylist=$(echo "$osmwaylist"; echo -e "  <trk>\n    <name>platform ${platform_counter}: ${wayplatformname} (${memberid})</name>\n    <desc>platform ${platform_counter}: ${wayplatformname} (${memberid})</desc>\n    <trkseg>")
+
+  else
+
+   osmwaylist=$(echo "$osmwaylist"; echo -e "  <trk>\n    <trkseg>")
+
+  fi
+
+    for waymemberline in $(seq 1 "$anzwaymember"); do
+
+     waymembersingleline="$(echo "$waymember" | sed -n ''$waymemberline'p')"
+     waymembernodeid="$(echo "$waymembersingleline" | sed 's/.*ref=['\''\"]\([[:digit:]]*\)['\''\"].*/\1/')"
+     waymembernodeline="$(sed -n '/<node id=['\''\"]'"$waymembernodeid"'['\''\"]/p' "$2")"
+     waymembernodelat="$(echo "$waymembernodeline" | sed 's/.*lat=['\''\"]\(-*[[:digit:]]*\.[[:digit:]]*\)['\''\"].*/\1/')"
+     waymembernodelon="$(echo "$waymembernodeline" | sed 's/.*lon=['\''\"]\(-*[[:digit:]]*\.[[:digit:]]*\)['\''\"].*/\1/')"
+
+     osmwaylist=$(echo "$osmwaylist"; echo -e "      <trkpt lat=\"${waymembernodelat}\" lon=\"${waymembernodelon}\">\n      </trkpt>")
+
+    done
+
+    osmwaylist=$(echo "$osmwaylist"; echo -e "    </trkseg>\n  </trk>")
+
+ # *** Relation (relation) ***
+ elif [ "$osmelement" == "relation" ]; then
+
+  relbereich2="$(sed -n '/<relation id=['\''\"]'"$memberid"'['\''\"]/,/<\/relation>/p' "$2")"
+
+  # ** Public-Transport-Schema wird ausgewertet **
+  if [ -n "$(echo "$relbereich2" | grep 'v=.platform')" ]; then
+   let platform_counter++
+  fi
+
+  relmember2="$(echo "$relbereich2" | grep '<member')"
+  anzrelmember2="$(echo "$relmember2" | wc -l)"
+
+  relplatformname="$(echo "$relbereich2" | grep 'k=['\''\"]name['\''\"]' | sed 's/.*v=['\''\"]\([^'\''\"]*\)['\''\"].*/\1/')"
+  relrefname="$(echo "$relbereich2" | grep 'k=['\''\"]ref['\''\"]' | sed 's/.*v=['\''\"]\([^'\''\"]*\)['\''\"].*/\1/')"
+
+  # Hier werden die einzelnen Wege der Relation ermittelt.
+  for memberline2 in $(seq 1 "$anzrelmember2"); do
+
+    singleline2="$(echo "$relmember2" | sed -n ''$memberline2'p')"
+    memberid2="$(echo "$singleline2" | sed 's/.*ref=['\''\"]\([[:digit:]]*\)['\''\"].*/\1/')"
+    waybereich2="$(sed -n '/<way id=['\''\"]'"$memberid2"'['\''\"]/,/<\/way>/p' "$2")"
+    waymember2="$(echo "$waybereich2" | grep '<nd ')"
+    anzwaymember2="$(echo "$waymember2" | wc -l)"
+
+    # ** Public-Transport-Schema wird ausgewertet **
+    if [ -n "$(echo "$relbereich2" | grep 'v=.platform')" ]; then
+     osmrellist=$(echo "$osmrellist"; echo -e "  <trk>\n    <name>platform (relation): ${platform_counter} (${memberid}) way (${memberid2})</name>\n    <desc>platform (relation): ${platform_counter} (${memberid}) way (${memberid2})</desc>\n    <trkseg>")
+    else
+     osmrellist=$(echo "$osmrellist"; echo -e "  <trk>\n    <name>relation (${memberid}) way (${memberid2})</name>\n    <desc>relation (${memberid}) way (${memberid2})</desc>\n    <trkseg>")
+    fi
+
+    # Hier werden die einzelnen Punkte des Weges der Relation ermittelt.
+    for waymemberline2 in $(seq 1 "$anzwaymember2"); do
+
+      waymembersingleline2="$(echo "$waymember2" | sed -n ''$waymemberline2'p')"
+      waymembernodeid2="$(echo "$waymembersingleline2" | sed 's/.*ref=['\''\"]\([[:digit:]]*\)['\''\"].*/\1/')"
+      waymembernodeline2="$(sed -n '/<node id=['\''\"]'"$waymembernodeid2"'['\''\"]/p' "$2")"
+      waymembernodelat2="$(echo "$waymembernodeline2" | sed 's/.*lat=['\''\"]\(-*[[:digit:]]*\.[[:digit:]]*\)['\''\"].*/\1/')"
+      waymembernodelon2="$(echo "$waymembernodeline2" | sed 's/.*lon=['\''\"]\(-*[[:digit:]]*\.[[:digit:]]*\)['\''\"].*/\1/')"
+
+      osmrellist=$(echo "$osmrellist"; echo -e "      <trkpt lat=\"${waymembernodelat2}\" lon=\"${waymembernodelon2}\">\n      </trkpt>")
+
+    # Ende waymemberline2-Schleife
+    done
+
+    osmrellist=$(echo "$osmrellist"; echo -e "    </trkseg>\n  </trk>")
+
+  # Ende memberline2-Schleife
+  done
+
+ fi
+
+done
+
+echo -e "\rVerarbeitung der einzelnen Relations-Mitglieder beendet."
+
+# Leerzeilen werden entfernt.
+osmnodelist=$(echo "$osmnodelist" | sed '/^$/d')
+osmwaylist=$(echo "$osmwaylist" | sed '/^$/d')
+osmrellist=$(echo "$osmrellist" | sed '/^$/d')
+
+relname="$1"
+
+echo "Datei ${relname}.gpx wird erstellt ..."
+
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" >./"$relname".gpx
+echo "<gpx" >>./"$relname".gpx
+echo "version=\"1.0\"" >>./"$relname".gpx
+echo "creator=\"$(basename $0)\"" >>./"$relname".gpx
+echo "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" >>./"$relname".gpx
+echo "xmlns=\"http://www.topografix.com/GPX/1/0\"" >>./"$relname".gpx
+echo "xsi:schemaLocation=\"http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd\">" >>./"$relname".gpx
+
+echo " <metadata>" >>./"$relname".gpx
+echo "  <name>OSM public transport route (${relname})</name>" >>./"$relname".gpx
+echo "  <desc>OSM public transport route (${relname})</desc>" >>./"$relname".gpx
+echo " </metadata>" >>./"$relname".gpx
+
+echo "$osmnodelist" >>./"$relname".gpx
+echo "$osmwaylist" >>./"$relname".gpx
+echo "$osmrellist" >>./"$relname".gpx
+
+echo "</gpx>" >>./"$relname".gpx
+
+echo "GPX-Datei ${relname}.gpx ist fertig."
+
+

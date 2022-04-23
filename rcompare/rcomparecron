@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# License: GNU Lesser General Public License v3.0
+# See: http://www.gnu.org/licenses/lgpl-3.0.html
+# Written by Carsten Jacob
+# Please feel free to contact me coding@langstreckentouren.de
+# https://github.com/CarstenHa
+
+startdatum=`date +%Y%m%d_%H%M%S`
+
+usage() {
+cat <<EOH
+ 
+Skript zum automatischen Starten von rcompare.sh bzw. um den Prozess sofort im Hintergrund zu starten.
+
+Syntax:
+
+	$0 [option]
+	$0 [option] [NUM]
+	
+Beispiel (für einen kompletten rcompare.sh-Durchlauf; ohne git):
+	
+	./rcompare.sh -dgda -m no [NUM]
+	
+Mit den Optionen -dga -m no [NUM] startet man einen kompletten Durchlauf. Es sind zwischen den einzelnen
+Arbeitsschritten "Sollbruchstellen" eingebaut. Bei Fehlerfunden wird die weitere Bearbeitung
+abgebrochen. Wichtig ist zu Beginn das Löschen der Arbeitsordner, damit nicht eventuell auf veraltete
+Analysedateien zurückgegriffen werden kann.
+Die meisten Optionen (f,l) benötigen als weiteren Parameter eine Nummer für einen config-Ordner.
+Zur Zeit existieren folgende config-Ordner und eingebundene Gebiete:
+
+NUM:  Ordner:             Gebiete:
+$(for gebiete in ../config/ptarea[0-9]; do echo "$(echo "$gebiete" | grep -o '[[:digit:]]*$')     $gebiete   $(sed -n 's/^ptarealong=["'\'']*\([^"'\'']*\)["'\'']*$/\1/p' "${gebiete}/ptarea.cfg" 2>/dev/null)"; done)
+
+Beschreibung der einzelnen Optionen:
+
+   -f [NUM] (Full-Modus, entspricht ./rcompare -dgda -m no [NUM])
+
+	Startet den kompletten Durchlauf
+	1. löschen der Arbeitsordner
+	2. .cfg-Datei aktualisieren
+	3. HTML-Seitenerstellung
+	4. Erstellung von gtfsroutes.html
+	
+	Als zusätzlicher Parameter muss eine Nummer für einen config-Ordner angegeben werden
+	(1 für ../config/ptarea1, 2 für ../config/ptarea2, usw.)
+	
+   -h (Hilfe)
+   
+	ruft diese Hilfe auf.
+	
+   -l [NUM] (Light-Modus, entspricht ./rcompare.sh -da -m no -d [NUM])
+   
+	Startet den Modus ohne die Auswertung der GTFS-Daten (inkl. Haltestellen) in .cfg-Datei.
+	1. löschen der Arbeitsordner
+	2. HTML-Seitenerstellung
+	3. Erstellung von gtfsroutes.html
+	4. löschen der Arbeitsordner (Arbeitsdateien wurden zuvor in zip-file gespeichert)
+	
+	Als zusätzlicher Parameter muss eine Nummer für einen config-Ordner angegeben werden
+	(1 für ../config/ptarea1, 2 für ../config/ptarea2, usw.)
+	
+EOH
+}
+
+if [ $# == "0" ]; then
+ usage
+ echo "Bitte eine Option angeben."
+fi
+
+while getopts f:l:h opt
+
+do
+ case $opt in
+  
+  f) echo "** Full Modus (entspricht ./rcompare -dgda -m no ${OPTARG}) **"
+     if [ ! -d "../config/ptarea${OPTARG}" ]; then
+      echo -e "Bitte eine Zahl für einen existierenden config-Ordner im letzten Argument angeben. (z.B. 1 für Ordner ptarea1)\nSkript wird abgebrochen!"
+      exit 1
+     fi
+     nohup ./rcompare.sh -dgda -m no ${OPTARG} >./backup/${startdatum}_checkcfgfile_full.log 2>&1 &
+   break
+   ;;
+   
+  l) echo "** Light Modus (entspricht ./rcompare -da -m no -d ${OPTARG}) **"
+     if [ ! -d "../config/ptarea${OPTARG}" ]; then
+      echo -e "Bitte eine Zahl für einen existierenden config-Ordner im letzten Argument angeben. (z.B. 1 für Ordner ptarea1)\nSkript wird abgebrochen!"
+      exit 1
+     fi
+     nohup ./rcompare.sh -da -m no -d ${OPTARG} >./backup/${startdatum}_checkcfgfile_light.log 2>&1 &
+   break
+   ;;
+   
+  h) usage
+     exit
+   ;;
+   
+  *) usage
+   echo "Ungültige Option."
+   ;;
+ 
+ esac
+done
+
+
