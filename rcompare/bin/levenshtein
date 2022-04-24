@@ -1,6 +1,6 @@
 #!/usr/bin/perl 
 
-# Quellen: https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Perl
+# Sources: https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Perl
 #          https://askubuntu.com/questions/753608/is-there-any-program-for-fuzzy-string-matching-which-provides-a-match-score/
 # Licensed under CC BY-SA (https://creativecommons.org/licenses/by-sa/3.0/)
 # Script is modified

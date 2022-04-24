@@ -68,6 +68,12 @@ Font Awesome: Font Awesome by Dave Gandy (<http://fontawesome.io>). The font is 
 
 Font Exo2: Copyright (c) 2013, Natanael Gama (www.ndiscovered.com info(at)ndiscovered.com), with Reserved Font Name Exo. This Font Software is licensed under the SIL Open Font License, Version 1.1. <http://scripts.sil.org/OFL>
 
+Levenshtein-Script:  
+Sources:  
+<https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Perl>  
+<https://askubuntu.com/questions/753608/is-there-any-program-for-fuzzy-string-matching-which-provides-a-match-score/>  
+Licensed under CC BY-SA (<https://creativecommons.org/licenses/by-sa/3.0/>)
+
 CarstenHa/pta is licensed under the GNU Lesser General Public License v3.0  
 <https://github.com/CarstenHa/pta/blob/master/LICENSE>
 
