@@ -258,7 +258,7 @@ echo "  <table>" >>./gtfstohtml_kopf.txt
 # *** Hier wird zusätzlich die Kartenseite erstellt. ***
 # Dummies werden kopiert und entsprechend angepasst.
 cp ./dummy/index.html ../htmlfiles/gtfs/maps/${gtfsshapeid}.html
-cp ./dummy/newproject.js ../htmlfiles/gtfs/maps/${gtfsshapeid}.js
+cp ./dummy/ol/newproject.js ../htmlfiles/gtfs/maps/${gtfsshapeid}.js
 gtfsmapfile="../htmlfiles/gtfs/maps/${gtfsshapeid}.html"
 gtfsjsfile="../htmlfiles/gtfs/maps/${gtfsshapeid}.js"
 sed -i 's/gpxdummy.gpx/'"${gtfsshapeid}"'.gpx/' "$gtfsjsfile"
