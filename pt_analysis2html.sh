@@ -63,7 +63,7 @@ singlecheck() {
  [ -z "$relid" ] && echo "RelationID existiert nicht in cfg-file. Skript wird abgebrochen!" && exit 1
  htmlname="./htmlfiles/osmroutes.html"
  echo "Datei ${htmlname} wird gesichert ..."
- cp ./"$htmlname" "$backupordner"/`date +%Y%m%d_%H%M`_"$(basename $htmlname)"
+ cp "$htmlname" "$backupordner"/`date +%Y%m%d_%H%M`_"$(basename $htmlname)"
  echo "${htmlname} wird bearbeitet ..."
 }
 
@@ -177,7 +177,7 @@ do
        echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$mroutesline")"
       else
        echo "Zeile ${mroutesline}: Statistik wird angepasst ..."
-       sed -i '/in OSM data:/s/\(in OSM data: \)[[:digit:]]*/\1'"$newagencyroutes"'/' "${htmlname}"
+       sed -i ''"$mroutesline"'s/\(in OSM data: \)[[:digit:]]*/\1'"$newagencyroutes"'/' "${htmlname}"
       fi
 
       # Statistik wird angepasst (Anzahl der Busrouten in Prozent).
@@ -189,7 +189,7 @@ do
        echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$routespercline")"
       else
        echo "Zeile ${routespercline}: Statistik wird angepasst ..."
-       sed -i '/are created in whole or in part/s/[[:digit:]]*%/'"$newmissroutesperc"'%/' "${htmlname}"
+       sed -i ''"$routespercline"'s/[[:digit:]]*%/'"$newmissroutesperc"'%/' "${htmlname}"
       fi
 
       # Hier werden die einzelnen Tabellen neu durchnummeriert. Der Platzhalter wird durch die neue Zeichenkette ersetzt.
@@ -247,7 +247,7 @@ do
          echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$mroutesline")"
         else
          echo "Zeile ${mroutesline}: Statistik wird angepasst ..."
-         sed -i '/in OSM data:/s/\(in OSM data: \)[[:digit:]]*/\1'"$newagencyroutes"'/' "${htmlname}"
+         sed -i ''"$mroutesline"'s/\(in OSM data: \)[[:digit:]]*/\1'"$newagencyroutes"'/' "${htmlname}"
          modified="yes"
         fi
        fi
@@ -262,7 +262,7 @@ do
          echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$routespercline")"
         else
          echo "Zeile ${routespercline}: Statistik wird angepasst ..."
-         sed -i '/are created in whole or in part/s/[[:digit:]]*%/'"$newmissroutesperc"'%/' "${htmlname}"
+         sed -i ''"$routespercline"'s/[[:digit:]]*%/'"$newmissroutesperc"'%/' "${htmlname}"
          modified="yes"
         fi
        fi
@@ -507,7 +507,7 @@ echo "    Evaluated bus routes: ${anzbusrel}</p>" >>./"$htmlname"
 if [ -e "./htmlfiles/gtfsroutes.html" ]; then
  agencyroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
  # Folgende Zeile wird ggf. mit der Option -s geändert.
- echo " <p>Bus routes (${ptagencyname}) in OSM data: ${agencyroutes}<br>" >>./"$htmlname"
+ echo " <p id=\"stat_aar\">Bus routes (${ptagencyname}) in OSM data: ${agencyroutes}<br>" >>./"$htmlname"
  anzmissingroutes="$(grep 'gtfsid[12]tab' ./htmlfiles/gtfsroutes.html | wc -l)"
  # Folgende Zeile wird ggf. mit der Option -s geändert.
  echo "    Ca. $((100*${agencyroutes}/${anzmissingroutes}))% of bus routes (${ptagencyname}) are created in whole or in part.</p>" >>./"$htmlname"
