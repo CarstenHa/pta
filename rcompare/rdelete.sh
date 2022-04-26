@@ -7,7 +7,7 @@ echo "***** Löschung einer Route aus pta (GTFS und .cfg-Datei) *****"
 cd ..
 ./start.sh -L
 cd - &>/dev/null
-read -p "Welches Depot soll bearbeitet werden? " depotnr
+read -p "Welches Depot soll bearbeitet werden? Bitte Nr angeben: " depotnr
 if [ ! -e "../config/ptarea${depotnr}/real_bus_stops.cfg" ]; then
  [ ! -d "../config/ptarea${depotnr}" ] && echo "Ordner ../config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!" && exit 1
  echo "real_bus_stops.cfg im Ordner ../config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!"
@@ -122,15 +122,7 @@ else
  echo "Änderungsdatum konnte nicht in gtfsroutes.html eingetragen werden."
 fi
 
-echo "Eintragen der gelöschten Route in ${invcfgfile}"
-echo "Mögliche Optionen sind:"
-echo "0 = In OSM-Daten und in PTA gelöscht."
-echo "1 = Route existiert noch in OSM aber nicht in PTA"
-echo "2 = Routenvariante existiert noch in OSM aber nicht in PTA"
-read -p "Welchen Status soll die gelöschte Route erhalten? " rstatus
-while [ ! "$rstatus" -lt 3 ]; do
- read -p "Ungültiger Status. Neue Eingabe: " rstatus
-done
+echo "Eintragen der gelöschten Route in ${invcfgfile} (mit Status 0)"
 invcheck="$(grep "^${relid} " "$invcfgfile")"
 if [ -n "$invcheck" ]; then
  echo "RelationID existiert bereits in der Datei ${invcfgfile}:"
@@ -139,7 +131,7 @@ if [ -n "$invcheck" ]; then
 else
  echo "Neuer Eintrag in ${invcfgfile}:"
  echo "$commentline" | tee -a "$invcfgfile"
- echo "${relid} $(date +%Y-%m-%d) ${cfgrouteref} ${rstatus}" | tee -a "$invcfgfile"
+ echo "${relid} $(date +%Y-%m-%d) ${cfgrouteref} 0" | tee -a "$invcfgfile"
  sed -i '/^$/d' "$invcfgfile"
 fi
 
@@ -148,6 +140,6 @@ cd ..
 ./start.sh -l
 cd -
 
-echo -e "\nRoute ${relid} wurde gelöscht mit $(basename $0).\nLogdatei: ./backup/${datumjetzt}_rdelete.log"
+echo -e "\nRoute mit der der ShapeID ${shapeid} wurde aus pta-Dateien (GTFS-Bereich) gelöscht mit $(basename $0).\nLogdatei: ./backup/${datumjetzt}_rdelete.log"
 # Logdatei wird bereinigt.
 sed -i 's/.\[1;32m//g;s/.\[0m//g' ./backup/${datumjetzt}_rdelete.log

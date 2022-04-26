@@ -8,9 +8,9 @@
 
 # Abfrage für JOSM:
 # type:relation and type=route and (route=bus or route=ferry or route=light_rail or route=train or route=tram or route=subway)
-# Takst Sjælland Koordinaten: 12.3925778,55.6047299,12.7383038,55.7518496
 
 ptdatumjetzt=`date +%Y%m%d_%H%M`
+backupordner="./backup"
 
 if [ -z "$1" ]; then
  echo "Es muss dem Skript ein Argument übergeben werden. Bitte neu starten. Skript wird abgebrochen." && exit 2
@@ -40,7 +40,7 @@ Beschreibung der Optionen:
 
    -s [relationid]
 
-	Aktualisierung von Routendaten, die neu in eine real_bus_stops.cfg aufgenommen worden ist.
+	Komplettieren von Routendaten, die neu in eine real_bus_stops.cfg aufgenommen worden ist.
 	Routen in den OSM-Daten werden immer ausgewertet, auch wenn diese noch nicht in den diversen
 	.cfg-Dateien aufgenommen worden sind. Will man schnell eine neu eingetragene Route (real_bus_stops.cfg)
 	in der bestehenden osmroutes.html vollständig auswerten, ohne eine komplette Auswertung der gesamten
@@ -52,7 +52,8 @@ Beschreibung der Optionen:
 EOU
 }
 singlecheck() {
- read -p "Welches Depot soll bearbeitet werden? " depotnr
+ ./start.sh -L
+ read -p "Welches Depot soll bearbeitet werden? Bitte Nr angeben: " depotnr
  if [ ! -e "./config/ptarea${depotnr}/real_bus_stops.cfg" ]; then
   [ ! -d "./config/ptarea${depotnr}" ] && echo "Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!" && exit 1
   echo "real_bus_stops.cfg im Ordner ./config/ptarea${depotnr} existiert nicht. Skript wird abgebrochen!"
@@ -77,6 +78,8 @@ do
    d) # Route löschen
 
       singlecheck
+
+      echo "************* Löschung einer Route aus pta (OSM) *************"
 
       if [ ! -e "${htmlname}" ]; then
        echo "${htmlname} existiert nicht. Skript wird abgebrochen."
@@ -130,14 +133,19 @@ do
        if [ "$anzmroutes" == 1 ]; then
 
         while true; do
-         read -p "Soll ${anzmroutes} Masterroute aus osmroutes.html gelöscht werden? " delmaster
+         read -p "Soll ${anzmroutes} Masterroute aus ${htmlname} gelöscht werden? (j/n) " delmaster
          case "$delmaster" in
           j|J) anzmroutes=0
-               sed -i '/<a class="masterueber" href="#route'"$refnumber"'"><h3>/,/^<\/div>/d' "${htmlname}"
-               echo "HINWEIS: Nicht vergessen die Masterroute ${masterrelnumber} aus den OSM-Rohdaten zu löschen!"
+               # Zuerst wird das innen liegende <div ...class="masterroute"> bis zum abschliessenden
+               # </div> mit der CSS-Klasse class="mastertabhg" gelöscht.
+               sed -i '/<div id="route'"$refnumber"'" class="masterroute">/,/<\/div>/d' "${htmlname}"
+               # Dann wird der Rest von <a class="masterueber" bis zum abschliessenden
+               # </div> der CSS-Kasse class="masterroute" gelöscht.
+               sed -i '/<a class="masterueber" href="#route'"$refnumber"'"><h3>/,/<\/div>/d' "${htmlname}"
+               echo "HINWEIS: Nicht vergessen die Masterroute ${masterrelnumber} ggf. aus den OSM-Rohdaten zu löschen."
                break
           ;;
-          n|N) echo "Masterroute bleibt in osmroutes.html-Seite erhalten."
+          n|N) echo "Masterroute bleibt in ${htmlname} erhalten."
                break
           ;;
             *) echo "Fehlerhafte Eingabe."
@@ -156,7 +164,7 @@ do
       if [ "$anzmroutes" == 1 ]; then
        # Anzahl der Masterrouten wird in osmroutes.html angepasst
        echo "Masterroute ${masterrelnumber} wird angepasst ..."
-       echo "Anzahl der Masterrouten wird in osmroutes.html von ${anzroutesinmaster} auf ${newanzroutesinmaster} geändert."
+       echo "Anzahl der Routen in Masterroute wird in ${htmlname} von ${anzroutesinmaster} auf ${newanzroutesinmaster} geändert."
        if [ "$masterchild" == "no" ]; then
         sed -i 's/\(^.*<td \)\(id="anzmr'"$masterrelnumber"'">\)[[:digit:]]*\( routes in master route.<\/td>.*$\)/\1class="red" \2'"$newanzroutesinmaster"'\3/' "${htmlname}"
        else
@@ -171,7 +179,7 @@ do
       rm -f "./htmlfiles/osm/${relid}.html"
 
       # Statistik wird angepasst (Anzahl der Busrouten).
-      mroutesline="$(grep -ni 'in OSM data:' "${htmlname}" | grep -o '^[[:digit:]]*')"
+      mroutesline="$(grep -ni 'id="stat_aar"' "${htmlname}" | grep -o '^[[:digit:]]*')"
       # Zusätzliche Überprüfung, falls mehrere identische Zeilen in osmroutes.html gefunden wurden.
       if [ "$(echo "$mroutesline" | wc -l)" -gt "1" ]; then
        echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$mroutesline")"
@@ -194,11 +202,11 @@ do
 
       # Hier werden die einzelnen Tabellen neu durchnummeriert. Der Platzhalter wird durch die neue Zeichenkette ersetzt.
       # Busrelationen
-      echo "Busrouten werden neu durchnummeriert ..."
+      echo "Busrouten werden in ${htmlname} neu durchnummeriert ..."
       sed -i 's/\(<h4 id=\"h4[[:digit:]]*\">\)Bus route [0-9]*\.[0-9]*\(.*<\/h4>\)/\1placeholder_pta_bus\2/' "${htmlname}"
       for ((u=1 ; u<=(("$newagencyroutes")) ; u++)); do
        zeilennummer="$(grep -n '<h4.*>placeholder_pta_bus.*</h4>' "${htmlname}" | sed -n '1p' | grep -o '^[[:digit:]]*')"
-       sed -i "${zeilennummer}s/placeholder_pta_bus/Bus route 1.${u}\&nbsp\;\&nbsp\;\&nbsp\;/" "${htmlname}"
+       sed -i "${zeilennummer}s/placeholder_pta_bus/Bus route 1.${u}/" "${htmlname}"
       done
 
       # Änderungsdatum wird eingetragen/aktualisiert.
@@ -212,12 +220,13 @@ do
       # Wenn das Depot eines aktiven Verkehrsgebietes geändert wurde, werden hier die Dateien aktualisiert.
       echo "Depot (./config/ptarea${depotnr}/*.cfg) wird mit dem Arbeitsverzeichnis (./config/*.cfg) abgeglichen ..."
       ./start.sh -l
-      echo "Löschung der RelationID ${relid} beendet."
+      echo "Löschung der RelationID ${relid} aus pta-Dateien (OSM-Bereich) beendet."
+      echo "HINWEIS: Nicht vergessen, ggf. die Relation ${relid} aus den OSM-Rohdaten zu löschen."
 
       exit
 
    ;;
-   s) # Anpassung für neu aufgenommene Route
+   s) # Komplettieren einer neu aufgenommenen Route
 
       singlecheck
       
@@ -241,7 +250,7 @@ do
        newagencyroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
        newanzmissingroutes="$(grep 'gtfsid[12]tab' ./htmlfiles/gtfsroutes.html | wc -l)"
        if [ ! "$oldagencyroutes" == "$newagencyroutes" ]; then
-        mroutesline="$(grep -ni 'in OSM data:' "${htmlname}" | grep -o '^[[:digit:]]*')"
+        mroutesline="$(grep -ni 'id="stat_aar"' "${htmlname}" | grep -o '^[[:digit:]]*')"
         # Zusätzliche Überprüfung, falls mehrere identische Zeilen in osmroutes.html gefunden wurden.
         if [ "$(echo "$mroutesline" | wc -l)" -gt "1" ]; then
          echo "Statistikzeile konnte nicht eindeutig identifiziert werden.("$mroutesline")"
@@ -394,7 +403,6 @@ fi
 source ./config/tt_period.cfg
 
 # Belegung der Variablen
-backupordner="./backup"
 htmlname="htmlfiles/osmroutes.html"
 invroutescfg="config/invalidroutes.cfg"
 relationlist="$(egrep -o 'relation id='\''[^'\'']*'\''' "$1" | sed 's/relation id='\''\(.*\)'\''/\1/')"
