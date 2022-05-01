@@ -36,6 +36,11 @@ Um dieses Tool nutzen zu können, müssen einige Schritte vorher durchgeführt w
 * Das Programm Osmconvert muss heruntergeladen und in das Verzeichnis 'tools/osmconvert' verschoben werden. Informationen zu dem Programm finden sich unter:  
 <https://wiki.openstreetmap.org/wiki/Osmconvert>
 
+* Das Programm gtfsanalyzer muss in einen `$PATH`-Ordner des Benutzers heruntergeladen werden:  
+`curl -L -o /your_path/gtfsanalyzer https://raw.githubusercontent.com/CarstenHa/gtfsanalyzer/master/gtfsanalyzer`  
+Anschließend muss die Datei noch ausführbar gemacht werden:  
+`chmod +x /your_path/gtfsanalyzer`
+
 * In dem Ordner 'config/template' liegen eine Reihe von .cfg-Dateien als Vorlagen. Diese neuen Dateien können dann mit Daten gefüttert werden und in einen Ordner `config/ptarea?/` abgelegt werden. Zahlreiche Erläuterungen dazu befinden sich in den Dateien selber.
 
 Folgende config-Dateien gibt es:
