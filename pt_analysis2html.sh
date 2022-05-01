@@ -204,7 +204,8 @@ do
       # Busrelationen
       echo "Busrouten werden in ${htmlname} neu durchnummeriert ..."
       sed -i 's/\(<h4 id=\"h4[[:digit:]]*\">\)Bus route [0-9]*\.[0-9]*\(.*<\/h4>\)/\1placeholder_pta_bus\2/' "${htmlname}"
-      for ((u=1 ; u<=(("$newagencyroutes")) ; u++)); do
+      anzallroutes="$(grep -c '<h4.*>placeholder_pta_bus.*</h4>' "${htmlname}")"
+      for ((u=1 ; u<=(("$anzallroutes")) ; u++)); do
        zeilennummer="$(grep -n '<h4.*>placeholder_pta_bus.*</h4>' "${htmlname}" | sed -n '1p' | grep -o '^[[:digit:]]*')"
        sed -i "${zeilennummer}s/placeholder_pta_bus/Bus route 1.${u}/" "${htmlname}"
       done
