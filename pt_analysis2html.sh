@@ -563,7 +563,7 @@ done
 # relationlist wird neu belegt. Ist jetzt sortiert nach ref.
 unset relationlist
 relationlist="$(sort -g ./sortlist.tmp | sed 's/^.*RelID\(.*$\)/\1/')"
-echo "$relationlist" >./checksortlist.tmp
+echo "$relationlist" >./checksortlist_"${ptareashort}".tmp
 # Nächsten zwei Zeilen sind eigentlich überflüssig:
 unset anzrel
 anzrel="$(echo "$relationlist" | wc -l)"
@@ -1388,36 +1388,36 @@ mv ./relmasterlist.tmp "$backupordner"/"$ptdatumjetzt"_relmasterlist.lst
 mv ./relmem_bus_takst.lst "$backupordner"/"$ptdatumjetzt"_relmem_bus_takst.lst
 
 # Es wird auf neue bzw. gelöschte Routen überprüft (Nur bei route_bus.osm).
-# Es wird die letzte Version von checksortlist.lst aus dem Backup-Ordner mit der aktuellen Version (.tmp) verglichen.
+# Es wird die letzte Version von checksortlist*.lst aus dem Backup-Ordner mit der aktuellen Version (.tmp) verglichen.
 if [ "$1" == "./osmdata/route_bus.osm" -o "$1" == "osmdata/route_bus.osm" ]; then
  echo ""
  echo "*** Routenvergleich ***"
  echo ""
- if [ -z "$(ls -t "$backupordner"/*checksortlist.lst 2>/dev/null | sed -n '1p')" ]; then
-  echo "Hinweis: Es existiert keine Datei checksortlist.lst im Backup-Ordner, die mit der aktuellen Version verglichen werden könnte."
+ if [ -z "$(ls -t "$backupordner"/*checksortlist_"${ptareashort}".lst 2>/dev/null | sed -n '1p')" ]; then
+  echo "Hinweis: Es existiert keine Datei checksortlist_${ptareashort}.lst im Backup-Ordner, die mit der aktuellen Version verglichen werden könnte."
  else
- checkbackupfile="$(ls -t "$backupordner"/*checksortlist.lst | sed -n '1p')"
-  if [ -z "$(diff "$checkbackupfile" ./checksortlist.tmp | sort | uniq -u -f 1 | sed -n '/^[<>]/p')" ]; then
+ checkbackupfile="$(ls -t "$backupordner"/*checksortlist_"${ptareashort}".lst | sed -n '1p')"
+  if [ -z "$(diff "$checkbackupfile" ./checksortlist_"${ptareashort}".tmp | sort | uniq -u -f 1 | sed -n '/^[<>]/p')" ]; then
    echo "Es befinden sich gegenüber der letzten Aktualisierung keine neuen Routen in der Zusammenstellung."
    echo ""
   else 
-   echo "Es gibt eine unterschiedliche Anzahl von Routen gegenüber der letzten Aktualisierung. Eine log-Datei ("$ptdatumjetzt"_diffchecksortlist.log) befindet sich im Backup-Ordner."
-   echo "Namen der zu vergleichenden Dateien: $checkbackupfile ($(cat "$checkbackupfile" | wc -l) Routen) ./checksortlist.tmp ("$ptdatumjetzt"_checksortlist.lst) ($(cat ./checksortlist.tmp | wc -l) Routen)"
+   echo "Es gibt eine unterschiedliche Anzahl von Routen gegenüber der letzten Aktualisierung. Eine log-Datei (${ptdatumjetzt}_diffchecksortlist_${ptareashort}.log) befindet sich im Backup-Ordner."
+   echo "Namen der zu vergleichenden Dateien: $checkbackupfile ($(cat "$checkbackupfile" | wc -l) Routen) ./checksortlist_${ptareashort}.tmp (${ptdatumjetzt}_checksortlist_${ptareashort}.lst) ($(cat ./checksortlist_"${ptareashort}".tmp | wc -l) Routen)"
    echo ""
-     if [ "$(diff "$checkbackupfile" ./checksortlist.tmp | sort | uniq -u -f 1 | sed -n '/^</p' | wc -l)" -gt "0" ]; then
+     if [ "$(diff "$checkbackupfile" ./checksortlist_"${ptareashort}".tmp | sort | uniq -u -f 1 | sed -n '/^</p' | wc -l)" -gt "0" ]; then
       echo "Folgende Relationen sind gelöscht worden oder haben andere Tags erhalten:"
-      diff "$checkbackupfile" ./checksortlist.tmp | sort | uniq -u -f 1 | sed -n '/^</p' | sed 's/^< /https:\/\/www.openstreetmap.org\/relation\//'
+      diff "$checkbackupfile" ./checksortlist_"${ptareashort}".tmp | sort | uniq -u -f 1 | sed -n '/^</p' | sed 's/^< /https:\/\/www.openstreetmap.org\/relation\//'
       echo ""
      fi
-     if [ "$(diff "$checkbackupfile" ./checksortlist.tmp | sort | uniq -u -f 1 | sed -n '/^>/p' | wc -l)" -gt "0" ]; then
+     if [ "$(diff "$checkbackupfile" ./checksortlist_"${ptareashort}".tmp | sort | uniq -u -f 1 | sed -n '/^>/p' | wc -l)" -gt "0" ]; then
       echo "Folgende Relationen sind neu hinzu gekommen:"
-      diff "$checkbackupfile" ./checksortlist.tmp | sort | uniq -u -f 1 | sed -n '/^>/p' | sed 's/^> /https:\/\/www.openstreetmap.org\/relation\//'
+      diff "$checkbackupfile" ./checksortlist_"${ptareashort}".tmp | sort | uniq -u -f 1 | sed -n '/^>/p' | sed 's/^> /https:\/\/www.openstreetmap.org\/relation\//'
       echo ""
      fi
-  fi | tee "$backupordner"/"$ptdatumjetzt"_diffchecksortlist.log
+  fi | tee "$backupordner"/"$ptdatumjetzt"_diffchecksortlist_"${ptareashort}".log
  fi
- mv ./checksortlist.tmp "$backupordner"/"$ptdatumjetzt"_checksortlist.lst
-else rm -f ./checksortlist.tmp
+ mv ./checksortlist_"${ptareashort}".tmp "$backupordner"/"$ptdatumjetzt"_checksortlist_"${ptareashort}".lst
+else rm -f ./checksortlist_"${ptareashort}".tmp
 fi
 
 echo "Ende der Erstellung der HTML-Seiten $htmlname und der OSM-Haltestellendateien durch $(basename $0)."
