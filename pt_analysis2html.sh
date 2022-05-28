@@ -490,12 +490,16 @@ htmlkopf >./"$htmlname"
 
 # Überprüfungen, ob Relationen in Daten existieren.
 # Die anderen Relationen (bei Takst Sjaelland z.B. 10020275/10002530) brauchen hier nicht überprüft werden. Dies wird durch start.sh geregelt.
-if [ -n "$(grep '<relation.*id=['\''\"]'"$ptareafirstlevelrelid"'['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
+if [ -z "$ptareafirstlevelrelid" ]; then
+ echo "Variable ptareafirstlevelrelid ist nicht belegt."
+elif [ -n "$(grep '<relation.*id=['\''\"]'"$ptareafirstlevelrelid"'['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
  echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareafirstlevelrelid}\">${ptareafirstleveldesc}</a>: ${ptareafirstlevelrelid}</p>" >>./"$htmlname"
 else
  echo " <p>${ptareafirstleveldesc}: Relation not found</p>" >>./"$htmlname"
 fi
-if [ -n "$(grep '<relation.*id=['\''\"]'"$ptareasecondlevelrelid"'['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
+if [ -z "$ptareasecondlevelrelid" ]; then
+ echo "Variable ptareasecondlevelrelid ist nicht belegt."
+elif [ -n "$(grep '<relation.*id=['\''\"]'"$ptareasecondlevelrelid"'['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
  echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareasecondlevelrelid}\">${ptareasecondleveldesc}</a>: ${ptareasecondlevelrelid}</p>" >>./"$htmlname"
 else
  echo " <p>${ptareasecondleveldesc}: Relation not found</p>" >>./"$htmlname"

@@ -170,7 +170,7 @@ fi
 
 if [ "$showtparealong" == "yes" ]; then
   echo -e "\nAuflistung aller eingebundenen Verkehrsgebiete:"
-  echo -e "\e[1;32mNr\e[0m Directory                     Full name           \e[1;32mShort name\e[0m        Description"
+  echo -e "\e[1;32mNr\e[0m Directory                     Full name                \e[1;32mShort name\e[0m   Description"
   echo "----------------------------------------------------------------------------------------------------------------------------"
  for cfgfile in ./config/ptarea*/ptarea.cfg; do
   if [ "$currentptareapath" == "$cfgfile" ]; then
@@ -182,7 +182,7 @@ if [ "$showtparealong" == "yes" ]; then
   cfgareashort="$(sed -n 's/^ptareashort=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
   cfgarealong="$(sed -n 's/^ptarealong=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
   cfgareadesc="$(sed -n 's/^ptareadescription=['\''"]\(.*\)['\''"]/\1/p' "$cfgfile")"
-  printf '\e[1;32m%2s\e[0m %-29s %-20s \e[1;32m%-17s\e[0m %-50s\n' "$ptareanr" "$cfgfile" "$cfgarealong" "${cfgareashort} ${ptsign}" "$cfgareadesc"
+  printf '\e[1;32m%2s\e[0m %-29s %-25.24s \e[1;32m%-12s\e[0m %-50s\n' "$ptareanr" "$cfgfile" "$cfgarealong" "${cfgareashort} ${ptsign}" "$cfgareadesc"
  done
  echo ""
  exit
@@ -207,7 +207,7 @@ if [ "$pkind" == "pull" -o "$pkind" == "list" ]; then
     for line in "${optrelid[@]}"; do
      linerelid="${line%:*}"
      linedesc="${line#*:}"
-     printf '%-20d %30s\n' "$linerelid" "$linedesc"
+     printf '%-20s %30s\n' "$linerelid" "$linedesc"
     done
    fi
    
@@ -263,8 +263,8 @@ echo "[7] - Download trolleybus routes in ${ptarealong}-area (route_trolleybus.o
 echo "[8] - Download ferry routes in ${ptarealong}-area (route_ferry.osm)"
 echo "[9] - Download stop-areas in ${ptarealong}-area (stop_areas.osm)"
 echo "[10] - Download stop-area-groups in ${ptarealong}-area (stop_area_groups.osm)"
-echo "[11] - Download stop-areas in ${ptarealong}-stoprelation (stoprelation.osm)"
-echo "[12] - Download bus routes in ${ptarealong}-bus-relation (route_busrelation.osm)"
+echo "[11] - Download stoprelation in ${ptarealong}-area (stoprelation.osm)"
+echo "[12] - Download bus-routes-relation in ${ptarealong}-area (route_busrelation.osm)"
 echo "[13] - Download master routes in ${ptarealong}-area (route_master_bus.osm)"
 echo "[a] - Download all OSM-files and start HTML generation."
 echo "[n] - Download nothing. Start HTML generation."
@@ -296,7 +296,7 @@ areabus() {
 echo "*** Processing route_bus.osm ***"
 osmname="./osmdata/route_bus.osm"
 kindofsize="$minsizebus"
-wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareabbox}) [\"type\"=\"route\"][\"route\"=\"bus\"];>;);out meta;"
+wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(poly:\"${ptareapoly}\") [\"type\"=\"route\"][\"route\"=\"bus\"];>;);out meta;"
 [ "$cutbus" == "yes" ] && cuttingosmfile
 # Für Skript pt_analysis2html muss Datei noch wie folgt bearbeitet werden (damit die Datei konform mit JOSM-Api-Abfrage-Datei ist):
 # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
@@ -397,20 +397,28 @@ areastoprelation() {
 echo "*** Processing stoprelation.osm ***"
 osmname="./osmdata/stoprelation.osm"
 kindofsize="$minsizestoprelation"
-wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareastoprelid});>>;);out meta;"
-[ "$cutstoprelation" == "yes" ] && cuttingosmfile
-# Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
+if [ -n "$ptareastoprelid" ]; then
+ wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareastoprelid});>>;);out meta;"
+ [ "$cutstoprelation" == "yes" ] && cuttingosmfile
+ # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
+ sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
+else
+ touch "$osmname"
+fi
 }
 
 areabusrelation() {
 echo "*** Processing route_busrelation.osm ***"
 osmname="./osmdata/route_busrelation.osm"
 kindofsize="$minsizebusrelation"
-wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareabusrelid});>>;);out meta;"
-[ "$cutbusrelation" == "yes" ] && cuttingosmfile
-# Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
-sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
+if [ -n "$ptareabusrelid" ]; then
+ wget -O "$osmname" "http://overpass-api.de/api/interpreter?data=(relation(${ptareabusrelid});>>;);out meta;"
+ [ "$cutbusrelation" == "yes" ] && cuttingosmfile
+ # Hochkommas werden geändert und html-Code wird am Ende von Zeilen umgeschrieben.
+ sed -i 's/"/'\''/g;s/\/>/ \/>/g' "$osmname"
+else
+ touch "$osmname"
+fi
 }
 
 routemasterbus() {
@@ -693,16 +701,26 @@ rm -f ./osmdata/*.tmp
 
 # *** HTML-Seitenerstellung ***
 ./"$stopareascript"
+exitcode1="$?"
 ./"$ptroutescript" ./"$osmanalysisfile"
+exitcode2="$?"
 
 # *** Benachrichtigungen ***
 # Zeitspanne des Erstellungsprozesses wird errechnet und angezeigt.
 zeitdiff=$((`date +%s`-"$zeitpunktbegin"))
 
-echo "Public Transport Analyseseiten sind fertig (`date +%d.%m.%Y` um `date +%H:%M` Uhr)."
 printf 'Dauer des Erstellungsprozesses: %02dh:%02dm:%02ds\n' $(($zeitdiff/3600)) $(($zeitdiff%3600/60)) $(($zeitdiff%60))
-notify-send -t 0 "Hinweis" "Public Transport-Analyseseiten sind fertig." 2>/dev/null
-if [ -e "./tools/mail/sendamail" ]; then
- ./tools/mail/sendamail
-fi
 
+if [ "$exitcode1" == 0 -a "$exitcode2" == 0 ]; then
+ echo "OSM-Analyseseiten sind fertig (`date +%d.%m.%Y` um `date +%H:%M` Uhr)."
+ notify-send -t 0 "Hinweis" "OSM-Analyseseiten sind fertig." 2>/dev/null
+ if [ -e "./tools/mail/sendamail" ]; then
+  ./tools/mail/sendamail
+ fi
+else
+ echo "Es gab einen Fehler beim OSM-Analyse-Prozess (`date +%d.%m.%Y` um `date +%H:%M` Uhr)."
+ notify-send -t 0 "Fehler" "Es gab einen Fehler beim OSM-Analyse-Prozess." 2>/dev/null
+ if [ -e "./tools/mail/sendamail" ]; then
+  ./tools/mail/sendamail -e
+ fi
+fi

@@ -22,5 +22,6 @@ exclude.lst
 zipall.sh
 tools/scripte/
 tools/codebausteine/
+tools/poly/vos.poly
 ptasync
 
