@@ -156,7 +156,7 @@ echo " <h2 style=\"text-align: center;\">(in alphabetical order)</h2>"
 echo "  <div class=\"headerallg\">"
 echo "   <p>"
 echo "    <img id=\"ptaroutelogo\" src=\"images/ptaroute.svg\"><span>OSM</span><a href=\"osmroutes.html\">pta routes analysis</a><br>"
-echo "    <img id=\"ptagtfslogo\" src=\"images/gtfs.svg\"><span>GTFS</span><a href=\"gtfsroutes.html\">pta gtfs analysis</a>"
+[ ! "$gtfsgen" == "no" ] && echo "    <img id=\"ptagtfslogo\" src=\"images/gtfs.svg\"><span>GTFS</span><a href=\"gtfsroutes.html\">pta gtfs analysis</a>"
 echo "    <a href=\"../index.html\"><img id=\"logo\" src=\"images/logo.svg\"></a>"
 echo "   </p>"
 echo "   <hr>"
@@ -195,15 +195,19 @@ for ((b=1 ; b<=(("$anzsortrel")) ; b++)); do
 
    # Erster Teil der Tabelle wird erstellt.
    echo " <div class=\"stopareatab\">" >>./"$htmlname"
-   echo "  <h4 id=\"$relsortnumber\">Stop area placeholder_staa2html<a href=\"#$relsortnumber\">Permalink</a>&nbsp;&nbsp;&nbsp;<a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a>&nbsp;&nbsp;&nbsp;<a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname"
- relsortname="$(echo "$relsortbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/')"
+   echo "  <h4 id=\"$relsortnumber\">Stop area placeholder_staa2html<a href=\"#$relsortnumber\">Permalink</a>&nbsp;&nbsp;&nbsp;<a href=\"${geofabstopsuri}\">OSMI</a>&nbsp;&nbsp;&nbsp;<a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname"
+   relsortname="$(echo "$relsortbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/')"
    echo " <table class=\"first\">" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
    echo "   <th>RelationID:</th>" >>./"$htmlname"
    echo "   <td>$relsortnumber</td>" >>./"$htmlname"
    echo "  </tr>" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
-   echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in ${ptareastopreldesc})</span>:</th>" >>./"$htmlname"
+   if [ -n "$ptareastopreldesc" ]; then
+    echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in ${ptareastopreldesc})</span>:</th>" >>./"$htmlname"
+   else
+    echo "   <th>Name:</th>" >>./"$htmlname"
+   fi
    if [ -z "$relsortname" ]; then
     echo "   <td class=\"yellow\">(Name is missing.)</td>" >>./"$htmlname"
    elif [ "$(grep '<relation.*id='\'''"$relsortnumber"''\''' ./osmdata/stoprelation.osm | wc -l)" -gt "0" ]; then

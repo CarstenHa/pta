@@ -459,7 +459,7 @@ echo " <h2 style=\"text-align: center;\">${secondheadline}</h2>"
 echo "<div class=\"headerallg\">"
 echo " <p>"
 echo "  <img id=\"ptastoplogo\" src=\"images/ptastop.svg\"><span>OSM</span><a href=\"stop_areas.html\">pta stop area analysis</a><br>"
-echo "  <img id=\"ptagtfslogo\" src=\"images/gtfs.svg\"><span>GTFS</span><a href=\"gtfsroutes.html\">pta gtfs analysis</a>"
+[ ! "$gtfsgen" == "no" ] && echo "  <img id=\"ptagtfslogo\" src=\"images/gtfs.svg\"><span>GTFS</span><a href=\"gtfsroutes.html\">pta gtfs analysis</a>"
 echo "  <a href=\"../index.html\"><img id=\"logo\" src=\"images/logo.svg\"></a>"
 echo " </p>"
 echo " <hr>"
@@ -491,21 +491,26 @@ htmlkopf >./"$htmlname"
 # Überprüfungen, ob Relationen in Daten existieren.
 # Die anderen Relationen (bei Takst Sjaelland z.B. 10020275/10002530) brauchen hier nicht überprüft werden. Dies wird durch start.sh geregelt.
 if [ -z "$ptareafirstlevelrelid" ]; then
- echo "Variable ptareafirstlevelrelid ist nicht belegt."
+ echo "Hinweis: Variable ptareafirstlevelrelid ist nicht belegt."
 elif [ -n "$(grep '<relation.*id=['\''\"]'"$ptareafirstlevelrelid"'['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
  echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareafirstlevelrelid}\">${ptareafirstleveldesc}</a>: ${ptareafirstlevelrelid}</p>" >>./"$htmlname"
 else
  echo " <p>${ptareafirstleveldesc}: Relation not found</p>" >>./"$htmlname"
 fi
 if [ -z "$ptareasecondlevelrelid" ]; then
- echo "Variable ptareasecondlevelrelid ist nicht belegt."
+ echo "Hinweis: Variable ptareasecondlevelrelid ist nicht belegt."
 elif [ -n "$(grep '<relation.*id=['\''\"]'"$ptareasecondlevelrelid"'['\''\"]' ./osmdata/route_master_bus.osm)" ]; then
  echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareasecondlevelrelid}\">${ptareasecondleveldesc}</a>: ${ptareasecondlevelrelid}</p>" >>./"$htmlname"
 else
  echo " <p>${ptareasecondleveldesc}: Relation not found</p>" >>./"$htmlname"
 fi
-
-echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareastoprelid}\">${ptareastopreldesc}</a>: ${ptareastoprelid}</p>" >>./"$htmlname"
+if [ -z "$ptareastoprelid" ]; then
+ echo "Hinweis: Variable ptareastoprelid ist nicht belegt."
+elif [ -n "$(grep '<relation.*id=['\''\"]'"$ptareastoprelid"'['\''\"]' ./osmdata/stoprelation.osm)" ]; then
+ echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareastoprelid}\">${ptareastopreldesc}</a>: ${ptareastoprelid}</p>" >>./"$htmlname"
+else
+ echo " <p>${ptareastopreldesc}: Relation not found</p>" >>./"$htmlname"
+fi
 echo "</div>" >>./"$htmlname"
 echo " <h2>1. Bus routes:</h2>" >>./"$htmlname"
 echo " <p><a href=\"https://www.openstreetmap.org/relation/${ptareabusrelid}\">${ptareabusreldesc}</a>: ${ptareabusrelid}</p>" >>./"$htmlname"
@@ -517,7 +522,7 @@ echo " <i id=\"off\" class=\"fa-div fa fa-minus fa-1x\"></i>" >>./"$htmlname"
 echo " <h4>Statistics</h4>" >>./"$htmlname"
 echo " <p>Name of the evaluated file: "$1"<br>" >>./"$htmlname"
 echo "    Evaluated bus routes: ${anzbusrel}</p>" >>./"$htmlname"
-if [ -e "./htmlfiles/gtfsroutes.html" ]; then
+if [ -e "./htmlfiles/gtfsroutes.html" -a ! "$gtfsgen" == "no" ]; then
  agencyroutes="$(cat ./config/real_bus_stops.cfg | sed '/^#/d' | sed '/^$/d' | wc -l)"
  # Folgende Zeile wird ggf. mit der Option -s geändert.
  echo " <p id=\"stat_aar\">Bus routes (${ptagencyname}) in OSM data: ${agencyroutes}<br>" >>./"$htmlname"
@@ -660,14 +665,18 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
    # Toggle Ende
 
    echo " <div id=\"rt${relnumber}\" class=\"routetab\">" >>./"$htmlname"
-   echo "  <h4 id=\"h4${relnumber}\">placeholder_pta_bus<a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSMI</a>&nbsp;&nbsp;&nbsp;<a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname"
+   echo "  <h4 id=\"h4${relnumber}\">placeholder_pta_bus<a href=\"${geofabroutesuri}\">OSMI</a>&nbsp;&nbsp;&nbsp;<a href=\"javascript:history.back()\">back</a></h4>" >>./"$htmlname"
    echo " <table id=\"$relnumber\" class=\"first\">" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
    echo "   <th>RelationID:</th>" >>./"$htmlname"
    echo "   <td>"$relnumber"</td>" >>./"$htmlname"
    echo "  </tr>" >>./"$htmlname"
    echo "  <tr>" >>./"$htmlname"
-   echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in Relation ${ptareabusrelid})</span>:</th>" >>./"$htmlname"
+   if [ -n "$ptareabusrelid" ]; then
+    echo "   <th>Name <span style=\"font-weight: normal;\">(green: integrated in Relation ${ptareabusrelid})</span>:</th>" >>./"$htmlname"
+   else
+    echo "   <th>Name:</th>" >>./"$htmlname"
+   fi
    if [ "$(grep 'id='\'''"$relnumber"''\''' ./osmdata/route_busrelation.osm | wc -l)" -gt "0" ]; then
     echo "   <td class=\"withcolour\">$(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/')</td>" >>./"$htmlname"
    else echo "   <td>$(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/')</td>" >>./"$htmlname"
@@ -949,8 +958,8 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
   
   # Überschrift
   if [ "$(echo "$relbereich" | grep '<tag k='\''name'\''' | wc -l)" -gt "0" ]; then
-   echo " <h4>RelationID: $relnumber - $(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/') - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>"$htmlname2"
-  else echo " <h4>RelationID: $relnumber - <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_stops&lon=11.76892&lat=55.42372&zoom=8&overlays=stops_,stops_positions,stops_classic,stops_positions_not_on_ways,platforms_,platforms_nodes,platforms_ways\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>"$htmlname2"
+   echo " <h4>RelationID: $relnumber - $(echo "$relbereich" | grep '<tag k='\''name'\''' | sed 's/.*v='\''\(.*\)'\''.*/\1/' | sed 's/=&gt\;/=>/') - <a href=\"${geofabstopsuri}\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>"$htmlname2"
+  else echo " <h4>RelationID: $relnumber - <a href=\"${geofabstopsuri}\">OSMI</a> - <a href=\"javascript:history.back()\">back</a></h4>" >>"$htmlname2"
   fi
   echo " <h5 id=\"st_ar1\">Stop_positions:</h5>" >>"$htmlname2"
 
@@ -959,7 +968,11 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo "  <table class=\"stop_plat\">" >>"$htmlname2"
     echo "  <tr>" >>"$htmlname2"
     echo "   <th> </th>" >>"$htmlname2"
-    echo "   <td class=\"small grey\">StopID / Member in any stop_area (green: integrated in ${ptareastopreldesc}):</td>" >>"$htmlname2"
+    if [ -n "$ptareastopreldesc" ]; then
+     echo "   <td class=\"small grey\">StopID / Member in any stop_area (green: integrated in ${ptareastopreldesc}):</td>" >>"$htmlname2"
+    else
+     echo "   <td class=\"small grey\">StopID / Member in any stop_area:</td>" >>"$htmlname2"
+    fi
     echo "   <td class=\"small grey\">Name stop_position (if available):</td>" >>"$htmlname2"
     echo "   <td class=\"small grey\">OSM-Element:</td>" >>"$htmlname2"
     echo "   <td class=\"grey\">Tag/Role-Check:</td>" >>"$htmlname2"
@@ -1096,7 +1109,11 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
     echo "  <table class=\"stop_plat\">" >>"$htmlname2"
     echo "  <tr>" >>"$htmlname2"
     echo "   <th> </th>" >>"$htmlname2"
-    echo "   <td class=\"small grey\">PlatformID / Member in any stop_area (green: integrated in ${ptareastopreldesc}):</td>" >>"$htmlname2"
+    if [ -n "$ptareastopreldesc" ]; then
+     echo "   <td class=\"small grey\">PlatformID / Member in any stop_area (green: integrated in ${ptareastopreldesc}):</td>" >>"$htmlname2"
+    else
+     echo "   <td class=\"small grey\">PlatformID / Member in any stop_area:</td>" >>"$htmlname2"
+    fi
     echo "   <td class=\"small grey\">Name platform (if available):</td>" >>"$htmlname2"
     echo "   <td class=\"small grey\">OSM-Element:</td>" >>"$htmlname2"
     echo "   <td class=\"grey\">Tag/Role-Check:</td>" >>"$htmlname2"
@@ -1319,7 +1336,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
    echo "  <p>Abkürzung ${ptareaabbr}: ${ptarealong}</p>"
    echo "  <p>Stops: Only PTv2-stops (node; public_transport=stop_position).</p>"
    echo "  <p>Platforms: Only PTv2-platforms (node, way, relation; public_transport=platform).</p>"
-   echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und ist nur als Ergänzung zu anderen Analysetools zu sehen, wie zum Beispiel den <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSM-Inspector</a>.</p>"
+   echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und ist nur als Ergänzung zu anderen Analysetools zu sehen, wie zum Beispiel den <a href=\"${geofabroutesuri}\">OSM-Inspector</a>.</p>"
    echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
    echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
    echo "  <p>&nbsp;</p>"
@@ -1358,10 +1375,10 @@ echo "  <p>Stops: Only PTv2-stops (node; public_transport=stop_position).</p>"
 echo "  <p>Platforms: Only PTv2-platforms (node, way, relation; public_transport=platform).</p>"
 echo "  <p>¹) Anzahl der tatsächlichen Haltestellen einer Route. Ergebnis wird nicht aus der Analyse der OSM-Daten gewonnen. Datum ist Zeitpunkt der Datenerfassung.</p>"
 echo "  <p>Fernbus-Routen sind nicht Teil von ${ptarealong} und sind nicht vollständig in der Analyse erfasst.</p>"
-echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und ist nur als Ergänzung zu anderen Analysetools zu sehen, wie zum Beispiel den <a href=\"https://tools.geofabrik.de/osmi/?view=pubtrans_routes&lon=11.76892&lat=55.42372&zoom=8&overlays=ptv2_routes_,ptv2_routes_valid,ptv2_routes_invalid,ptv2_error_,ptv2_error_ways,ptv2_error_nodes\">OSM-Inspector</a>.</p>"
+echo "  <p>Diese Analyse analysiert nicht alle Bestandteile des PTv2-Schemas und ist nur als Ergänzung zu anderen Analysetools zu sehen, wie zum Beispiel den <a href=\"${geofabroutesuri}\">OSM-Inspector</a>.</p>"
 echo "  <p>Das Analyseergebnis wurde aus den Daten des Openstreetmap-Projektes gewonnen. Die Openstreetmap-Daten stehen unter der <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL-Lizenz</a>.</p>"
 echo "  <p>© OpenStreetMap contributors <a href=\"https://www.openstreetmap.org/copyright\">https://www.openstreetmap.org/copyright</a></p>"
-echo "  <p>GTFS is not part of Openstreetmap. For more Information, see <a href=\"https://carstenha.github.io/ptaweb.dk.east.bus/index.html\">https://carstenha.github.io/ptaweb.dk.east.bus/index.html</a></p>"
+[ ! "$gtfsgen" == "no" ] && echo "  <p>GTFS is not part of Openstreetmap. For more Information, see <a href=\"${ptaweburi}\">${ptaweburi}</a></p>"
 echo "  <p>&nbsp;</p>"
 echo "  <p id=\"createdate\">Erstellungsdatum dieser Seite: `date +%d.%m.%Y` um `date +%H\:%M` Uhr durch $(basename $0)</p>"
 echo "  <p>The Code is available on <a href=\"https://github.com/CarstenHa/pta\">https://github.com/CarstenHa/pta</a></p>"
