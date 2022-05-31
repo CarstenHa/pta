@@ -119,7 +119,7 @@ done
 # config-Dateien in Arbeitsordner kopieren
 if [ ! -e ./config/ptarea.cfg -o "$changeptarea" == "yes" ]; then
  [ ! -e ./config/ptarea.cfg ] && echo "Keine ptarea.cfg gefunden. Kein Gebiet für weitere Bearbeitung ausgewählt."
- [ ! "$changeptarea" == "yes" ] && read -p "Bitte Gebiet angeben: " areaarg
+ [ ! "$changeptarea" == "yes" ] && read -p "Bitte Gebiet angeben (short name): " areaarg
  ptareacfgfile="$(egrep -H '^ptareashort=["'\'']*'"$areaarg"'["'\'']*$' ./config/ptarea*/ptarea.cfg | cut -f1 -d:)"
  if [ "$(echo "$ptareacfgfile" | sed '/^$/d' | wc -l)" == 1 ]; then
   echo -e "Verarbeitung wird vorbereitet.\nLöschen der alten config-Dateien:"
@@ -185,6 +185,8 @@ if [ "$showtparealong" == "yes" ]; then
   printf '\e[1;32m%2s\e[0m %-29s %-25.24s \e[1;32m%-12s\e[0m %-50s\n' "$ptareanr" "$cfgfile" "$cfgarealong" "${cfgareashort} ${ptsign}" "$cfgareadesc"
  done
  echo ""
+ # Logdatei anpassen.
+ sed -i 's/.\[1;32m//g;s/.\[0m//g' ./backup/${startdatum}_ptanalysis.log
  exit
 fi
 
