@@ -87,6 +87,11 @@ do
        c) # Wechseln des Verkehrsgebietes
           changeptarea="yes"
           areaarg="$OPTARG"
+          if [ -e ./config/ptarea.cfg ]; then
+           echo -e "Wichtiger Hinweis:\nVerkehrsgebiete zu wechseln kann unter Umständen zu Problemen führen."
+           echo "Es kann vorteilhafter sein, für ein neues Verkehrsgebiet einen neuen Verzeichnisbaum mit ptaexpand.sh zu erstellen."
+           read -p "Weiter mit [ENTER]. Abbruch mit [STRG]+[C]"
+          fi
        ;;
        # Löscht alle Dateien im Backup-Ordner, die älter als * Tage sind.
        d) find "$backupordner"/ -maxdepth 1 -type f \( -name "*.osm" -or -name "*.html" -or -name "*.lst" -or -name "*.log" -or -name "*.zip" \) -mtime +"$OPTARG" -execdir rm -f {} \;
