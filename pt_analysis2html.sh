@@ -571,7 +571,11 @@ for ((a=1 ; a<=(("$anzrel")) ; a++)); do
 done
 # relationlist wird neu belegt. Ist jetzt sortiert nach ref.
 unset relationlist
-relationlist="$(sort -g ./sortlist.tmp | sed 's/^.*RelID\(.*$\)/\1/')"
+if [ "$defrefpos" == "left" ]; then
+ relationlist="$(sort -V ./sortlist.tmp | sed 's/^.*RelID\(.*$\)/\1/')"
+else
+ relationlist="$(sort -g ./sortlist.tmp | sed 's/^.*RelID\(.*$\)/\1/')"
+fi
 echo "$relationlist" >./checksortlist_"${ptareashort}".tmp
 # Nächsten zwei Zeilen sind eigentlich überflüssig:
 unset anzrel
