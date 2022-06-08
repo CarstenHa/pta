@@ -85,12 +85,20 @@ do
           autoprocess="yes"
        ;;
        c) # Wechseln des Verkehrsgebietes
-          changeptarea="yes"
-          areaarg="$OPTARG"
-          if [ -e ./config/ptarea.cfg ]; then
-           echo -e "Wichtiger Hinweis:\nVerkehrsgebiete zu wechseln kann unter Umständen zu Problemen führen."
-           echo "Es kann vorteilhafter sein, für ein neues Verkehrsgebiet einen neuen Verzeichnisbaum mit ptaexpand.sh zu erstellen."
-           read -p "Weiter mit [ENTER]. Abbruch mit [STRG]+[C]"
+          if [ -h ./start.sh -o -h ./pt_analysis2html.sh -o -h ./stopareaanalysis2html.sh -o -h ./rcompare/rcompare.sh ]; then
+           echo -e "Ordner ist ein expandiertes pta.\nDas Verkehrsgebiet kann nicht gewechselt werden.\nSkript wird abgebrochen!"
+           exit 1
+          elif [ "$(ls ./config/ptarea*/ptarea.cfg 2>/dev/null | wc -l)" == 1 ]; then
+           echo "Wechsel nicht möglich. Es gibt nur ein Verkehrsgebiet. Skript wird abgebrochen!"
+           exit 1
+          else
+           changeptarea="yes"
+           areaarg="$OPTARG"
+           if [ -e ./config/ptarea.cfg ]; then
+            echo -e "Wichtiger Hinweis:\nVerkehrsgebiete zu wechseln kann unter Umständen zu Problemen führen."
+            echo "Es kann vorteilhafter sein, für ein neues Verkehrsgebiet einen neuen Verzeichnisbaum mit ptaexpand.sh zu erstellen."
+            read -p "Weiter mit [ENTER]. Abbruch mit [STRG]+[C]"
+           fi
           fi
        ;;
        # Löscht alle Dateien im Backup-Ordner, die älter als * Tage sind.
@@ -144,7 +152,8 @@ fi
 
 source ./config/ptarea.cfg
 
-currentptareapath="$(grep -i '^ptarealong=["'\'']*'"$ptarealong"'["'\'']*' ./config/*/ptarea.cfg | cut -f1 -d:)"
+# Option -H ist wichtig, damit die Ausgabe korrekt ist, auch wenn nur ein Ordner mit einer Datei existiert.
+currentptareapath="$(grep -iH '^ptarealong=["'\'']*'"$ptarealong"'["'\'']*' ./config/*/ptarea.cfg | cut -f1 -d:)"
 currentptareadir="$(dirname "$currentptareapath")"
 
 if [ "$(echo "$currentptareadir" | wc -l)" -gt "1" ]; then

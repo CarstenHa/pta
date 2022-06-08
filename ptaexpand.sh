@@ -53,16 +53,36 @@ echo -e "\n***** 6. Symlinks der Dateien des Ordners tools erstellen *****\n"
 find tools -path 'tools/osmconvert' -prune -o -type f -print -exec cp -vs "${PWD}"/{} "${ptarea}"/{} \;
 cp -vs "${PWD}"/tools/osmconvert/osmconvert "${ptarea}"/tools/osmconvert/
 
-echo -e "\n***** 7. Verkehrsgebiet auswählen *****"
-echo -e "\n*** Auflistung der Verkehrsgebiete aus $PWD ***"
+echo -e "\n***** 7. Verkehrsgebiet auswählen *****\n"
 
-./start.sh -L
+while true; do
+ read -p "Soll ein bestehendes Verkehrsgebiet [k]opiert, oder ein [n]eues Gebiet erstellt, werden? " oldornew
+ case "$oldornew" in
+  k|K) echo -e "\n*** Auflistung der Verkehrsgebiete aus $PWD ***"
+       ./start.sh -L
 
-echo "**** Bitte neues Verkehrsgebiet für ${ptarea} auswählen *****"
-cd "${ptarea}"
-./start.sh -L
-cd -
+       echo "**** Bitte neues Verkehrsgebiet für ${ptarea} auswählen *****"
+       cd "${ptarea}"
+       ./start.sh -L
+       cd -
 
+       rm -rf "${ptarea}"/config/{ptarea[0-9],template}
+       mkdir "${ptarea}"/config/ptarea1
+       mv "${ptarea}"/config/*.cfg "${ptarea}"/config/ptarea1
+       cp -vs "${ptarea}"/config/ptarea1/*.cfg "${ptarea}"/config/
+    break
+  ;;
+  n|N) rm -rf "${ptarea}"/config/{ptarea[0-9],template}
+       mkdir "${ptarea}"/config/ptarea1
+       cp -v "${PWD}"/config/template/*.cfg "${ptarea}"/config/ptarea1
+       echo -e "\nVorlagendateien liegen im Ordner ${ptarea}/config/ptarea1"
+    break
+  ;;
+    *) echo "Fehlerhafte Eingabe!"
+  ;;
+ esac
+done
+
+echo "$0 beendet am `date +%d.%m.%Y` um `date +%H:%M` Uhr."
 # Logdatei anpassen.
 sed -i 's/.\[1;32m//g;s/.\[0m//g' ./backup/${startdat}_ptaexpand.log
-
