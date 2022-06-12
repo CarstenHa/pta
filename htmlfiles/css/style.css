@@ -656,7 +656,7 @@
     background-color: #F0E68C;
    }
    td.red {
-    background-color: #FA8072;
+    background-color: #FA8072 !important;
    }
    td.grey {
     background-color: #F6F6F6;
