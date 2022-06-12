@@ -1298,7 +1298,7 @@ for ((i=1 ; i<=(("$anzrel")) ; i++)); do
 
      # Hier wird bei einem gefundenen Fehler ein Kommentar durch eine Tabellenzeile ersetzt.
      # Zelle erstreckt sich über die ersten beiden Spalten (colspan="2").
-     sed -i 's/<!--@othernotes3'${i}'-->/<tr class="othernotes"><th style="font-weight: normal;">Other notes:<\/th><td class="small red" colspan="2"><a href="'"$(basename "$htmlname2")"'#othernotes3'${i}'">Other notes<\/a><\/td><\/tr>/' ./"$htmlname" && \
+     sed -i 's/<!--@othernotes3'${i}'-->/<tr class="othernotes"><th style="font-weight: normal;">Other notes:<\/th><td class="small red" colspan="2"><a href="osm\/'"$(basename "$htmlname2")"'#othernotes3'${i}'">Other notes<\/a><\/td><\/tr>/' ./"$htmlname" && \
 
      echo "  <table id=\"othernotes3${i}\" class=\"third\">" >>"$htmlname2"
      echo "    <tr>" >>"$htmlname2"

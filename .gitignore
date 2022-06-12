@@ -23,5 +23,7 @@ zipall.sh
 tools/scripte/
 tools/codebausteine/
 tools/poly/vos.poly
+tools/geovar2poly/
+tools/osmrelpoly/
 ptasync
 
