@@ -1,0 +1,177 @@
+#!/bin/bash
+
+if [ -z "$(type -p mail)" ]; then
+ echo "Programm mail ist nicht installiert."
+ exit 1
+fi
+
+if [ -e ./config/ptarea.cfg ]; then
+ source ./config/ptarea.cfg
+elif [ -e ../config/ptarea.cfg -a "$(basename "$PWD")" == "rcompare" ]; then
+ source ../config/ptarea.cfg
+else
+ echo "$(basename "$0"): ptarea.cfg konnte nicht ermittelt werden."
+ exit 1
+fi
+
+if [ -z "$ptamail" ]; then
+ echo "$(basename "$0"): Keine Mailadresse in ptarea.cfg angegeben."
+ exit 1
+fi
+
+# Wird für start.sh benötigt (ohne Option und Option -d)
+ptanalysislogfile="$(ls backup/*ptanalysis.log 2>/dev/null | sort -nr | sed -n 1p)"
+
+if [ "$#" == "0" ]; then
+
+# Achtung! Pfade müssen relativ zum Wurzelverzeichnis von pta angegeben werden.
+diffcheckfname="$(basename "$(ls backup/*diffchecksortlist*.log 2>/dev/null | sort -nr | sed -n 1p)")"
+
+if [ -n "$diffcheckfname" ]; then
+
+diffcheckcontent="$(cat "$(ls backup/*diffchecksortlist*.log | sort -nr | sed -n 1p)")"
+
+mailcontent() {
+cat <<EOM
+HTML-Seiten fertig gestellt am `date +%d.%m.%Y` um `date +%H:%M` Uhr.
+
+${diffcheckfname}:
+${diffcheckcontent}
+
+Auszug aus $(basename ${ptanalysislogfile}):
+$(cat "$ptanalysislogfile" | grep '^Downloadversuch' | tac | uniq --skip-fields=4 | tac | sed 's/\(^Downloadversuch\) \([[:digit:]]*\) \*\*\* Processing \(.*\.osm\) .*/\1(e) \3: \2/')
+
+EOM
+}
+
+else
+
+# Content, wenn der Vorgang das erste Mal ausgeführt wird und keine *diffchecksortlist*.log vorliegt.
+mailcontent() {
+cat <<EOM
+HTML-Seiten fertig gestellt am `date +%d.%m.%Y` um `date +%H:%M` Uhr.
+
+Auszug aus $(basename ${ptanalysislogfile}):
+$(cat "$ptanalysislogfile" | grep '^Downloadversuch' | tac | uniq --skip-fields=4 | tac | sed 's/\(^Downloadversuch\) \([[:digit:]]*\) \*\*\* Processing \(.*\.osm\) .*/\1(e) \3: \2/')
+
+EOM
+}
+
+fi
+
+ if [ -n "$ptanalysislogfile" ]; then
+  mailcontent | mail -a "Content-Type: text/plain; charset=UTF-8" -s "PT-analysis" "$ptamail"
+ else
+  echo -e "HTML-Seiten fertig gestellt am `date +%d.%m.%Y` um `date +%H:%M` Uhr.\nKeine Analysedatei vorhanden." | mail -a "Content-Type: text/plain; charset=UTF-8" -s "PT-analysis" "$ptamail"
+ fi
+
+fi
+
+# Achtung! Pfade müssen relativ zum Wurzelverzeichnis von rcompare angegeben werden.
+mailcontent-g() {
+cat <<EOM
+GTFS-ShapeID-Analyse fertig gestellt am `date +%d.%m.%Y` um `date +%H:%M` Uhr.
+
+Auszug aus $(basename ${gtfsanalysislogfile}):
+$(cat "$gtfsanalysislogfile" | sed -n '/^Statistik:/,$p')
+
+EOM
+}
+mailcontent-a() {
+cat <<EOM
+rcompare.sh -a beendet am `date +%d.%m.%Y` um `date +%H:%M` Uhr.
+
+Auszug aus $(basename ${rcompareanalysislogfile}):
+$(cat "$rcompareanalysislogfile")
+
+EOM
+}
+mailcontent-m() {
+cat <<EOM
+rcompare.sh -m beendet am `date +%d.%m.%Y` um `date +%H:%M` Uhr.
+
+Auszug aus $(basename ${rcomparemissinglogfile}):
+$(cat "$rcomparemissinglogfile")
+
+EOM
+}
+mailcontent-d() {
+cat <<EOM
+Fehlermeldung: `date +%d.%m.%Y` um `date +%H:%M` Uhr.
+
+Es gab Probleme beim Download der OSM-Daten. Erstellung wurde abgebrochen.
+
+Auszug aus $(basename ${ptanalysislogfile}):
+$(cat "$ptanalysislogfile" | grep '^Downloadversuch' | tac | uniq --skip-fields=4 | tac | sed 's/\(^Downloadversuch\) \([[:digit:]]*\) \*\*\* Processing \(.*\.osm\) .*/\1(e) \3: \2/')
+
+$(cat "$ptanalysislogfile" | sed -n '/^Es konnten nicht alle OSM-Daten vollständig heruntergeladen werden/,$p')
+
+EOM
+}
+mailcontent-e() {
+cat <<EOM
+Fehlermeldung: `date +%d.%m.%Y` um `date +%H:%M` Uhr.
+
+Es gab einen Fehler beim pta-Prozess.
+
+EOM
+}
+mailcontent-p() {
+cat <<EOM
+Fehlermeldung: `date +%d.%m.%Y` um `date +%H:%M` Uhr.
+
+Es konnte keine Verbindung zum Internet hergestellt werden. Erstellung wurde abgebrochen.
+
+EOM
+}
+
+while getopts gademp opt
+
+do
+ case $opt in
+
+  g) # Nachricht rcompare Ende GTFS-ShapeID-Analyse
+     gtfsanalysislogfile="$(ls results/*gtfsanalyse.txt 2>/dev/null | sort -nr | sed -n 1p)"
+     if [ -n "$gtfsanalysislogfile" ]; then
+      mailcontent-g | mail -a "Content-Type: text/plain; charset=UTF-8" -s "GTFS-ShapeID-Analyse" "$ptamail"
+     else
+      echo -e "GTFS-ShapeID-Analyse fertig gestellt am `date +%d.%m.%Y` um `date +%H:%M` Uhr.\nKeine Analysedatei vorhanden." | mail -a "Content-Type: text/plain; charset=UTF-8" -s "GTFS-ShapeID-Analyse" "$ptamail"
+     fi
+  ;;
+
+  a) # Nachricht rcompare Ende GTFS-ShapeID-Analyse
+     rcompareanalysislogfile="$(ls results/*fehlerdatei.txt 2>/dev/null | sort -nr | sed -n 1p)"
+     if [ -n "$rcompareanalysislogfile" ]; then
+      mailcontent-a | mail -a "Content-Type: text/plain; charset=UTF-8" -s "cfg-Datei-Analyse" "$ptamail"
+     else
+      echo -e "rcompare.sh -a beendet am `date +%d.%m.%Y` um `date +%H:%M` Uhr.\nKeine Analysedatei vorhanden." | mail -a "Content-Type: text/plain; charset=UTF-8" -s "cfg-Datei-Analyse" "$ptamail"
+     fi
+  ;;
+
+  m) # rcompare.sh finished with Option -m
+     rcomparemissinglogfile="$(ls results/*missingroutes.txt 2>/dev/null | sort -nr | sed -n 1p)"
+     if [ -n "$rcomparemissinglogfile" ]; then
+      mailcontent-m | mail -a "Content-Type: text/plain; charset=UTF-8" -s "rcompare.sh -m beendet" "$ptamail"
+     else
+      echo -e "rcompare.sh -m beendet am `date +%d.%m.%Y` um `date +%H:%M` Uhr.\nKeine Analysedatei vorhanden." | mail -a "Content-Type: text/plain; charset=UTF-8" -s "rcompare.sh -m beendet" "$ptamail"
+     fi
+  ;;
+
+  d) # Fehlermeldung: Download OSM-Daten
+     if [ -n "$ptanalysislogfile" ]; then
+      mailcontent-d | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Downloadfehler" "$ptamail"
+     else
+      echo -e "Fehlermeldung: `date +%d.%m.%Y` um `date +%H:%M` Uhr.\nEs gab Probleme beim Download der OSM-Daten. Erstellung wurde abgebrochen.\nKeine Analysedatei vorhanden." | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Downloadfehler" "$ptamail"
+     fi
+  ;;
+
+  e) # Nachricht Fehlermeldung
+     mailcontent-e | mail -a "Content-Type: text/plain; charset=UTF-8" -s "pta Fehlermeldung" "$ptamail"
+  ;;
+
+  p) # Fehlermeldung: Keine Internetverbindung
+     mailcontent-p | mail -a "Content-Type: text/plain; charset=UTF-8" -s "pta Fehlermeldung" "$ptamail"
+  ;;
+
+ esac
+done
