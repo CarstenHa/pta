@@ -1838,7 +1838,7 @@ for ((a=1 ; a<=(("$anzrealbuslines")) ; a++)); do
  echo -e "\nStatistik:"
  echo "Insgesamt in .cfg-Datei eingebundene Routen: ${anzrealbuslines}"
  echo "Geänderte ShapeIDs: ${gtfsupdatecounter}"
- echo "$((100/${anzrealbuslines}*${gtfsupdatecounter}))% der erfassten Routen konnten überprüft werden."
+ echo "$((100*${gtfsupdatecounter}/${anzrealbuslines}))% der erfassten Routen konnten überprüft werden."
  echo "Geänderte Anzahl der Haltestellen: ${stopupdatecounter}"
  echo "Funde die geändert wurden, aber zusätzlich noch mal geprüft werden sollten: ${checkcounter}"
  echo "Funde ohne passende ShapeID, die noch von Hand geändert werden müssen: ${errorcounterlt}"
