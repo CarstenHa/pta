@@ -17,6 +17,7 @@ rcompare/backup/*
 rcompare/bin/lizenzhinweise
 rcompare/dummy/backup
 rcompare/rchecker.sh
+rcompare/results
 alternativedownload.sh
 exclude.lst
 zipall.sh

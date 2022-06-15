@@ -202,6 +202,7 @@ datumjetzt=`date +%Y%m%d_%H%M%S`
 cfgfile="../config/ptarea${!#}/real_bus_stops.cfg"
 pathtogtfsdata="./gtfsdata"
 pathtooldgtfsdata="./oldgtfsdata"
+[ ! -d ./results ] && mkdir -v ./results
 pathtoresults="./results"
 pathtogtfsresults=./gtfsdata/results/
 pathtogtfsgpx=./gtfsdata/gpx/
