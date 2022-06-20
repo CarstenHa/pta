@@ -2518,6 +2518,7 @@ do
 
      # ***** Hier werden die ersten beiden Tabellen generiert. *****
      counterm="0"
+     countera="0"
      echo "*** Analyselogfile - Auflistung von fehlenden Routen in OSM-Daten (Option -m) ***" >./results/${datumjetzt}_analyse_missingroutes.txt
      for ((t=1 ; t<=(("$anzshapes")) ; t++)); do
      
@@ -2534,8 +2535,51 @@ do
 
       gtfsshapeid="$(echo "$sortgtfslist" | sed -n ''$t'p')"
       analysisresult="$(cd "$pathtogtfsdata" && gtfsanalyzer -l servicedays "$gtfsshapeid")"
+      serviceresult="$(echo "$analysisresult" | grep '^[01] [01] [01] [01] [01] [01] [01]' | sort | uniq)"
       anzroutes="$(echo "$analysisresult" | sed -n 's/^Gefundene Routen : \(.*$\)/\1/p')"
       busnumber="$(echo "$analysisresult" | sed -n 's/^route_short_name : \(.*$\)/\1/p')"
+      routeid="$(echo "$analysisresult" | sed -n 's/^RouteID *: \(.*$\)/\1/p')"
+
+      # ** Mehrrouten-ShapeID wird gefiltert. **
+      if [ "$anzroutes" -gt "1" ]; then
+
+       echo "ShapeID hat mehrere Routen. Route $(echo $busnumber | sed 's/ /\//g') wird gefiltert (ShapeID: ${gtfsshapeid})." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+       severalshapes+="$gtfsshapeid "
+       chkservcounter=0
+       routeidtmp="$routeid"
+       unset analysisresultfix
+       unset serviceresultfix
+       unset busnumberfix
+       unset routeidfix
+       while read -r singleroute; do
+        # analysisresult wird gesplittet.
+        analysisresulttmp="$(echo "$analysisresult" | sed -n '/^RouteID.*'"$singleroute"'$/,/^[-]*-$/p')"
+        serviceresulttmp="$(echo "$analysisresulttmp" | grep '^[01] [01] [01] [01] [01] [01] [01]' | sort | uniq)"
+        if [ ! "$serviceresulttmp" == "0 0 0 0 0 0 0" ]; then
+         let chkservcounter++
+         analysisresultfix="$analysisresulttmp"
+         serviceresultfix="$serviceresulttmp"
+         busnumberfix="$(echo "$analysisresultfix" | sed -n 's/^route_short_name : \(.*$\)/\1/p')"
+         routeidfix="$singleroute"
+        elif [ "$serviceresulttmp" == "0 0 0 0 0 0 0" ]; then
+         let counterm++
+         echo "Route ${singleroute} hat keine dauerhaften Verkehrstage (ShapeID: ${gtfsshapeid})." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+         echo "Route wird nicht in HTML-Seite aufgenommen." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+        fi
+       done <<<"$routeidtmp"
+
+       # Variablen werden neu belegt.
+       if [ "$chkservcounter" == 1 ]; then
+        anzroutes=1
+        analysisresult="$analysisresultfix"
+        serviceresult="$serviceresultfix"
+        busnumber="$busnumberfix"
+        routeid="$routeidfix"
+       fi
+
+      fi
+      # ** Filterung - Ende **
+
       # sort und uniq: Weil es sehr unwahrscheinlich ist, das bei gleicher Shape
       # das Verkehrsmittel wechselt. Wird gebraucht, um Hafenfähren rauszufiltern.
       # Auf anzroutes=1 wird dann später auch noch geprüft.
@@ -2545,32 +2589,28 @@ do
       # Warum negieren und nicht auf 3 (Bus) prüfen? Weil die S-Busse den nicht offiziellen
       # route_type 700 in den GTFS-Daten haben.
       if [ ! "$routetype" == "4 (Ferry)" ]; then
-      
-       # Variablen, die nur für Parameter no bzw. wenn nur ein Teil der Liste
-       # mit Stopliste und Mapansicht generiert wird.
-       if ([[ "$OPTARG" == [0-9]* ]] && [ "$t" -gt "$plimit" ]) || [ "$noprocess" == "yes" ]; then
-        routeid="$(echo "$analysisresult" | sed -n 's/^RouteID *: \(.*$\)/\1/p')"
-        agencyname="$(echo "$analysisresult" | sed -n 's/^Agency name *: \(.*$\)/\1/p')"
-        tripheadsign="$(echo "$analysisresult" | sed -n 's/^trip_headsign *: \(.*$\)/\1/p')"
-       fi
-       anzgtfsstops="$(echo "$sortgtfslist" | wc -l)"
-      
+
+       # *** Darstellung mit Liste und Karte ***
        if ([[ "$OPTARG" == [0-9]* ]] && [ "$t" -le "$plimit" ]) || [ "$allprocess" == "yes" ]; then
-     
-        cd "${pathtogtfsdata}"
-         gtfsanalyzer -s singleauto "$agencynumber" "$busnumber" "$gtfsshapeid"
-        cd -
-        gtfsanalyzerfile="$(find ${pathtogtfsresults} -name *shapesingle_${gtfsshapeid}.txt | sort -r | sed -n '1p')"
-        if [ -z "$gtfsanalyzerfile" ]; then
-         echo "Schwerwiegender Fehler! Es konnte keine Analysedatei von gtfsanalyzer gefunden werden." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
-         echo "Dieses Skript wird abgebrochen!" | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
-         echo "GTFSID: ${gtfsshapeid}" | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
-         let counterm++
-         exit 1
-        fi
-      
-        if [ ! "$(sed -n 's/^Verkehrstage des ausgewerteten Trips (Mo-So): \(.*\)/\1/p' "$gtfsanalyzerfile")" == "- - - - - - -" ]; then
-      
+
+        if [ "$anzroutes" == "1" ]; then
+
+         # Bei folgendem Block ist wichtig, das dieser mit anzroutes==1 getestet wird, 
+         # da sonst bei gleicher ShapeID und mehreren Routen ein Abbruch erfolgen würde.
+         cd "${pathtogtfsdata}"
+          gtfsanalyzer -s singleauto "$agencynumber" "$busnumber" "$gtfsshapeid"
+         cd -
+         gtfsanalyzerfile="$(find ${pathtogtfsresults} -name *shapesingle_${gtfsshapeid}.txt | sort -r | sed -n '1p')"
+         if [ -z "$gtfsanalyzerfile" ]; then
+          echo "Schwerwiegender Fehler! Es konnte keine Analysedatei von gtfsanalyzer gefunden werden." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+          echo "Dieses Skript wird abgebrochen!" | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+          echo "GTFSID: ${gtfsshapeid}" | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+          let counterm++
+          exit 1
+         fi
+
+         if [ ! "$serviceresult" == "0 0 0 0 0 0 0" ]; then
+
           gtfsshapelist="$(grep '^Stop' "$gtfsanalyzerfile" | sed 's/^Stop .*: \(.*\)/\1/')"
           anzgtfsstops="$(echo "$gtfsshapelist" | wc -l)"
           echo "$gtfsshapelist" | tee ./gtfstohtml.tmp ./gtfs.txt 1>/dev/null
@@ -2586,61 +2626,60 @@ do
           # Ansonsten würden die x und - in Awesome-Element auch mit umgewandelt.
           servicedays="$(sed -n 's/^Verkehrstage des ausgewerteten Trips (Mo-So): \(.*\)/\1/p' "$gtfsanalyzerfile" | sed 's/-/@/g;s/x/#/g;s/@/<i class="fa-div fa fa-times fa-1x"><\/i>/g;s/#/<i class="fa-div fa fa-check fa-1x"><\/i>/g')"
           serviceinterval="$(sed -n 's/^Gültigkeit des ausgewerteten Trips (von-bis einschließlich): \(....\)\(..\)\(..\)-\(....\)\(..\)\(..\)/\1-\2-\3 - \4-\5-\6/p' "$gtfsanalyzerfile")"
+
+          # Start- und Endhaltestelle werden ermittelt.
+          startstop="$(sed -n '1p' ./gtfstohtml.tmp)"
+          endstop="$(sed -n '$p' ./gtfstohtml.tmp)"
+
+          gtfsdatatohtml
+         
+          cd "$pathtogtfsdata"
+          gtfsanalyzer -g singleauto "$agencynumber" "$busnumber" "${gtfsshapeid}" 
+          cd -
+
+          gtfsgpxfile="$(find ${pathtogtfsgpx} -name ${busnumber}_${gtfsshapeid}.gpx)"
+          gpxconvert
+          mv -v ${gtfsgpxfile} ./results/
+
+          echo "${busnumber}</th><td class=\"small\">${startstop}</td><td class=\"small\">${endstop}</td><td id=\"gtfsid1tab${gtfsshapeid}\" class=\"small\">${gtfsshapeid}</td><td class=\"small\"><a href=\"gtfs/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td><td><a href=\"gtfs/maps/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td></tr>" >>./addgtfstohtml.txt
+
+         else
       
-          # Es wird nur bei einem Analyseergebnis (gtfsanalyzer -l servicedays [shapeid]) von einer gefundenen Route die Seiten erstellt.
-          # Bei mehreren gefundenen Routen, was relativ selten vorkommt, könnte man hier noch weiter analysieren.
-          if [ "$anzroutes" == "1" ]; then
-        
-           # Start- und Endhaltestelle werden ermittelt.
-           startstop="$(sed -n '1p' ./gtfstohtml.tmp)"
-           endstop="$(sed -n '$p' ./gtfstohtml.tmp)"
+          let counterm++
+          # plimit wird um 1 erhöht, damit auch wirklich die angegebene Anzahl von Seiten mit Listen- und Mapansicht erstellt wird.
+          let plimit++
+          echo "Keine dauerhaften Verkehrstage (ShapeID: ${gtfsshapeid})." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+          echo "HTML-Seitenerstellung wir nicht durchgeführt." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
 
-           gtfsdatatohtml
-         
-           cd "$pathtogtfsdata"
-           gtfsanalyzer -g singleauto "$agencynumber" "$busnumber" "${gtfsshapeid}" 
-           cd -
+         fi
 
-           gtfsgpxfile="$(find ${pathtogtfsgpx} -name ${busnumber}_${gtfsshapeid}.gpx)"
-           gpxconvert
-           mv -v ${gtfsgpxfile} ./results/
-         
-           echo "${busnumber}</th><td class=\"small\">${startstop}</td><td class=\"small\">${endstop}</td><td id=\"gtfsid1tab${gtfsshapeid}\" class=\"small\">${gtfsshapeid}</td><td class=\"small\"><a href=\"gtfs/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td><td><a href=\"gtfs/maps/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td></tr>" >>./addgtfstohtml.txt
-         
-          else
-          
-           let counterm++
-           echo "Mehrere Routen bei gleicher ShapeID gefunden (ShapeID: ${gtfsshapeid})." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
-           echo "Route wird nicht in HTML-Seite aufgenommen." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
-
-          fi
-        
         else
-      
-         let counterm++
+
+         let countera++
          # plimit wird um 1 erhöht, damit auch wirklich die angegebene Anzahl von Seiten mit Listen- und Mapansicht erstellt wird.
          let plimit++
-         echo "Keine dauerhaften Verkehrstage (ShapeID: ${gtfsshapeid})." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
-         echo "HTML-Seitenerstellung wir nicht durchgeführt." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
-       
-        fi 
-      
+         echo "Mehrere Routen bei gleicher ShapeID gefunden (ShapeID: ${gtfsshapeid})." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+         echo "Route wird nicht in HTML-Seite aufgenommen." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+
+        fi
+
        else
-        
+
+         # *** Einfache Darstellung ohne Liste und Karte ***
          # Es wird nur bei einem Analyseergebnis (gtfsanalyzer -l servicedays [shapeid]) von einer gefundenen Route die Seiten erstellt.
-         # Bei mehreren gefundenen Routen, was relativ selten vorkommt, könnte man hier noch weiter analysieren.
          if [ "$anzroutes" == "1" ]; then
-          serviceresult="$(echo "$analysisresult" | grep '^[01] [01] [01] [01] [01] [01] [01]' | sort | uniq)"
           # Hier wird auf dauerhafte Verkehrstage geprüft.
           if [ "$serviceresult" == "0 0 0 0 0 0 0" ]; then
            let counterm++
            echo "Keine dauerhaften Verkehrstage (ShapeID: ${gtfsshapeid})." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
            echo "Route wird nicht in HTML-Seite aufgenommen." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
           else
-          echo "${busnumber}</th><td class=\"small\">${tripheadsign}</td><td class=\"small\">${agencyname}</td><td class=\"small\">${routeid}</td><td id=\"gtfsid2tab${gtfsshapeid}\">${gtfsshapeid}</td></tr>" >>./addgtfstohtml2.txt
+           agencyname="$(echo "$analysisresult" | sed -n 's/^Agency name *: \(.*$\)/\1/p')"
+           tripheadsign="$(echo "$analysisresult" | sed -n 's/^trip_headsign *: \(.*$\)/\1/p')"
+           echo "${busnumber}</th><td class=\"small\">${tripheadsign}</td><td class=\"small\">${agencyname}</td><td class=\"small\">${routeid}</td><td id=\"gtfsid2tab${gtfsshapeid}\">${gtfsshapeid}</td></tr>" >>./addgtfstohtml2.txt
           fi
          else
-          let counterm++
+          let countera++
           echo "Mehrere Routen bei gleicher ShapeID gefunden (ShapeID: ${gtfsshapeid})." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
           echo "Route wird nicht in HTML-Seite aufgenommen." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
          fi
@@ -2650,6 +2689,10 @@ do
       else
      
        let counterm++
+       if ([[ "$OPTARG" == [0-9]* ]] && [ "$t" -le "$plimit" ]); then
+        # plimit wird um 1 erhöht, damit auch wirklich die angegebene Anzahl von Seiten mit Listen- und Mapansicht erstellt wird.
+        let plimit++
+       fi
        echo "Route ${busnumber} mit ShapeID ${gtfsshapeid} ist keine Busroute." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
        echo "Route wird nicht in HTML-Seite aufgenommen." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
 
@@ -2668,14 +2711,56 @@ do
 
       gtfsshapeid="$(echo "$cfggtfslist" | sed -n ''$u'p')"
       analysisresult="$(cd "$pathtogtfsdata" && gtfsanalyzer -l singleshape "$gtfsshapeid")"
-      #anzroutes="$(echo "$analysisresult" | sed -n 's/^Gefundene Routen : \(.*$\)/\1/p')"
-      busnumber="$(echo "$analysisresult" | sed -n 's/^route_short_name : \(.*$\)/\1/p')"
+      anzroutes="$(echo "$analysisresult" | sed -n 's/^Gefundene Routen : \(.*$\)/\1/p')"
       routeid="$(echo "$analysisresult" | sed -n 's/^RouteID *: \(.*$\)/\1/p')"
+
+      busnrcounter=0
+      if [ "$anzroutes" -gt 1 ]; then
+
+       echo "ShapeID ${gtfsshapeid} hat mehrere Routen. Routen werden gefiltert."
+       severalshapes+="$gtfsshapeid "
+       routeidtmp="$routeid"
+       # Es wird später nach der gleiche Routenbezeichnung gesucht, die auch in der .cfg-Datei verwendet wird.
+       cfgbusnr="$(grep " ${gtfsshapeid}$" "$cfgfile" | cut -f4 -d' ')"
+       unset analysisresultfix
+       unset routeidfix
+       while read -r singleroute; do
+        # analysisresult wird gesplittet.
+        analysisresulttmp="$(echo "$analysisresult" | sed -n '/^RouteID.*'"$singleroute"'$/,/^[-]*-$/p')"
+        if [ -n "$(echo "$analysisresulttmp" | grep '^route_short_name : '"$cfgbusnr"'$')" ]; then
+         let busnrcounter++
+         analysisresultfix="$analysisresulttmp"
+         routeidfix="$singleroute"
+        fi
+       done <<<"$routeidtmp"
+
+       if [ "$busnrcounter" == 1 ]; then
+        analysisresult="$analysisresultfix"
+        routeid="$routeidfix"
+        echo "Passende Route gefunden (RouteID: ${routeid})."
+        echo -e "\n${analysisresult}"
+       elif [ "$busnrcounter" -gt 1 ]; then
+        echo "ACHTUNG! Mehrrouten-ShapeID (${gtfsshapeid})! Passende Route konnte nicht herausgefiltert werden. Bitte HTML-Seite prüfen!" | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+        let countera++
+        # Stand vor der Filterung wird wieder hergestellt
+        analysisresult="$(cd "$pathtogtfsdata" && gtfsanalyzer -l singleshape "$gtfsshapeid")"
+        routeid="$(echo "$analysisresult" | sed -n 's/^RouteID *: \(.*$\)/\1/p')"
+       fi
+
+      fi
+
+      busnumber="$(echo "$analysisresult" | sed -n 's/^route_short_name : \(.*$\)/\1/p')"
       agencyname="$(echo "$analysisresult" | sed -n 's/^Agency name *: \(.*$\)/\1/p')"
       tripheadsign="$(echo "$analysisresult" | sed -n 's/^trip_headsign *: \(.*$\)/\1/p')"
-      
-      echo "${busnumber}</th><td class=\"small\">${tripheadsign}</td><td class=\"small\">${agencyname}</td><td class=\"small\">${routeid}</td><td id=\"gtfsid3tab${gtfsshapeid}\" class=\"small\">${gtfsshapeid}</td><td class=\"small\"><a href=\"gtfs/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td><td class=\"small\"><a href=\"gtfs/maps/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td><td class=\"pta\"><a href=\"osmroutes.html#route${busnumber}\">&nbsp;&nbsp;&nbsp;</a></td></tr>" >>./addgtfstohtml3.txt
-     
+
+      # Falls es mal vorkommen sollte, das bei einer Mehrrouten-ShapeID die Filterung nicht greift,
+      # wird der gesamte Content in die Zeile geschrieben. Generierte HTML-Seite sollte dann unbedingt geprüft werden.
+      if [ "$busnrcounter" -gt 1 ]; then
+       echo ""${busnumber}"</th><td class=\"small\">"${tripheadsign}"</td><td class=\"small\">"${agencyname}"</td><td class=\"small\">"${routeid}"</td><td id=\"gtfsid3tab${gtfsshapeid}\" class=\"small\">${gtfsshapeid}</td><td class=\"small\"><a href=\"gtfs/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td><td class=\"small\"><a href=\"gtfs/maps/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td><td class=\"pta\"><a href=\"osmroutes.html\">&nbsp;&nbsp;&nbsp;</a></td></tr>" >>./addgtfstohtml3.txt
+      else
+       echo "${busnumber}</th><td class=\"small\">${tripheadsign}</td><td class=\"small\">${agencyname}</td><td class=\"small\">${routeid}</td><td id=\"gtfsid3tab${gtfsshapeid}\" class=\"small\">${gtfsshapeid}</td><td class=\"small\"><a href=\"gtfs/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-list fa-1x\"></i></a></td><td class=\"small\"><a href=\"gtfs/maps/${gtfsshapeid}.html\"><i class=\"fa-td fa fa-map fa-1x\"></i></a></td><td class=\"pta\"><a href=\"osmroutes.html#route${busnumber}\">&nbsp;&nbsp;&nbsp;</a></td></tr>" >>./addgtfstohtml3.txt
+      fi
+
      done
      
      if [ -e ./addgtfstohtml.txt ]; then
@@ -2701,18 +2786,25 @@ do
      fi
 
      echo ""
-     if [ "$counterm" == "0" ]; then
+     if [ -n "$severalshapes" ]; then
+      anzseveralshapes="$(echo "$severalshapes" | wc -w)"
+      echo -e "Hinweis:\nEs kann vorkommen, das eine ShapeID für mehrere Routen gültig ist.\nDas ist meistens dann der Fall, wenn sich die Routenbezeichnung während der Gültigkeit\nder GTFS-Daten ändert.\nFolgende ${anzseveralshapes} ShapeID(s) sind davon betroffen:" | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+      echo "$severalshapes" | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+     fi
+     if [ "$counterm" == "0" -a "$countera" == "0" ]; then
       echo "Durchlauf beendet am `date +%d.%m.%Y` um `date +%H:%M` Uhr. Keine nennenswerten Vorkommnisse." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
      else
-      echo "Durchlauf beendet am `date +%d.%m.%Y` um `date +%H:%M` Uhr. Es gibt ${counterm} Einträge in ./results/${datumjetzt}_analyse_missingroutes.txt." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+      echo "Durchlauf beendet am `date +%d.%m.%Y` um `date +%H:%M` Uhr." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+      [ "$counterm" -gt "0" ] && echo "Es gibt ${counterm} Einträge ohne dauerhafte Verkehrstage in ./results/${datumjetzt}_analyse_missingroutes.txt." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
+      [ "$countera" -gt "0" ] && echo "Es gibt ${countera} Mehrrouten-ShapeID(s), die nicht analysiert werden konnten, in ./results/${datumjetzt}_analyse_missingroutes.txt." | tee -a ./results/${datumjetzt}_analyse_missingroutes.txt
      fi
-     
+
      if [ -e "../tools/mail/sendamail" ]; then
       ../tools/mail/sendamail -m
      fi
-     
+
      # *** HTML-Seitenerstellung - Ende ***
-     
+
      # Aufräumen
      rm -f ./addgtfstohtml_kopf0.txt
      rm -f ./addgtfstohtml_kopf1.txt
@@ -2722,7 +2814,7 @@ do
      rm -f ./sortaddgtfstohtml.txt
      rm -f ./sortaddgtfstohtml2.txt
      rm -f ./addgtfstohtml_fuss.txt
-     
+
      # Zeitstempel der Logdatei wird zurückgesetzt für Auswertung mit find im zip-Befehl.
      touch -t "$mprocessstart" "${pathtoresults}/${datumjetzt}_analyse_missingroutes.txt"
      zip "./backup/zipfiles/${datumjetzt}_completehtmlgen.zip" $(find "${pathtoresults}/" -type f -cnewer "$pathtoresults/${datumjetzt}_analyse_missingroutes.txt") "$pathtoresults/${datumjetzt}_analyse_missingroutes.txt"
