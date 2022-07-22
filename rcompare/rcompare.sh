@@ -200,6 +200,15 @@ rm -f ./*errorvar.tmp
 datumjetzt=`date +%Y%m%d_%H%M%S`
 # ${!#} gibt den Wert des letzten Arguments aus.
 cfgfile="../config/ptarea${!#}/real_bus_stops.cfg"
+cfgfile2="../config/ptarea${!#}/ptarea.cfg"
+if [ -e "$cfgfile2" ] && [[ "${!#}" == [1-9] ]]; then
+ source "$cfgfile2"
+elif [ ! -e "$cfgfile2" ] && [[ "${!#}" == [1-9] ]]; then
+ echo "${cfgfile2} existiert nicht. Bitte erst anlegen."
+ echo "Eine Beispieldatei finden Sie unter: ../config/template/ptarea.cfg"
+ echo "Skript wird abgebrochen!"
+ exit 1
+fi
 pathtogtfsdata="./gtfsdata"
 pathtooldgtfsdata="./oldgtfsdata"
 [ ! -d ./results ] && mkdir -v ./results
@@ -208,13 +217,27 @@ pathtogtfsresults=./gtfsdata/results/
 pathtogtfsgpx=./gtfsdata/gpx/
 pathtoosmdata="../osmdata"
 
-if [ "$(sed -n '6p' "$pathtogtfsdata"/agency.txt | grep '^221,' | wc -l)" == "0" ]; then
- echo "gtfsanalyzer-Einstellungen haben sich geändert. Bitte Variable agencynumber überprüfen!"
+# *** Ermitteln des Verkehrsunternehmens ***
+if [ "${#gtfsagencyid[@]}" == "1" ]; then
+ agid="${gtfsagencyid%#*}"
+ agname="${gtfsagencyid#*#}"
+ agline="$(egrep -n '^["'\'']{,1}'"$agid"'["'\'']{,1},' "$pathtogtfsdata"/agency.txt | egrep -i '["'\'']{,1}'"$agname"'["'\'']{,1}')"
+ if [ -n "$agline" ]; then
+  agencynumber="$(($(echo "$agline" | grep -o '^[0-9]*') - 1))"
+  echo "agencynumber für Agency ${agname} mit der GTFS-ID ${agid} lautet ${agencynumber}."
+ else
+  echo -e "agencynumber für Agency ${agname} mit der GTFS-ID ${agid} konnte nicht ermittelt werden.\nSkript wird abgebrochen!"
+  echo "Bitte ${cfgfile2} überprüfen und ggf. anpassen."
+  exit 1
+ fi
+elif [ "${#gtfsagencyid[@]}" -gt "1" ]; then
+ echo "Mehrere AgencyIDs für das Verkehrsgebiet ${ptarealong} ermittelt."
+ echo "Dies wird zur Zeit noch nicht unterstützt. Skript wird abgebrochen!"
  exit 1
-else
- agencynumber="5"
+elif [ -z "${gtfsagencyid}" -a -e "$cfgfile2" ]; then
+ echo "Fehler! Variable gtfsagencyid in ${cfgfile2} ist nicht definiert. Bitte .cfg-Datei erst konfigurieren und dann Skript neu starten."
+ exit 1
 fi
- 
 
 gtfsdatatohtml() {
 # ****** HTML-Seitenerstellung ******
