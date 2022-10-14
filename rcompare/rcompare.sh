@@ -2231,7 +2231,7 @@ do
      touch -t "$gprocessstart" "${pathtoresults}/${datumjetzt}_gtfsanalyse.txt" 
      zip "./backup/zipfiles/${datumjetzt}_checkgtfsid.zip" $(find "${pathtoresults}/" -type f -cnewer "$pathtoresults/${datumjetzt}_gtfsanalyse.txt") "$pathtoresults/${datumjetzt}_gtfsanalyse.txt"
      echo -e "\nAlle relevanten Analysedateien wurden gesichert und befinden sich in ./backup/zipfiles/${datumjetzt}_checkgtfsid.zip"
-     notify-send Hinweis "GTFS-ShapeID-Analyse (Option -g) am `date +%d.%m.%Y` um `date +%H:%M` Uhr beendet.\n\nAnalysedatei(en):\n${PWD}/backup/zipfiles/${datumjetzt}_checkgtfsid.zip"
+     notify-send -i "${PWD}/../tools/images/logo32x32.png" Hinweis "GTFS-ShapeID-Analyse (Option -g) am `date +%d.%m.%Y` um `date +%H:%M` Uhr beendet.\n\nAnalysedatei(en):\n${PWD}/backup/zipfiles/${datumjetzt}_checkgtfsid.zip"
 
   ;;
 
@@ -2250,7 +2250,7 @@ do
      touch -t "$aprocessstart" "${pathtoresults}/${datumjetzt}_fehlerdatei.txt" 
      zip "./backup/zipfiles/${datumjetzt}_completehtmlgen.zip" $(find "${pathtoresults}/" -type f -cnewer "$pathtoresults/${datumjetzt}_fehlerdatei.txt") "$pathtoresults/${datumjetzt}_fehlerdatei.txt"
      echo -e "\nAlle relevanten Analysedateien wurden gesichert und befinden sich in ./backup/zipfiles/${datumjetzt}_completehtmlgen.zip"
-     notify-send Hinweis ".cfg-Datei-Analyse und HTML-Seitenerstellung (GTFS-Unterseiten; Option -a) am `date +%d.%m.%Y` um `date +%H:%M` Uhr beendet."
+     notify-send -i "${PWD}/../tools/images/logo32x32.png" Hinweis ".cfg-Datei-Analyse und HTML-Seitenerstellung (GTFS-Unterseiten; Option -a) am `date +%d.%m.%Y` um `date +%H:%M` Uhr beendet."
 
   ;;
 
@@ -2843,7 +2843,7 @@ do
      touch -t "$mprocessstart" "${pathtoresults}/${datumjetzt}_analyse_missingroutes.txt"
      zip "./backup/zipfiles/${datumjetzt}_completehtmlgen.zip" $(find "${pathtoresults}/" -type f -cnewer "$pathtoresults/${datumjetzt}_analyse_missingroutes.txt") "$pathtoresults/${datumjetzt}_analyse_missingroutes.txt"
      echo -e "\nAlle relevanten Analysedateien wurden gesichert und befinden sich in ./backup/zipfiles/${datumjetzt}_completehtmlgen.zip"
-     notify-send Hinweis "HTML-Seitenerstellung von gtfsroutes.html (Option -m) am `date +%d.%m.%Y` um `date +%H:%M` Uhr beendet.\n\nAnalysedatei(en):\n${PWD}/backup/zipfiles/${datumjetzt}_completehtmlgen.zip"
+     notify-send -i "${PWD}/../tools/images/logo32x32.png" -t 0 Hinweis "HTML-Seitenerstellung von gtfsroutes.html (Option -m) am `date +%d.%m.%Y` um `date +%H:%M` Uhr beendet.\n\nAnalysedatei(en):\n${PWD}/backup/zipfiles/${datumjetzt}_completehtmlgen.zip"
 
   ;;
 

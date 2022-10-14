@@ -729,13 +729,13 @@ printf 'Dauer des Erstellungsprozesses: %02dh:%02dm:%02ds\n' $(($zeitdiff/3600))
 
 if [ "$exitcode1" == 0 -a "$exitcode2" == 0 ]; then
  echo "OSM-Analyseseiten sind fertig (`date +%d.%m.%Y` um `date +%H:%M` Uhr)."
- notify-send -t 0 "Hinweis" "OSM-Analyseseiten sind fertig." 2>/dev/null
+ notify-send -i "${PWD}/tools/images/logo32x32.png" -t 0 "Hinweis" "OSM-Analyseseiten sind fertig." 2>/dev/null
  if [ -e "./tools/mail/sendamail" ]; then
   ./tools/mail/sendamail
  fi
 else
  echo "Es gab einen Fehler beim OSM-Analyse-Prozess (`date +%d.%m.%Y` um `date +%H:%M` Uhr)."
- notify-send -t 0 "Fehler" "Es gab einen Fehler beim OSM-Analyse-Prozess." 2>/dev/null
+ notify-send -i "${PWD}/tools/images/logo32x32.png" -t 0 "Fehler" "Es gab einen Fehler beim OSM-Analyse-Prozess." 2>/dev/null
  if [ -e "./tools/mail/sendamail" ]; then
   ./tools/mail/sendamail -e
  fi
